@@ -24,7 +24,7 @@ public class Wishlist {
     @NotNull
     private Long pid;
 
-    @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = FybUser.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @NotNull
     private Long uid;

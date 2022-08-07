@@ -34,28 +34,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .csrf().disable() // token을 사용하는 방식이기 때문에 csrf를 disable
+                .csrf().disable()
 
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
 
-                .exceptionHandling() // Exception을 핸들링 할때 직접 만든 Exception 클래스들을 설정
+                .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
 
-                // 세션을 사용하지 않기 때문에 STATELESS로 설정
+
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
                 .and()
-                .authorizeRequests() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다는 의미
-                .antMatchers("/login").permitAll() // 인증없이 접근을 허용하겠다는 의미
-                .antMatchers("/register").permitAll()
-                .antMatchers("/authenticate").permitAll()
+                .authorizeRequests()
+                .antMatchers("/auth/login").permitAll()
+                .antMatchers("/auth/register").permitAll()
 
-                .anyRequest().authenticated() // 나머지 요청들은 전부 인증 받아야함을 명시
+                .anyRequest().authenticated()
 
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider)); // JwtFilter를 JwtSecurityConfig 에 등록했기에 필터에 적용
+                .apply(new JwtSecurityConfig(tokenProvider));
     }
 }

@@ -1,6 +1,7 @@
 package school.bonobono.fyb.Entity;
 
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -17,7 +18,7 @@ import java.util.Set;
 @Builder
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class User {
+public class FybUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
@@ -26,7 +27,7 @@ public class User {
     @NotNull
     private String email;
 
-    @Column(name = "pw", length = 30)
+    @Column(name = "pw")
     @NotNull
     private String pw;
 
