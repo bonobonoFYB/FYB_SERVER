@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import school.bonobono.fyb.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.Dto.UserReadDto;
 import school.bonobono.fyb.Dto.UserRegisterDto;
 import school.bonobono.fyb.Dto.UserUpdateDto;
@@ -61,12 +62,13 @@ public class UserService {
     }
 
     // 내 정보 수정
+
     @Transactional
     public UserUpdateDto.Response updateUser(UserUpdateDto.Request request) {
-        Long userid = UserUpdateDto.Response.update(SecurityUtil.getCurrentUsername().flatMap(userRepository::findOneWithAuthoritiesByEmail).orElse(null)).getId();
-        String userpw = UserUpdateDto.Response.update(SecurityUtil.getCurrentUsername().flatMap(userRepository::findOneWithAuthoritiesByEmail).orElse(null)).getPw();
-        String useremail = UserUpdateDto.Response.update(SecurityUtil.getCurrentUsername().flatMap(userRepository::findOneWithAuthoritiesByEmail).orElse(null)).getEmail();
-        LocalDateTime localDateTime = UserUpdateDto.Response.update(SecurityUtil.getCurrentUsername().flatMap(userRepository::findOneWithAuthoritiesByEmail).orElse(null)).getCreateAt();
+        Long userid = getTokenInfo().getId();
+        String userpw = getTokenInfo().getPw();
+        String useremail = getTokenInfo().getEmail();
+        LocalDateTime localDateTime = getTokenInfo().getCreateAt();
 
         Authority authority = Authority.builder()
                 .authorityName("ROLE_USER")
@@ -88,5 +90,10 @@ public class UserService {
                                 .build()
                 )
         );
+    }
+
+    // validate 및 단순 메소드화
+    private TokenInfoResponseDto getTokenInfo() {
+        return TokenInfoResponseDto.Response(SecurityUtil.getCurrentUsername().flatMap(userRepository::findOneWithAuthoritiesByEmail).orElse(null));
     }
 }
