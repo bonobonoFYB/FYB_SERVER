@@ -43,16 +43,5 @@ public class UserRegisterDto {
         private Integer weight;
         private Integer age;
 
-        public static Response register(@NotNull FybUser user){
-            return Response.builder()
-                    .email(user.getEmail())
-                    .pw(user.getPw())
-                    .name(user.getName())
-                    .gender(user.getGender())
-                    .height(user.getHeight())
-                    .weight(user.getWeight())
-                    .age(user.getAge())
-                    .build();
-        }
     }
 }

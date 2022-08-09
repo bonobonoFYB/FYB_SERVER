@@ -43,18 +43,5 @@ public class UserUpdateDto {
         private Integer age;
         private LocalDateTime createAt;
 
-        public static UserUpdateDto.Response update (@NotNull FybUser user){
-            return Response.builder()
-                    .email(user.getEmail())
-                    .name(user.getName())
-                    .pw(user.getPw())
-                    .gender(user.getGender())
-                    .height(user.getHeight())
-                    .weight(user.getWeight())
-                    .age(user.getAge())
-                    .id(user.getId())
-                    .createAt(user.getCreateAt())
-                    .build();
-        }
     }
 }
