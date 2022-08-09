@@ -18,6 +18,7 @@ import school.bonobono.fyb.Util.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class UserService {
 
     // 회원가입
     @Transactional
-    public UserRegisterDto.Response registerUser(UserRegisterDto.Request request) {
+    public FybUser registerUser(UserRegisterDto.Request request) {
         if (userRepository.findOneWithAuthoritiesByEmail(request.getEmail()).orElse(null) != null) {
             throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
         }
@@ -38,19 +39,17 @@ public class UserService {
                 .authorityName("ROLE_USER")
                 .build();
 
-        return UserRegisterDto.Response.register(
-                userRepository.save(
-                        FybUser.builder()
-                                .email(request.getEmail())
-                                .pw(passwordEncoder.encode(request.getPw()))
-                                .name(request.getName())
-                                .authorities(Collections.singleton(authority))
-                                .gender(request.getGender())
-                                .height(request.getHeight())
-                                .weight(request.getWeight())
-                                .age(request.getAge())
-                                .build()
-                )
+        return userRepository.save(
+                FybUser.builder()
+                        .email(request.getEmail())
+                        .pw(passwordEncoder.encode(request.getPw()))
+                        .name(request.getName())
+                        .authorities(Collections.singleton(authority))
+                        .gender(request.getGender())
+                        .height(request.getHeight())
+                        .weight(request.getWeight())
+                        .age(request.getAge())
+                        .build()
         );
     }
 
@@ -58,13 +57,22 @@ public class UserService {
     @Transactional
     public UserReadDto.UserResponse getMyInfo() {
         // getCurrentUsername 은 해당 프젝에서는 email 임 !
-        return UserReadDto.UserResponse.Response(SecurityUtil.getCurrentUsername().flatMap(userRepository::findOneWithAuthoritiesByEmail).orElse(null));
+        return UserReadDto.UserResponse.Response(
+                Objects.requireNonNull(
+                        SecurityUtil.getCurrentUsername()
+                                .flatMap(
+                                        userRepository
+                                                ::findOneWithAuthoritiesByEmail
+                                )
+                                .orElse(null)
+                )
+        );
     }
 
     // 내 정보 수정
 
     @Transactional
-    public UserUpdateDto.Response updateUser(UserUpdateDto.Request request) {
+    public FybUser updateUser(UserUpdateDto.Request request) {
         Long userid = getTokenInfo().getId();
         String userpw = getTokenInfo().getPw();
         String useremail = getTokenInfo().getEmail();
@@ -74,8 +82,7 @@ public class UserService {
                 .authorityName("ROLE_USER")
                 .build();
 
-        return UserUpdateDto.Response.update(
-                userRepository.save(
+        return userRepository.save(
                         FybUser.builder()
                                 .id(userid)
                                 .email(useremail)
@@ -88,12 +95,16 @@ public class UserService {
                                 .age(request.getAge())
                                 .createAt(localDateTime)
                                 .build()
-                )
-        );
+                );
     }
 
     // validate 및 단순 메소드화
     private TokenInfoResponseDto getTokenInfo() {
-        return TokenInfoResponseDto.Response(SecurityUtil.getCurrentUsername().flatMap(userRepository::findOneWithAuthoritiesByEmail).orElse(null));
+        return TokenInfoResponseDto.Response(
+                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
+                        .flatMap(
+                                userRepository::findOneWithAuthoritiesByEmail)
+                        .orElse(null))
+        );
     }
 }
