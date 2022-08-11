@@ -13,10 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import school.bonobono.fyb.Dto.UserLoginDto;
+import school.bonobono.fyb.Entity.userToken;
 import school.bonobono.fyb.Jwt.JwtFilter;
 import school.bonobono.fyb.Jwt.TokenProvider;
 import school.bonobono.fyb.Model.StatusTrue;
-import school.bonobono.fyb.Repository.UserRepository;
+import school.bonobono.fyb.Repository.TokenRepository;
 
 import javax.validation.Valid;
 
@@ -24,7 +25,7 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 @RequestMapping(value = "/auth")
 public class LoignController {
-    private final UserRepository userRepository;
+    private final TokenRepository tokenRepository;
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
@@ -40,6 +41,11 @@ public class LoignController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt = tokenProvider.createToken(authentication);
+
+        // 토큰 유효성 검증을 위한 데이터 저장 (로그아웃을 위한 장치)
+        tokenRepository.save(userToken.builder()
+                .token("Bearer " + jwt)
+                .build());
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
