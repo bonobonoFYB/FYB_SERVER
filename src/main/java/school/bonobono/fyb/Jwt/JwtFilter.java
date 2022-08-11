@@ -7,6 +7,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
+import school.bonobono.fyb.Entity.userToken;
+import school.bonobono.fyb.Model.StatusTrue;
+import school.bonobono.fyb.Repository.TokenRepository;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -14,6 +17,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 public class JwtFilter extends GenericFilterBean {
@@ -42,7 +46,6 @@ public class JwtFilter extends GenericFilterBean {
       } else {
          logger.debug("유효한 JWT 토큰이 없습니다, uri: {}", requestURI);
       }
-
       filterChain.doFilter(servletRequest, servletResponse);
    }
 
