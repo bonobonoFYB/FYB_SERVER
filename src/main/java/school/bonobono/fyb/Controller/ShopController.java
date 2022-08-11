@@ -22,7 +22,7 @@ public class ShopController {
     @GetMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public List<Object> getAllShopAndUserInfo(HttpServletRequest request) {
-        return shopService.getAllShopAndUserInfo();
+        return shopService.getAllShopAndUserInfo(request);
     }
 
     // Search 페이지 Get

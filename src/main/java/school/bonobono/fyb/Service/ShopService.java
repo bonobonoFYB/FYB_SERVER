@@ -7,11 +7,15 @@ import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.Dto.ShopDto;
 import school.bonobono.fyb.Dto.UserReadDto;
 import school.bonobono.fyb.Entity.Shop;
+import school.bonobono.fyb.Model.StatusFalse;
 import school.bonobono.fyb.Repository.ShopRepository;
+import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -21,13 +25,28 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ShopService {
 
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+
+    private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
 
     // Main 홈 조회 페이지
     @Transactional
-    public List<Object> getAllShopAndUserInfo() {
-        List<Object> list = new ArrayList<>();
+    public List<Object> getAllShopAndUserInfo(HttpServletRequest request) {
+
+        // 데이터 저장된 토큰 검증을 위한 Validation
+        if (!tokenCredEntialsValidate(request))
+            return Collections.singletonList(StatusFalse.JWT_CREDENTIALS_STATUS_FALSE);
+
+        List<Object> list = shopRepository
+                .findAll()
+                .stream()
+                .map(ShopDto.Response::response)
+                .collect(
+                        Collectors.toList()
+                );
+
         list.add(UserReadDto.UserResponse.Response(
                         Objects.requireNonNull(
                                 SecurityUtil.getCurrentUsername()
@@ -38,16 +57,9 @@ public class ShopService {
                                         .orElse(null))
                 )
         );
-        list.add(shopRepository
-                .findAll()
-                .stream()
-                .map(ShopDto.Response::response)
-                .collect(
-                        Collectors.toList()
-                )
-        );
         return list;
     }
+
 
     // Search 페이지 전체 조회
     @Transactional
@@ -62,5 +74,13 @@ public class ShopService {
         log.info(request.getShop());
         log.info("===================");
         return shopRepository.findByShopContaining(request.getShop());
+    }
+
+    private Boolean tokenCredEntialsValidate(HttpServletRequest request) {
+        String getToken = request.getHeader(AUTHORIZATION_HEADER);
+        if (!tokenRepository.existsById(getToken)) {
+            return false;
+        }
+        return true;
     }
 }
