@@ -13,9 +13,14 @@ import school.bonobono.fyb.Dto.UserUpdateDto;
 import school.bonobono.fyb.Entity.Authority;
 import school.bonobono.fyb.Entity.FybUser;
 import school.bonobono.fyb.Exception.DuplicateMemberException;
+import school.bonobono.fyb.Model.StatusFalse;
+import school.bonobono.fyb.Model.StatusTrue;
+import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
 
+import javax.servlet.http.HttpServletRequest;
+import java.lang.constant.Constable;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Objects;
@@ -24,6 +29,10 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+
+    private final TokenRepository tokenRepository;
 
     private final UserRepository userRepository;
 
@@ -55,7 +64,12 @@ public class UserService {
 
     // 내 정보 조회
     @Transactional
-    public UserReadDto.UserResponse getMyInfo() {
+    public Object getMyInfo(HttpServletRequest headerRequest) {
+
+        // 데이터 저장된 토큰 검증을 위한 Validation
+        if (!tokenCredEntialsValidate(headerRequest))
+            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+
         // getCurrentUsername 은 해당 프젝에서는 email 임 !
         return UserReadDto.UserResponse.Response(
                 Objects.requireNonNull(
@@ -72,7 +86,12 @@ public class UserService {
     // 내 정보 수정
 
     @Transactional
-    public FybUser updateUser(UserUpdateDto.Request request) {
+    public Constable updateUser(UserUpdateDto.Request request, HttpServletRequest headerRequest) {
+
+        // 데이터 저장된 토큰 검증을 위한 Validation
+        if (!tokenCredEntialsValidate(headerRequest))
+            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+
         Long userid = getTokenInfo().getId();
         String userpw = getTokenInfo().getPw();
         String useremail = getTokenInfo().getEmail();
@@ -82,21 +101,35 @@ public class UserService {
                 .authorityName("ROLE_USER")
                 .build();
 
-        return userRepository.save(
-                        FybUser.builder()
-                                .id(userid)
-                                .email(useremail)
-                                .pw(userpw)
-                                .name(request.getName())
-                                .authorities(Collections.singleton(authority))
-                                .gender(request.getGender())
-                                .height(request.getHeight())
-                                .weight(request.getWeight())
-                                .age(request.getAge())
-                                .createAt(localDateTime)
-                                .build()
-                );
+        userRepository.save(
+                FybUser.builder()
+                        .id(userid)
+                        .email(useremail)
+                        .pw(userpw)
+                        .name(request.getName())
+                        .authorities(Collections.singleton(authority))
+                        .gender(request.getGender())
+                        .height(request.getHeight())
+                        .weight(request.getWeight())
+                        .age(request.getAge())
+                        .createAt(localDateTime)
+                        .build()
+        );
+
+        return StatusTrue.UPDATE_STATUS_TURE;
     }
+
+    @Transactional
+    public Constable logoutUser(HttpServletRequest headerRequest) {
+        // 데이터 저장된 토큰 검증을 위한 Validation
+        if (!tokenCredEntialsValidate(headerRequest))
+            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+
+        String getToken = headerRequest.getHeader(AUTHORIZATION_HEADER);
+        tokenRepository.deleteById(getToken);
+        return StatusTrue.LOGOUT_STATUS_TRUE;
+    }
+
 
     // validate 및 단순 메소드화
     private TokenInfoResponseDto getTokenInfo() {
@@ -107,4 +140,14 @@ public class UserService {
                         .orElse(null))
         );
     }
+
+    private Boolean tokenCredEntialsValidate(HttpServletRequest request) {
+        String getToken = request.getHeader(AUTHORIZATION_HEADER);
+        if (!tokenRepository.existsById(getToken)) {
+            return false;
+        }
+        return true;
+    }
+
+
 }
