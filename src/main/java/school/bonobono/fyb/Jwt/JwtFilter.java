@@ -19,12 +19,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Optional;
 
+import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
+
 @Slf4j
 public class JwtFilter extends GenericFilterBean {
 
    private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
-
-   public static final String AUTHORIZATION_HEADER = "Authorization";
 
    private TokenProvider tokenProvider;
 
