@@ -20,33 +20,31 @@ public class Wishlist {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "p_id")
-    @NotNull
+    @Column(name = "pid")
     private Long pid;
 
-    @ManyToOne(targetEntity = FybUser.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @Column(name = "uid")
     @NotNull
     private Long uid;
 
-    @Column(name = "p_name",length = 50)
+    @Column(name = "pname",length = 50)
     @NonNull
     private String pname;
 
-    @Column(name = "p_notes")
+    @Column(name = "pnotes")
     private String notes;
 
-    @Column(name = "p_url")
+    @Column(name = "purl")
     @NotNull
     private String purl;
 
-    @Column(name = "p_price")
+    @Column(name = "price")
     private Integer price;
 
     @CreatedDate
-    @Column(name = "p_createAt")
+    @Column(name = "createAt")
     private LocalDateTime pcreateAt;
     @LastModifiedDate
-    @Column(name = "p_updateAt")
+    @Column(name = "updateAt")
     private LocalDateTime pupdateAt;
 }
