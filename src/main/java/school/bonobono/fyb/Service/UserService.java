@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 import school.bonobono.fyb.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.Dto.UserReadDto;
 import school.bonobono.fyb.Dto.UserRegisterDto;
@@ -25,12 +26,13 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Objects;
 
+import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
 
-    public static final String AUTHORIZATION_HEADER = "Authorization";
 
     private final TokenRepository tokenRepository;
 
@@ -148,6 +150,4 @@ public class UserService {
         }
         return true;
     }
-
-
 }

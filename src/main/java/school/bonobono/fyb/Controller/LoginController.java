@@ -21,6 +21,8 @@ import school.bonobono.fyb.Repository.TokenRepository;
 
 import javax.validation.Valid;
 
+import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/auth")
@@ -48,7 +50,7 @@ public class LoginController {
                 .build());
 
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
+        httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + jwt);
         return new ResponseEntity<>(StatusTrue.LOGIN_STATUS_TRUE, httpHeaders, HttpStatus.OK);
     }
 

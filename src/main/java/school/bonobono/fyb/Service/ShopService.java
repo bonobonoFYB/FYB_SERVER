@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ShopService {
-
-    public static final String AUTHORIZATION_HEADER = "Authorization";
 
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
