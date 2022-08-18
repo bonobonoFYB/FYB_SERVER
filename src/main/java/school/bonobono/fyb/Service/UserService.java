@@ -242,7 +242,20 @@ public class UserService {
         return StatusTrue.PASSWORD_CHANGE_STATUS_TRUE;
     }
 
-    public Constable delete(HttpServletRequest headerRequest) {
+    public Constable delete(PwDeleteDto.Request request,HttpServletRequest headerRequest) {
+        // 데이터 저장된 토큰 검증을 위한 Validation
+        if (!tokenCredEntialsValidate(headerRequest))
+            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+
+        log.info(request.getPw());
+
+        if(!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())){
+            return StatusFalse.USER_DELETE_STATUS_FALSE;
+        }
+
+        userRepository.deleteById(getTokenInfo().getId());
+
+        return StatusTrue.USER_DELETE_STATUS_TRUE;
 
 
     }
