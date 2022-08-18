@@ -170,7 +170,10 @@ public class UserService {
         return send;
     }
 
-    public Constable PwChangeUser(PwChangeDto.Request request) {
+    public Constable PwChangeUser(PwChangeDto.Request request,HttpServletRequest headerRequest) {
+        // 데이터 저장된 토큰 검증을 위한 Validation
+        if (!tokenCredEntialsValidate(headerRequest))
+            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
 
         if (userRepository.findByEmail(request.getEmail()).orElse(null) == null) {
             throw new RuntimeException("해당 이메일을 가진 유저가 없습니다.");
@@ -237,5 +240,10 @@ public class UserService {
                         .build()
         );
         return StatusTrue.PASSWORD_CHANGE_STATUS_TRUE;
+    }
+
+    public Constable delete(HttpServletRequest headerRequest) {
+
+
     }
 }

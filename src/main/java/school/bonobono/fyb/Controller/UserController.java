@@ -3,6 +3,7 @@ package school.bonobono.fyb.Controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import school.bonobono.fyb.Dto.PhoneCheckDto;
 import school.bonobono.fyb.Dto.PwChangeDto;
@@ -66,9 +67,9 @@ public class UserController {
     @PostMapping("pwchange")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable pwChangeUser(
-            @Valid @RequestBody final PwChangeDto.Request request
+            @Valid @RequestBody final PwChangeDto.Request request, HttpServletRequest headerRequest
             ) {
-        return userService.PwChangeUser(request);
+        return userService.PwChangeUser(request,headerRequest);
     }
 
     // 비밀번호 변경 ( 로그인 이전 )
@@ -85,4 +86,12 @@ public class UserController {
     public Constable logoutUser(HttpServletRequest headerRequest) {
         return userService.logoutUser(headerRequest);
     }
+
+    // 회원탈퇴
+    @PostMapping("delete")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public Constable deleteUser(HttpServletRequest headerRequest){
+        return userService.delete(headerRequest);
+    }
+
 }
