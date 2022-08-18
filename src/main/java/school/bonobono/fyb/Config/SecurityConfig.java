@@ -54,6 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/main/search").permitAll()
                 .antMatchers("/auth/check").permitAll()
                 .antMatchers("/auth/lost/pwchange").permitAll()
+                .antMatchers("/main/search").permitAll()
                 .anyRequest().authenticated()
 
                 .and()
