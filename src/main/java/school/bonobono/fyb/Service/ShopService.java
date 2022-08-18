@@ -43,13 +43,13 @@ public class ShopService {
     }
 
     // Service
+
     // Main 홈 조회 페이지
     @Transactional
     public List<Object> getAllShopAndUserInfo(HttpServletRequest headerRequest) {
 
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
-
 
         List<Object> list = shopRepository
                 .findAll()
@@ -83,7 +83,7 @@ public class ShopService {
     @Transactional
     public List<Shop> getSearchShop(ShopDto.Request request) {
         List<Shop> shopList = shopRepository.findByShopContaining(request.getShop());
-        if (shopList.isEmpty()){
+        if (shopList.isEmpty()) {
             throw new CustomException(SEARCH_EMPTY);
         }
         return shopList;
