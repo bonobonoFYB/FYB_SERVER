@@ -37,6 +37,7 @@ public class UserController {
         return userService.certifiedPhoneNumber(request,randNum);
     }
 
+    // 회원가입
     @PostMapping("register")
     public StatusTrue registerUser(
             @Valid @RequestBody final UserRegisterDto.Request request
@@ -45,12 +46,14 @@ public class UserController {
         return StatusTrue.REGISTER_STATUS_TRUE;
     }
 
+    // 내 정보 조회
     @GetMapping("info")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<Object> getMyUserInfo(HttpServletRequest request) {
         return ResponseEntity.ok(userService.getMyInfo(request));
     }
 
+    // 내 정보 수정
     @PutMapping("update")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable updateUser(
@@ -76,6 +79,7 @@ public class UserController {
         return userService.PwLostChange(request);
     }
 
+    // 로그아웃
     @PostMapping("logout")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable logoutUser(HttpServletRequest headerRequest) {
