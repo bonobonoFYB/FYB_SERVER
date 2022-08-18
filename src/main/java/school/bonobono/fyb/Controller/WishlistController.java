@@ -24,7 +24,7 @@ public class WishlistController {
     // 회원 장바구니 조회
     @GetMapping("wishlist")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public List<Object> getWishlistInfo(HttpServletRequest headerRequest){
+    public List<WishlistDto.Response> getWishlistInfo(HttpServletRequest headerRequest){
         return wishlistService.getWishlistInfo(headerRequest);
     }
 

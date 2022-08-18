@@ -20,8 +20,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static school.bonobono.fyb.Exception.CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
+import static school.bonobono.fyb.Exception.CustomErrorCode.*;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
+import static school.bonobono.fyb.Model.StatusTrue.*;
 
 @Service
 @RequiredArgsConstructor
@@ -56,17 +57,22 @@ public class WishlistService {
 
     // 사용자 장바구니 전체조회
     @Transactional
-    public List<Object> getWishlistInfo(HttpServletRequest headerRequest) {
+    public List<WishlistDto.Response> getWishlistInfo(HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
 
-        return wishlistRepository
+        List<WishlistDto.Response> list = wishlistRepository
                 .findByUid(getTokenInfo().getId())
                 .stream()
                 .map(WishlistDto.Response::response)
                 .collect(
                         Collectors.toList()
                 );
+
+        if(list.isEmpty())
+            throw new CustomException(WISHLIST_EMPTY);
+
+        return list;
     }
 
 
@@ -85,7 +91,7 @@ public class WishlistService {
                         .price(request.getPrice())
                         .build()
         );
-        return StatusTrue.WISHLIST_ADD_STATUS_TRUE;
+        return WISHLIST_ADD_STATUS_TRUE;
     }
 
     // 사용자 장바구니 상품 삭제
@@ -94,7 +100,7 @@ public class WishlistService {
         tokenCredEntialsValidate(headerRequest);
 
         wishlistRepository.deleteById(request.getPid());
-        return StatusTrue.WISHLIST_DELETE_STATUS_TRUE;
+        return WISHLIST_DELETE_STATUS_TRUE;
     }
 
     // 사용자 장바구니 상품 수정
@@ -113,6 +119,6 @@ public class WishlistService {
                         .price(request.getPrice())
                         .build()
         );
-        return StatusTrue.WISHLIST_UPDATE_STATUS_TRUE;
+        return WISHLIST_UPDATE_STATUS_TRUE;
     }
 }

@@ -12,9 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.Dto.*;
 import school.bonobono.fyb.Entity.Authority;
 import school.bonobono.fyb.Entity.FybUser;
-import school.bonobono.fyb.Exception.CustomErrorCode;
 import school.bonobono.fyb.Exception.CustomException;
-import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
@@ -23,23 +21,17 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.constant.Constable;
 import java.util.*;
 
+import static school.bonobono.fyb.Exception.CustomErrorCode.*;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
+import static school.bonobono.fyb.Model.StatusTrue.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
 
-
-    public static final CustomErrorCode JWT_CREDENTIALS_STATUS_FALSE = CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
-    public static final CustomErrorCode PASSWORD_CHANGE_STATUS_FALSE = CustomErrorCode.PASSWORD_CHANGE_STATUS_FALSE;
-    public static final CustomErrorCode USER_DELETE_STATUS_FALSE = CustomErrorCode.USER_DELETE_STATUS_FALSE;
-    public static final CustomErrorCode NOT_FOUND_USER = CustomErrorCode.NOT_FOUND_USER;
-    public static final CustomErrorCode DUPLICATE_USER = CustomErrorCode.DUPLICATE_USER;
     private final TokenRepository tokenRepository;
-
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     // validate 및 단순 메소드화
@@ -64,16 +56,16 @@ public class UserService {
 
     // 회원가입
     @Transactional
-    public FybUser registerUser(UserRegisterDto.Request request) {
+    public Constable registerUser(UserRegisterDto.Request request) {
 
-        if(userRepository.existsByEmail(request.getEmail()))
+        if (userRepository.existsByEmail(request.getEmail()))
             throw new CustomException(DUPLICATE_USER);
 
         Authority authority = Authority.builder()
                 .authorityName("ROLE_USER")
                 .build();
 
-        return userRepository.save(
+        userRepository.save(
                 FybUser.builder()
                         .email(request.getEmail())
                         .pw(passwordEncoder.encode(request.getPw()))
@@ -85,6 +77,8 @@ public class UserService {
                         .age(request.getAge())
                         .build()
         );
+
+        return REGISTER_STATUS_TRUE;
     }
 
     // 내 정보 조회
@@ -134,7 +128,7 @@ public class UserService {
                         .build()
         );
 
-        return StatusTrue.UPDATE_STATUS_TURE;
+        return UPDATE_STATUS_TURE;
     }
 
     @Transactional
@@ -144,7 +138,7 @@ public class UserService {
 
         String getToken = headerRequest.getHeader(AUTHORIZATION_HEADER);
         tokenRepository.deleteById(getToken);
-        return StatusTrue.LOGOUT_STATUS_TRUE;
+        return LOGOUT_STATUS_TRUE;
     }
 
     // 휴대폰 인증
@@ -204,7 +198,7 @@ public class UserService {
                         .createAt(getTokenInfo().getCreateAt())
                         .build()
         );
-        return StatusTrue.PASSWORD_CHANGE_STATUS_TRUE;
+        return PASSWORD_CHANGE_STATUS_TRUE;
     }
 
     public Constable PwLostChange(PwChangeDto.lostRequest request) {
@@ -241,7 +235,7 @@ public class UserService {
                         .createAt(userInfo.getCreateAt())
                         .build()
         );
-        return StatusTrue.PASSWORD_CHANGE_STATUS_TRUE;
+        return PASSWORD_CHANGE_STATUS_TRUE;
     }
 
     public Constable delete(PwDeleteDto.Request request, HttpServletRequest headerRequest) {
@@ -253,6 +247,6 @@ public class UserService {
         }
         userRepository.deleteById(getTokenInfo().getId());
 
-        return StatusTrue.USER_DELETE_STATUS_TRUE;
+        return USER_DELETE_STATUS_TRUE;
     }
 }
