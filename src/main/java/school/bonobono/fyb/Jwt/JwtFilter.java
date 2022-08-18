@@ -27,7 +27,7 @@ import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 public class JwtFilter extends GenericFilterBean {
 
    private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
-   public static final CustomErrorCode JWT_CREDENTIALS_STATUS_FALSE = CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
+   public static final CustomErrorCode JWT_TOKEN_IS_NULL = CustomErrorCode.JWT_TOKEN_IS_NULL;
 
    private TokenProvider tokenProvider;
 
@@ -40,8 +40,12 @@ public class JwtFilter extends GenericFilterBean {
       throws IOException, ServletException {
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
       String jwt = resolveToken(httpServletRequest);
-      String requestURI = httpServletRequest.getRequestURI();
 
+      log.info("----------------------------------");
+      log.info(jwt);
+      log.info("----------------------------------");
+
+      String requestURI = httpServletRequest.getRequestURI();
       if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
          Authentication authentication = tokenProvider.getAuthentication(jwt);
          SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -54,9 +58,7 @@ public class JwtFilter extends GenericFilterBean {
 
    private String resolveToken(HttpServletRequest request) {
       String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-      if(bearerToken == null){
-         throw new CustomException(JWT_CREDENTIALS_STATUS_FALSE);
-      }
+
       if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
          return bearerToken.substring(7);
       }

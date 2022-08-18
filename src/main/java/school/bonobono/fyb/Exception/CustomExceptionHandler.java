@@ -5,11 +5,11 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static school.bonobono.fyb.Exception.CustomErrorCode.INTERNAL_SERVER_ERROR;
-import static school.bonobono.fyb.Exception.CustomErrorCode.INVALID_REQUEST;
+import static school.bonobono.fyb.Exception.CustomErrorCode.*;
 
 
 @Slf4j
@@ -40,7 +40,7 @@ public class CustomExceptionHandler {
     public CustomErrorResponse handleBadRequest(
             Exception e, HttpServletRequest request
     ) {
-        log.error("errorCode : {}, url {}, message: {}",
+        log.error("url {}, message: {}",
                 request.getRequestURI(), e.getMessage());
 
         return CustomErrorResponse.builder()
