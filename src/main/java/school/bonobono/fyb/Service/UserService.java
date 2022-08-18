@@ -15,7 +15,6 @@ import school.bonobono.fyb.Entity.FybUser;
 import school.bonobono.fyb.Exception.CustomErrorCode;
 import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Exception.DuplicateMemberException;
-import school.bonobono.fyb.Model.StatusFalse;
 import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
@@ -34,6 +33,8 @@ public class UserService {
 
 
     public static final CustomErrorCode JWT_CREDENTIALS_STATUS_FALSE = CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
+    public static final CustomErrorCode PASSWORD_CHANGE_STATUS_FALSE = CustomErrorCode.PASSWORD_CHANGE_STATUS_FALSE;
+    public static final CustomErrorCode USER_DELETE_STATUS_FALSE = CustomErrorCode.USER_DELETE_STATUS_FALSE;
     private final TokenRepository tokenRepository;
 
     private final UserRepository userRepository;
@@ -169,7 +170,6 @@ public class UserService {
         send.put("randNum", randNum);
         return send;
     }
-
     public Constable PwChangeUser(PwChangeDto.Request request, HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
@@ -178,8 +178,10 @@ public class UserService {
             throw new RuntimeException("해당 이메일을 가진 유저가 없습니다.");
         }
 
-        if (passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) // 입력한 비밀번호와 현재 비밀번호가 맞을 경우
-        {
+        if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())){
+            throw new CustomException(PASSWORD_CHANGE_STATUS_FALSE);
+        }
+
             Authority authority = Authority.builder()
                     .authorityName("ROLE_USER")
                     .build();
@@ -198,11 +200,7 @@ public class UserService {
                             .createAt(getTokenInfo().getCreateAt())
                             .build()
             );
-
             return StatusTrue.PASSWORD_CHANGE_STATUS_TRUE;
-        } else {
-            return StatusFalse.PASSWORD_CHANGE_STATUS_FALSE;
-        }
     }
 
     public Constable PwLostChange(PwChangeDto.lostRequest request) {
@@ -248,7 +246,7 @@ public class UserService {
         log.info(request.getPw());
 
         if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
-            return StatusFalse.USER_DELETE_STATUS_FALSE;
+        throw new CustomException(USER_DELETE_STATUS_FALSE);
         }
 
         userRepository.deleteById(getTokenInfo().getId());

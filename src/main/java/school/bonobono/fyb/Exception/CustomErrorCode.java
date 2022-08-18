@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum CustomErrorCode {
     SEARCH_EMPTY("검색 항목이 존재하지 않습니다."),
     JWT_CREDENTIALS_STATUS_FALSE("로그인이 유효하지 않습니다."),
-
+    PASSWORD_CHANGE_STATUS_FALSE( "현재 비밀번호가 일치하지 않습니다." ),
+    USER_DELETE_STATUS_FALSE( "비밀번호가 일치하지 않아 탈퇴에 실패했습니다." ),
     // 알수 없는 오류의 처리
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."),
     INVALID_REQUEST("잘못된 요청입니다.");

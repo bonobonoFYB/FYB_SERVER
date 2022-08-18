@@ -9,15 +9,12 @@ import school.bonobono.fyb.Dto.UserReadDto;
 import school.bonobono.fyb.Entity.Shop;
 import school.bonobono.fyb.Exception.CustomErrorCode;
 import school.bonobono.fyb.Exception.CustomException;
-import school.bonobono.fyb.Model.StatusFalse;
 import school.bonobono.fyb.Repository.ShopRepository;
 import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
