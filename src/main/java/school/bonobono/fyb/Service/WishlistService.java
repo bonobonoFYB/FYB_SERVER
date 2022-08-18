@@ -9,6 +9,7 @@ import school.bonobono.fyb.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.Dto.WishlistDto;
 import school.bonobono.fyb.Entity.FybUser;
 import school.bonobono.fyb.Entity.Wishlist;
+import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Model.StatusFalse;
 import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.TokenRepository;
@@ -24,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static school.bonobono.fyb.Exception.CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 
 @Service
@@ -47,12 +49,12 @@ public class WishlistService {
         );
     }
 
-    private Boolean tokenCredEntialsValidate(HttpServletRequest request) {
-        String getToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (!tokenRepository.existsById(getToken)) {
-            return false;
-        }
-        return true;
+    private void tokenCredEntialsValidate(HttpServletRequest request) {
+        tokenRepository
+                .findById(request.getHeader(AUTHORIZATION_HEADER))
+                .orElseThrow(
+                        () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
+                );
     }
 
     // Service
@@ -61,8 +63,7 @@ public class WishlistService {
     @Transactional
     public List<Object> getWishlistInfo(HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
-        if (!tokenCredEntialsValidate(headerRequest))
-            return Collections.singletonList(StatusFalse.JWT_CREDENTIALS_STATUS_FALSE);
+        tokenCredEntialsValidate(headerRequest);
 
         return wishlistRepository
                 .findByUid(getTokenInfo().getId())
@@ -78,8 +79,7 @@ public class WishlistService {
     public Constable addWishlistInfo(WishlistDto.Request request, HttpServletRequest headerRequest) {
 
         // 데이터 저장된 토큰 검증을 위한 Validation
-        if (!tokenCredEntialsValidate(headerRequest))
-            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+        tokenCredEntialsValidate(headerRequest);
 
         wishlistRepository.save(
                 Wishlist.builder()
@@ -96,8 +96,7 @@ public class WishlistService {
     // 사용자 장바구니 상품 삭제
     public Constable deleteWishlistInfo(WishlistDto.deleteRequest request, HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
-        if (!tokenCredEntialsValidate(headerRequest))
-            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+        tokenCredEntialsValidate(headerRequest);
 
         wishlistRepository.deleteById(request.getPid());
         return StatusTrue.WISHLIST_DELETE_STATUS_TRUE;
@@ -107,8 +106,7 @@ public class WishlistService {
     public Constable updateWishlistInfo(WishlistDto.Response request, HttpServletRequest headerRequest) {
 
         // 데이터 저장된 토큰 검증을 위한 Validation
-        if (!tokenCredEntialsValidate(headerRequest))
-            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+        tokenCredEntialsValidate(headerRequest);
 
         wishlistRepository.save(
                 Wishlist.builder()

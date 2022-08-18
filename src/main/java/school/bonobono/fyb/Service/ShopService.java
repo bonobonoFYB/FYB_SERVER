@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static school.bonobono.fyb.Exception.CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 
 @Service
@@ -34,13 +35,23 @@ public class ShopService {
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
 
+
+    // Validation
+    private void tokenCredEntialsValidate(HttpServletRequest request) {
+        tokenRepository
+                .findById(request.getHeader(AUTHORIZATION_HEADER))
+                .orElseThrow(
+                        () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
+                );
+    }
+
+    // Service
     // Main 홈 조회 페이지
     @Transactional
-    public List<Object> getAllShopAndUserInfo(HttpServletRequest request) {
+    public List<Object> getAllShopAndUserInfo(HttpServletRequest headerRequest) {
 
         // 데이터 저장된 토큰 검증을 위한 Validation
-        if (!tokenCredEntialsValidate(request))
-            return Collections.singletonList(StatusFalse.JWT_CREDENTIALS_STATUS_FALSE);
+        tokenCredEntialsValidate(headerRequest);
 
         List<Object> list = shopRepository
                 .findAll()
@@ -80,11 +91,4 @@ public class ShopService {
         return shopList;
     }
 
-    private Boolean tokenCredEntialsValidate(HttpServletRequest request) {
-        String getToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (!tokenRepository.existsById(getToken)) {
-            return false;
-        }
-        return true;
-    }
 }

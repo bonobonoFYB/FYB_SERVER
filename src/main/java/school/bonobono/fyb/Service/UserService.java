@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.Dto.*;
 import school.bonobono.fyb.Entity.Authority;
 import school.bonobono.fyb.Entity.FybUser;
+import school.bonobono.fyb.Exception.CustomErrorCode;
+import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Exception.DuplicateMemberException;
 import school.bonobono.fyb.Model.StatusFalse;
 import school.bonobono.fyb.Model.StatusTrue;
@@ -31,6 +33,7 @@ import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 public class UserService {
 
 
+    public static final CustomErrorCode JWT_CREDENTIALS_STATUS_FALSE = CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
     private final TokenRepository tokenRepository;
 
     private final UserRepository userRepository;
@@ -47,12 +50,12 @@ public class UserService {
         );
     }
 
-    private Boolean tokenCredEntialsValidate(HttpServletRequest request) {
-        String getToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (!tokenRepository.existsById(getToken)) {
-            return false;
-        }
-        return true;
+    private void tokenCredEntialsValidate(HttpServletRequest request) {
+        tokenRepository
+                .findById(request.getHeader(AUTHORIZATION_HEADER))
+                .orElseThrow(
+                        () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
+                );
     }
 
     // Service
@@ -86,8 +89,7 @@ public class UserService {
     public Object getMyInfo(HttpServletRequest headerRequest) {
 
         // 데이터 저장된 토큰 검증을 위한 Validation
-        if (!tokenCredEntialsValidate(headerRequest))
-            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+        tokenCredEntialsValidate(headerRequest);
 
         // getCurrentUsername 은 해당 프젝에서는 email 임 !
         return UserReadDto.UserResponse.Response(
@@ -108,8 +110,7 @@ public class UserService {
     public Constable updateUser(UserUpdateDto.Request request, HttpServletRequest headerRequest) {
 
         // 데이터 저장된 토큰 검증을 위한 Validation
-        if (!tokenCredEntialsValidate(headerRequest))
-            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+        tokenCredEntialsValidate(headerRequest);
 
         Authority authority = Authority.builder()
                 .authorityName("ROLE_USER")
@@ -136,8 +137,7 @@ public class UserService {
     @Transactional
     public Constable logoutUser(HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
-        if (!tokenCredEntialsValidate(headerRequest))
-            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+        tokenCredEntialsValidate(headerRequest);
 
         String getToken = headerRequest.getHeader(AUTHORIZATION_HEADER);
         tokenRepository.deleteById(getToken);
@@ -170,10 +170,9 @@ public class UserService {
         return send;
     }
 
-    public Constable PwChangeUser(PwChangeDto.Request request,HttpServletRequest headerRequest) {
+    public Constable PwChangeUser(PwChangeDto.Request request, HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
-        if (!tokenCredEntialsValidate(headerRequest))
-            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+        tokenCredEntialsValidate(headerRequest);
 
         if (userRepository.findByEmail(request.getEmail()).orElse(null) == null) {
             throw new RuntimeException("해당 이메일을 가진 유저가 없습니다.");
@@ -242,14 +241,13 @@ public class UserService {
         return StatusTrue.PASSWORD_CHANGE_STATUS_TRUE;
     }
 
-    public Constable delete(PwDeleteDto.Request request,HttpServletRequest headerRequest) {
+    public Constable delete(PwDeleteDto.Request request, HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
-        if (!tokenCredEntialsValidate(headerRequest))
-            return StatusFalse.JWT_CREDENTIALS_STATUS_FALSE;
+        tokenCredEntialsValidate(headerRequest);
 
         log.info(request.getPw());
 
-        if(!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())){
+        if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
             return StatusFalse.USER_DELETE_STATUS_FALSE;
         }
 
