@@ -70,9 +70,8 @@ public class UserController {
 
     // 비밀번호 변경 ( 로그인 이전 )
     @PostMapping("lost/pwchange")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable pwLostChange(
-            @Valid @RequestBody final PwChangeDto.Request request
+            @Valid @RequestBody final PwChangeDto.lostRequest request
     ) {
         return userService.PwLostChange(request);
     }
