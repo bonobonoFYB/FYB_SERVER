@@ -12,4 +12,6 @@ public interface UserRepository extends JpaRepository<FybUser,Long> {
 
     Optional<FybUser> findByEmail(String email);
 
+    Boolean existsByEmail(String email);
+
 }
