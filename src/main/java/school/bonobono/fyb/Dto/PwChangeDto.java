@@ -14,4 +14,14 @@ public class PwChangeDto {
         private String pw;
         private String newPw;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class lostRequest{
+        private String email;
+        private String newPw;
+    }
 }
