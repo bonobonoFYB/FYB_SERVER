@@ -65,7 +65,7 @@ public class UserService {
     // 회원가입
     @Transactional
     public FybUser registerUser(UserRegisterDto.Request request) {
-        
+
         if(userRepository.existsByEmail(request.getEmail()))
             throw new CustomException(DUPLICATE_USER);
 

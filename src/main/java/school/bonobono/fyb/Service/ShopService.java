@@ -50,6 +50,7 @@ public class ShopService {
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
 
+
         List<Object> list = shopRepository
                 .findAll()
                 .stream()

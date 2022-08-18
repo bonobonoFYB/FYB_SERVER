@@ -8,6 +8,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 import school.bonobono.fyb.Entity.userToken;
+import school.bonobono.fyb.Exception.CustomErrorCode;
+import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.TokenRepository;
 
@@ -25,6 +27,7 @@ import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 public class JwtFilter extends GenericFilterBean {
 
    private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
+   public static final CustomErrorCode JWT_CREDENTIALS_STATUS_FALSE = CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
 
    private TokenProvider tokenProvider;
 
@@ -51,9 +54,9 @@ public class JwtFilter extends GenericFilterBean {
 
    private String resolveToken(HttpServletRequest request) {
       String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-      log.info("========================================================");
-      log.info(bearerToken);
-      log.info("========================================================");
+      if(bearerToken == null){
+         throw new CustomException(JWT_CREDENTIALS_STATUS_FALSE);
+      }
       if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
          return bearerToken.substring(7);
       }
