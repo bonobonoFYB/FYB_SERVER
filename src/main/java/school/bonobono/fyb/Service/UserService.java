@@ -14,7 +14,6 @@ import school.bonobono.fyb.Entity.Authority;
 import school.bonobono.fyb.Entity.FybUser;
 import school.bonobono.fyb.Exception.CustomErrorCode;
 import school.bonobono.fyb.Exception.CustomException;
-import school.bonobono.fyb.Exception.DuplicateMemberException;
 import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
@@ -36,6 +35,7 @@ public class UserService {
     public static final CustomErrorCode PASSWORD_CHANGE_STATUS_FALSE = CustomErrorCode.PASSWORD_CHANGE_STATUS_FALSE;
     public static final CustomErrorCode USER_DELETE_STATUS_FALSE = CustomErrorCode.USER_DELETE_STATUS_FALSE;
     public static final CustomErrorCode NOT_FOUND_USER = CustomErrorCode.NOT_FOUND_USER;
+    public static final CustomErrorCode DUPLICATE_USER = CustomErrorCode.DUPLICATE_USER;
     private final TokenRepository tokenRepository;
 
     private final UserRepository userRepository;
@@ -65,9 +65,10 @@ public class UserService {
     // 회원가입
     @Transactional
     public FybUser registerUser(UserRegisterDto.Request request) {
-        if (userRepository.findOneWithAuthoritiesByEmail(request.getEmail()).orElse(null) != null) {
-            throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
-        }
+        
+        if(userRepository.existsByEmail(request.getEmail()))
+            throw new CustomException(DUPLICATE_USER);
+
         Authority authority = Authority.builder()
                 .authorityName("ROLE_USER")
                 .build();
@@ -171,6 +172,7 @@ public class UserService {
         send.put("randNum", randNum);
         return send;
     }
+
     public Constable PwChangeUser(PwChangeDto.Request request, HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
@@ -180,29 +182,29 @@ public class UserService {
                         () -> new CustomException(NOT_FOUND_USER)
                 );
 
-        if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())){
+        if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
             throw new CustomException(PASSWORD_CHANGE_STATUS_FALSE);
         }
 
-            Authority authority = Authority.builder()
-                    .authorityName("ROLE_USER")
-                    .build();
+        Authority authority = Authority.builder()
+                .authorityName("ROLE_USER")
+                .build();
 
-            userRepository.save(
-                    FybUser.builder()
-                            .id(getTokenInfo().getId())
-                            .email(getTokenInfo().getEmail())
-                            .pw(passwordEncoder.encode(request.getNewPw()))
-                            .name(getTokenInfo().getName())
-                            .authorities(Collections.singleton(authority))
-                            .gender(getTokenInfo().getGender())
-                            .height(getTokenInfo().getHeight())
-                            .weight(getTokenInfo().getWeight())
-                            .age(getTokenInfo().getAge())
-                            .createAt(getTokenInfo().getCreateAt())
-                            .build()
-            );
-            return StatusTrue.PASSWORD_CHANGE_STATUS_TRUE;
+        userRepository.save(
+                FybUser.builder()
+                        .id(getTokenInfo().getId())
+                        .email(getTokenInfo().getEmail())
+                        .pw(passwordEncoder.encode(request.getNewPw()))
+                        .name(getTokenInfo().getName())
+                        .authorities(Collections.singleton(authority))
+                        .gender(getTokenInfo().getGender())
+                        .height(getTokenInfo().getHeight())
+                        .weight(getTokenInfo().getWeight())
+                        .age(getTokenInfo().getAge())
+                        .createAt(getTokenInfo().getCreateAt())
+                        .build()
+        );
+        return StatusTrue.PASSWORD_CHANGE_STATUS_TRUE;
     }
 
     public Constable PwLostChange(PwChangeDto.lostRequest request) {
@@ -246,16 +248,11 @@ public class UserService {
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
 
-        log.info(request.getPw());
-
         if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
-        throw new CustomException(USER_DELETE_STATUS_FALSE);
+            throw new CustomException(USER_DELETE_STATUS_FALSE);
         }
-
         userRepository.deleteById(getTokenInfo().getId());
 
         return StatusTrue.USER_DELETE_STATUS_TRUE;
-
-
     }
 }
