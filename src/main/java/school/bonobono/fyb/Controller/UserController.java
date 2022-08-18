@@ -37,11 +37,10 @@ public class UserController {
 
     // 회원가입
     @PostMapping("register")
-    public StatusTrue registerUser(
+    public Constable registerUser(
             @Valid @RequestBody final UserRegisterDto.Request request
     ) {
-        userService.registerUser(request);
-        return StatusTrue.REGISTER_STATUS_TRUE;
+        return userService.registerUser(request);
     }
 
     // 내 정보 조회
