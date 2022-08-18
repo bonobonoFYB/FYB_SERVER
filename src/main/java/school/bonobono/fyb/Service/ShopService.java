@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.Dto.ShopDto;
 import school.bonobono.fyb.Dto.UserReadDto;
 import school.bonobono.fyb.Entity.Shop;
+import school.bonobono.fyb.Exception.CustomErrorCode;
+import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Model.StatusFalse;
 import school.bonobono.fyb.Repository.ShopRepository;
 import school.bonobono.fyb.Repository.TokenRepository;
@@ -27,6 +29,7 @@ import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 @Slf4j
 public class ShopService {
 
+    public static final CustomErrorCode SEARCH_EMPTY = CustomErrorCode.SEARCH_EMPTY;
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
@@ -70,10 +73,11 @@ public class ShopService {
     // Search 페이지 검색 (문자열 포함 기반)
     @Transactional
     public List<Shop> getSearchShop(ShopDto.Request request) {
-        log.info("===================");
-        log.info(request.getShop());
-        log.info("===================");
-        return shopRepository.findByShopContaining(request.getShop());
+        List<Shop> shopList = shopRepository.findByShopContaining(request.getShop());
+        if (shopList.isEmpty()){
+            throw new CustomException(SEARCH_EMPTY);
+        }
+        return shopList;
     }
 
     private Boolean tokenCredEntialsValidate(HttpServletRequest request) {
