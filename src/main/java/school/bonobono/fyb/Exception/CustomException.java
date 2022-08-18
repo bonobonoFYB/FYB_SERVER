@@ -8,9 +8,9 @@ public class CustomException extends RuntimeException{ // runtimeException ÏÉÅÏÜ
     private String detaliMessage;
 
     public CustomException(CustomErrorCode customErrorCode){
-        super(customErrorCode.getMessage()); // runtimeException
+        super(customErrorCode.getStatusMessage()); // runtimeException
         this.customErrorCode = customErrorCode;
-        this.detaliMessage = customErrorCode.getMessage();
+        this.detaliMessage = customErrorCode.getStatusMessage();
     }
 
     public CustomException(CustomErrorCode customErrorCode, String detaliMessage){

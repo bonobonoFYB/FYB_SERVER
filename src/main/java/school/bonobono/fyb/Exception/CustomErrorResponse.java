@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class CustomErrorResponse {
-    private CustomErrorCode errorCode;
-    private String errorMessage;
+    private CustomErrorCode status;
+    private String statusMessage;
 
 }

@@ -7,9 +7,11 @@ import lombok.Getter;
 @Getter
 public enum CustomErrorCode {
     SEARCH_EMPTY("검색 항목이 존재하지 않습니다."),
+    JWT_CREDENTIALS_STATUS_FALSE("로그인이 유효하지 않습니다."),
 
-    INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."), // 알수없는 오류의 처리
+    // 알수 없는 오류의 처리
+    INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."),
     INVALID_REQUEST("잘못된 요청입니다.");
 
-    private final String message;
+    private final String statusMessage;
 }
