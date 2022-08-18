@@ -35,6 +35,7 @@ public class UserService {
     public static final CustomErrorCode JWT_CREDENTIALS_STATUS_FALSE = CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
     public static final CustomErrorCode PASSWORD_CHANGE_STATUS_FALSE = CustomErrorCode.PASSWORD_CHANGE_STATUS_FALSE;
     public static final CustomErrorCode USER_DELETE_STATUS_FALSE = CustomErrorCode.USER_DELETE_STATUS_FALSE;
+    public static final CustomErrorCode NOT_FOUND_USER = CustomErrorCode.NOT_FOUND_USER;
     private final TokenRepository tokenRepository;
 
     private final UserRepository userRepository;
@@ -174,9 +175,10 @@ public class UserService {
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
 
-        if (userRepository.findByEmail(request.getEmail()).orElse(null) == null) {
-            throw new RuntimeException("해당 이메일을 가진 유저가 없습니다.");
-        }
+        userRepository.findByEmail(request.getEmail())
+                .orElseThrow(
+                        () -> new CustomException(NOT_FOUND_USER)
+                );
 
         if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())){
             throw new CustomException(PASSWORD_CHANGE_STATUS_FALSE);
@@ -204,12 +206,13 @@ public class UserService {
     }
 
     public Constable PwLostChange(PwChangeDto.lostRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).orElse(null) == null) {
-            throw new RuntimeException("해당 이메일을 가진 유저가 없습니다.");
-        }
+
+        userRepository.findByEmail(request.getEmail())
+                .orElseThrow(
+                        () -> new CustomException(NOT_FOUND_USER)
+                );
 
         Optional<String> email = Optional.of(request.getEmail());
-
 
         TokenInfoResponseDto userInfo = TokenInfoResponseDto.Response(
                 Objects.requireNonNull(email

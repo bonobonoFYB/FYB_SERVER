@@ -44,6 +44,7 @@ public class LoginController {
                 .orElseThrow(
                         () -> new CustomException(LOGIN_FALSE)
                 );
+
         if (!passwordEncoder.matches(
                 request.getPw(),
                 userRepository.findByEmail(request.getEmail())
@@ -73,6 +74,4 @@ public class LoginController {
         httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + jwt);
         return new ResponseEntity<>(StatusTrue.LOGIN_STATUS_TRUE, httpHeaders, HttpStatus.OK);
     }
-
-
 }
