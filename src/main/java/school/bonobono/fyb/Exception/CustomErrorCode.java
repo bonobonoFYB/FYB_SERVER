@@ -12,6 +12,7 @@ public enum CustomErrorCode {
     USER_DELETE_STATUS_FALSE( "비밀번호가 일치하지 않아 탈퇴에 실패했습니다." ),
     LOGIN_FALSE("아이디 또는 비밀번호를 잘못 입력하였습니다."),
     NOT_FOUND_USER("해당 이메일의 유저가 존재하지 않습니다"),
+    DUPLICATE_USER("해당 이메일의 가입자가 이미 존재합니다."),
     // 알수 없는 오류의 처리
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."),
     INVALID_REQUEST("잘못된 요청입니다.");
