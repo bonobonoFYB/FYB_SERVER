@@ -10,4 +10,6 @@ public interface UserRepository extends JpaRepository<FybUser,Long> {
     @EntityGraph(attributePaths = "authorities")
     Optional<FybUser> findOneWithAuthoritiesByEmail(String email);
 
+    Optional<FybUser> findByEmail(String email);
+
 }
