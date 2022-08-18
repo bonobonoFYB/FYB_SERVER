@@ -9,7 +9,6 @@ import org.json.simple.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
 import school.bonobono.fyb.Dto.*;
 import school.bonobono.fyb.Entity.Authority;
 import school.bonobono.fyb.Entity.FybUser;
@@ -22,7 +21,6 @@ import school.bonobono.fyb.Util.SecurityUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.constant.Constable;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
@@ -38,6 +36,26 @@ public class UserService {
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    // validate 및 단순 메소드화
+    private TokenInfoResponseDto getTokenInfo() {
+        return TokenInfoResponseDto.Response(
+                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
+                        .flatMap(
+                                userRepository::findOneWithAuthoritiesByEmail)
+                        .orElse(null))
+        );
+    }
+
+    private Boolean tokenCredEntialsValidate(HttpServletRequest request) {
+        String getToken = request.getHeader(AUTHORIZATION_HEADER);
+        if (!tokenRepository.existsById(getToken)) {
+            return false;
+        }
+        return true;
+    }
+
+    // Service
 
     // 회원가입
     @Transactional
@@ -126,25 +144,7 @@ public class UserService {
         return StatusTrue.LOGOUT_STATUS_TRUE;
     }
 
-
-    // validate 및 단순 메소드화
-    private TokenInfoResponseDto getTokenInfo() {
-        return TokenInfoResponseDto.Response(
-                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
-                        .flatMap(
-                                userRepository::findOneWithAuthoritiesByEmail)
-                        .orElse(null))
-        );
-    }
-
-    private Boolean tokenCredEntialsValidate(HttpServletRequest request) {
-        String getToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (!tokenRepository.existsById(getToken)) {
-            return false;
-        }
-        return true;
-    }
-
+    // 휴대폰 인증
     public Map<Object, Object> certifiedPhoneNumber(PhoneCheckDto.Request request, String randNum) {
         String api_key = "NCSBDTMXRMDGUIFD";
         String api_secret = "S917YGKP2H2IFYE0P9ONJBTFA2EDCV3J";
@@ -194,7 +194,6 @@ public class UserService {
                             .weight(getTokenInfo().getWeight())
                             .age(getTokenInfo().getAge())
                             .createAt(getTokenInfo().getCreateAt())
-                            .authorities(Collections.singleton(authority))
                             .build()
             );
 
@@ -204,7 +203,39 @@ public class UserService {
         }
     }
 
-    public Constable PwLostChange(PwChangeDto.Request request) {
-        
+    public Constable PwLostChange(PwChangeDto.lostRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).orElse(null) == null) {
+            throw new RuntimeException("해당 이메일을 가진 유저가 없습니다.");
+        }
+
+        Optional<String> email = Optional.of(request.getEmail());
+
+
+        TokenInfoResponseDto userInfo = TokenInfoResponseDto.Response(
+                Objects.requireNonNull(email
+                        .flatMap(
+                                userRepository::findOneWithAuthoritiesByEmail)
+                        .orElse(null))
+        );
+
+        Authority authority = Authority.builder()
+                .authorityName("ROLE_USER")
+                .build();
+
+        userRepository.save(
+                FybUser.builder()
+                        .id(userInfo.getId())
+                        .email(userInfo.getEmail())
+                        .pw(passwordEncoder.encode(request.getNewPw()))
+                        .name(userInfo.getName())
+                        .authorities(Collections.singleton(authority))
+                        .gender(userInfo.getGender())
+                        .height(userInfo.getHeight())
+                        .weight(userInfo.getWeight())
+                        .age(userInfo.getAge())
+                        .createAt(userInfo.getCreateAt())
+                        .build()
+        );
+        return StatusTrue.PASSWORD_CHANGE_STATUS_TRUE;
     }
 }
