@@ -27,8 +27,8 @@ public class CustomExceptionHandler {
                 e.getCustomErrorCode(), request.getRequestURI(), e.getDetaliMessage());
 
         return CustomErrorResponse.builder()
-                .errorCode(e.getCustomErrorCode())
-                .errorMessage(e.getDetaliMessage())
+                .status(e.getCustomErrorCode())
+                .statusMessage(e.getDetaliMessage())
                 .build();
     }
 
@@ -44,8 +44,8 @@ public class CustomExceptionHandler {
                 request.getRequestURI(), e.getMessage());
 
         return CustomErrorResponse.builder()
-                .errorCode(INVALID_REQUEST)
-                .errorMessage(INVALID_REQUEST.getMessage())
+                .status(INVALID_REQUEST)
+                .statusMessage(INVALID_REQUEST.getStatusMessage())
                 .build();
     }
 
@@ -58,8 +58,8 @@ public class CustomExceptionHandler {
                 request.getRequestURI(), e.getMessage());
 
         return CustomErrorResponse.builder()
-                .errorCode(INTERNAL_SERVER_ERROR)
-                .errorMessage(INVALID_REQUEST.getMessage())
+                .status(INTERNAL_SERVER_ERROR)
+                .statusMessage(INVALID_REQUEST.getStatusMessage())
                 .build();
     }
 }
