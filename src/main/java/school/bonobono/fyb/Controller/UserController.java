@@ -5,10 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
-import school.bonobono.fyb.Dto.PhoneCheckDto;
-import school.bonobono.fyb.Dto.PwChangeDto;
-import school.bonobono.fyb.Dto.UserRegisterDto;
-import school.bonobono.fyb.Dto.UserUpdateDto;
+import school.bonobono.fyb.Dto.*;
 import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Service.UserService;
 
@@ -90,8 +87,9 @@ public class UserController {
     // 회원탈퇴
     @PostMapping("delete")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Constable deleteUser(HttpServletRequest headerRequest){
-        return userService.delete(headerRequest);
+    public Constable deleteUser(
+            @Valid @RequestBody final PwDeleteDto.Request request, HttpServletRequest headerRequest
+    ){
+        return userService.delete(request,headerRequest);
     }
-
 }
