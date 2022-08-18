@@ -10,6 +10,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.Entity.FybUser;
+import school.bonobono.fyb.Exception.CustomErrorCode;
+import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.UserRepository;
 
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 @Component("userDetailsService")
 @RequiredArgsConstructor
 public class CustomUserDeatailService implements UserDetailsService {
+    public static final CustomErrorCode LOGIN_FALSE = CustomErrorCode.LOGIN_FALSE;
     private final UserRepository userRepository;
 
     @Override
@@ -26,7 +29,7 @@ public class CustomUserDeatailService implements UserDetailsService {
     public UserDetails loadUserByUsername(final String email) {
         return userRepository.findOneWithAuthoritiesByEmail(email)
                 .map(user -> createUser(user))
-                .orElseThrow(() -> new UsernameNotFoundException(email + " -> 데이터베이스에서 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(LOGIN_FALSE));
     }
 
     private User createUser(FybUser user) {

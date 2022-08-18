@@ -8,16 +8,19 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import school.bonobono.fyb.Dto.UserLoginDto;
 import school.bonobono.fyb.Entity.userToken;
-import school.bonobono.fyb.Jwt.JwtFilter;
+import school.bonobono.fyb.Exception.CustomErrorCode;
+import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Jwt.TokenProvider;
 import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.TokenRepository;
+import school.bonobono.fyb.Repository.UserRepository;
 
 import javax.validation.Valid;
 
@@ -27,12 +30,29 @@ import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 @RequiredArgsConstructor
 @RequestMapping(value = "/auth")
 public class LoginController {
+    public static final CustomErrorCode LOGIN_FALSE = CustomErrorCode.LOGIN_FALSE;
     private final TokenRepository tokenRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     @PostMapping("/login")
     public ResponseEntity<StatusTrue> authorize(@Valid @RequestBody UserLoginDto.Request request) {
+
+        userRepository.findByEmail(request.getEmail())
+                .orElseThrow(
+                        () -> new CustomException(LOGIN_FALSE)
+                );
+        if (!passwordEncoder.matches(
+                request.getPw(),
+                userRepository.findByEmail(request.getEmail())
+                        .get()
+                        .getPw()
+        )
+        ) {
+            throw new CustomException(LOGIN_FALSE);
+        }
 
         // 토큰 생성
         UsernamePasswordAuthenticationToken authenticationToken =
