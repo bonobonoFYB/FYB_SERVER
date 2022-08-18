@@ -1,6 +1,7 @@
 package school.bonobono.fyb.Controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import school.bonobono.fyb.Dto.ShopDto;
@@ -11,8 +12,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
+import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
+
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/main")
 public class ShopController {
 
