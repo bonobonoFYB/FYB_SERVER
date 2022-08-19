@@ -8,7 +8,6 @@ import school.bonobono.fyb.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.Dto.WishlistDto;
 import school.bonobono.fyb.Entity.Wishlist;
 import school.bonobono.fyb.Exception.CustomException;
-import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Repository.WishlistRepository;
@@ -34,27 +33,8 @@ public class WishlistService {
 
     private final UserRepository userRepository;
 
-    // Validation 및 단순화
-
-    private TokenInfoResponseDto getTokenInfo() {
-        return TokenInfoResponseDto.Response(
-                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
-                        .flatMap(
-                                userRepository::findOneWithAuthoritiesByEmail)
-                        .orElse(null))
-        );
-    }
-
-    private void tokenCredEntialsValidate(HttpServletRequest request) {
-        tokenRepository
-                .findById(request.getHeader(AUTHORIZATION_HEADER))
-                .orElseThrow(
-                        () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
-                );
-    }
 
     // Service
-
     // 사용자 장바구니 전체조회
     @Transactional
     public List<WishlistDto.Response> getWishlistInfo(HttpServletRequest headerRequest) {
@@ -69,18 +49,16 @@ public class WishlistService {
                         Collectors.toList()
                 );
 
-        if(list.isEmpty())
-            throw new CustomException(WISHLIST_EMPTY);
+        GET_WISHLIST_INFO_VALIDATION(list);
 
         return list;
     }
 
-
     // 사용자 장바구니 안 상품 등록
     public Constable addWishlistInfo(WishlistDto.Request request, HttpServletRequest headerRequest) {
-
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
+        ADD_WISHLIST_INFO_VALIDATION(request);
 
         wishlistRepository.save(
                 Wishlist.builder()
@@ -105,9 +83,9 @@ public class WishlistService {
 
     // 사용자 장바구니 상품 수정
     public Constable updateWishlistInfo(WishlistDto.Response request, HttpServletRequest headerRequest) {
-
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
+        UPDATE_WISHLIST_INFO_VALIDATION(request);
 
         wishlistRepository.save(
                 Wishlist.builder()
@@ -120,5 +98,42 @@ public class WishlistService {
                         .build()
         );
         return WISHLIST_UPDATE_STATUS_TRUE;
+    }
+
+    // Validation 및 단순화
+
+    private TokenInfoResponseDto getTokenInfo() {
+        return TokenInfoResponseDto.Response(
+                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
+                        .flatMap(
+                                userRepository::findOneWithAuthoritiesByEmail)
+                        .orElse(null))
+        );
+    }
+    private void tokenCredEntialsValidate(HttpServletRequest request) {
+        tokenRepository
+                .findById(request.getHeader(AUTHORIZATION_HEADER))
+                .orElseThrow(
+                        () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
+                );
+    }
+    private void GET_WISHLIST_INFO_VALIDATION(List<WishlistDto.Response> list) {
+        if (list.isEmpty())
+            throw new CustomException(WISHLIST_EMPTY);
+    }
+    private void ADD_WISHLIST_INFO_VALIDATION(WishlistDto.Request request) {
+        if (request.getPname() == null)
+            throw new CustomException(WISHLIST_PNAME_IS_NULL);
+        if (request.getPurl() == null)
+            throw new CustomException(WISHLIST_PURL_IS_NULL);
+    }
+
+    private void UPDATE_WISHLIST_INFO_VALIDATION(WishlistDto.Response request) {
+        if (request.getPname() == null)
+            throw new CustomException(WISHLIST_PNAME_IS_NULL);
+        if (request.getPurl() == null)
+            throw new CustomException(WISHLIST_PURL_IS_NULL);
+        if(request.getPid() == null)
+            throw new CustomException(WISHLIST_PID_IS_NULL);
     }
 }
