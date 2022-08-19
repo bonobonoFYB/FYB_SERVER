@@ -27,7 +27,6 @@ import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 public class JwtFilter extends GenericFilterBean {
 
    private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
-   public static final CustomErrorCode JWT_TOKEN_IS_NULL = CustomErrorCode.JWT_TOKEN_IS_NULL;
 
    private TokenProvider tokenProvider;
 
