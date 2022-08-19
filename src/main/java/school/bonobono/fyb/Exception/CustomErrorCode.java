@@ -15,6 +15,7 @@ public enum CustomErrorCode {
     NOT_FOUND_USER("해당 이메일의 유저가 존재하지 않습니다"),
     DUPLICATE_USER("해당 이메일의 가입자가 이미 존재합니다."),
     WISHLIST_EMPTY("장바구니가 비어있습니다."),
+    PHONE_NUM_ERROR("핸드폰 번호가 잘못되었습니다."),
     // 알수 없는 오류의 처리
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."),
     AUTH_CHECK("권한 오류입니다."),
