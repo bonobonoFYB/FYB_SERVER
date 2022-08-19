@@ -15,15 +15,9 @@ public class UserRegisterDto {
     @NoArgsConstructor
     @Builder
     public static class Request{
-        @NotNull
         private String email;
-
-        @NotNull
         private String pw;
-
-        @NotNull
         private String name;
-
         private Character gender;
         private Integer height;
         private Integer weight;
