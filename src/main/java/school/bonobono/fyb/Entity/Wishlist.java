@@ -28,14 +28,12 @@ public class Wishlist {
     private Long uid;
 
     @Column(name = "pname",length = 50)
-    @NonNull
     private String pname;
 
     @Column(name = "pnotes")
     private String notes;
 
     @Column(name = "purl")
-    @NotNull
     private String purl;
 
     @Column(name = "price")
