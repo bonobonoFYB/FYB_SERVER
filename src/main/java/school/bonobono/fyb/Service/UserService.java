@@ -33,6 +33,11 @@ public class UserService {
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    Authority authority = Authority.builder()
+            .authorityName("ROLE_USER")
+            .build();
+
     private String randNum = "";
     private String[] number = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
@@ -43,9 +48,6 @@ public class UserService {
 
         REGISTER_VALIDATION(request);
 
-        Authority authority = Authority.builder()
-                .authorityName("ROLE_USER")
-                .build();
 
         userRepository.save(
                 FybUser.builder()
@@ -84,16 +86,11 @@ public class UserService {
     }
 
     // 내 정보 수정
-
     @Transactional
     public Constable updateUser(UserUpdateDto.Request request, HttpServletRequest headerRequest) {
-
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
-
-        Authority authority = Authority.builder()
-                .authorityName("ROLE_USER")
-                .build();
+        UPDATE_VALIDATION(request);
 
         userRepository.save(
                 FybUser.builder()
@@ -113,6 +110,7 @@ public class UserService {
         return UPDATE_STATUS_TURE;
     }
 
+    // 로그아웃
     @Transactional
     public Constable logoutUser(HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
@@ -155,13 +153,7 @@ public class UserService {
     public Constable PwChangeUser(PwChangeDto.Request request, HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
-
-        userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-
-        if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
-            throw new CustomException(PASSWORD_CHANGE_STATUS_FALSE);
-        }
+        PWCHANGE_VALIDATION(request);
 
         Authority authority = Authority.builder()
                 .authorityName("ROLE_USER")
@@ -184,23 +176,18 @@ public class UserService {
         return PASSWORD_CHANGE_STATUS_TRUE;
     }
 
-
     // 비밀번호 잃어버린경우
     public Constable PwLostChange(PwChangeDto.lostRequest request) {
 
-        userRepository.findByEmail(request.getEmail())
-                .orElseThrow(
-                        () -> new CustomException(NOT_FOUND_USER)
-                );
-
         Optional<String> email = Optional.of(request.getEmail());
-
         TokenInfoResponseDto userInfo = TokenInfoResponseDto.Response(
                 Objects.requireNonNull(email
                         .flatMap(
                                 userRepository::findOneWithAuthoritiesByEmail)
                         .orElse(null))
         );
+        PWLOSTCHANGE_VALIDATION(request,userInfo.getPw());
+
 
         Authority authority = Authority.builder()
                 .authorityName("ROLE_USER")
@@ -281,6 +268,31 @@ public class UserService {
                 || request.getPw().contains(")"))
         ) {
             throw new CustomException(NOT_CONTAINS_EXCLAMATIONMARK);
+        }
+    }
+
+    private void UPDATE_VALIDATION(UserUpdateDto.Request request) {
+        if (request.getName() == null || request.getWeight() == null || request.getHeight() == null)
+            throw new CustomException(UPDATE_INFO_NULL);
+    }
+
+    private void PWCHANGE_VALIDATION(PwChangeDto.Request request) {
+        userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
+
+        if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
+            throw new CustomException(PASSWORD_CHANGE_STATUS_FALSE);
+        }
+    }
+
+    private void PWLOSTCHANGE_VALIDATION(PwChangeDto.lostRequest request, String pw) {
+        userRepository.findByEmail(request.getEmail())
+                .orElseThrow(
+                        () -> new CustomException(NOT_FOUND_USER)
+                );
+
+        if(passwordEncoder.matches(request.getNewPw(),pw)){
+            throw new CustomException(PASSWORD_IS_NOT_CHANGE);
         }
     }
 }
