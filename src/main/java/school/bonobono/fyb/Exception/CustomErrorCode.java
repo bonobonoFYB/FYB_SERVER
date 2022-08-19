@@ -6,6 +6,10 @@ import lombok.Getter;
 @AllArgsConstructor // enum에 하나의 프로퍼티가 있는데 프로퍼티를 사용해서 enum을 하나 생성해줄때 메세지를 넣어서 생성해주는 생성자가 없어서 선언해줘야함
 @Getter
 public enum CustomErrorCode {
+    REGISTER_INFO_NULL("필수 항목을 입력하지 않았습니다."),
+    PASSWORD_SIZE_ERROR("비밀번호가 6자리 이상이여야 합니다."),
+    NOT_EMAIL_FORM("이메일 형식이 아닙니다."),
+    NOT_CONTAINS_EXCLAMATIONMARK("비밀번호에 특수문자가 포함되어있지 않습니다."),
     SEARCH_EMPTY("검색 항목이 존재하지 않습니다."),
     JWT_CREDENTIALS_STATUS_FALSE("로그인이 유효하지 않습니다."),
     JWT_TOKEN_IS_NULL("토큰에 값이 존재하지 않습니다."),
