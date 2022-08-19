@@ -34,39 +34,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private String randNum = "";
-
-    // validate 및 단순 메소드화
-    private TokenInfoResponseDto getTokenInfo() {
-        return TokenInfoResponseDto.Response(
-                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
-                        .flatMap(
-                                userRepository::findOneWithAuthoritiesByEmail)
-                        .orElse(null))
-        );
-    }
-
-    private void PHONE_NUM_LENGTH_CHECK(PhoneCheckDto.Request request) {
-        if(!(request.getPnum().length() == 13)){
-            throw new CustomException(PHONE_NUM_ERROR);
-        }
-    }
-
-    private void tokenCredEntialsValidate(HttpServletRequest request) {
-        tokenRepository
-                .findById(request.getHeader(AUTHORIZATION_HEADER))
-                .orElseThrow(
-                        () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
-                );
-    }
+    private String[] number = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
     // Service
-
     // 회원가입
     @Transactional
     public Constable registerUser(UserRegisterDto.Request request) {
 
-        if (userRepository.existsByEmail(request.getEmail()))
-            throw new CustomException(DUPLICATE_USER);
+        REGISTER_VALIDATION(request);
 
         Authority authority = Authority.builder()
                 .authorityName("ROLE_USER")
@@ -259,5 +234,53 @@ public class UserService {
         userRepository.deleteById(getTokenInfo().getId());
 
         return USER_DELETE_STATUS_TRUE;
+    }
+
+    // validate 및 단순 메소드화
+
+    private TokenInfoResponseDto getTokenInfo() {
+        return TokenInfoResponseDto.Response(
+                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
+                        .flatMap(
+                                userRepository::findOneWithAuthoritiesByEmail)
+                        .orElse(null))
+        );
+    }
+
+    private void PHONE_NUM_LENGTH_CHECK(PhoneCheckDto.Request request) {
+        if (!(request.getPnum().length() == 13)) {
+            throw new CustomException(PHONE_NUM_ERROR);
+        }
+    }
+
+    private void tokenCredEntialsValidate(HttpServletRequest request) {
+        tokenRepository
+                .findById(request.getHeader(AUTHORIZATION_HEADER))
+                .orElseThrow(
+                        () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
+                );
+    }
+
+    private void REGISTER_VALIDATION(UserRegisterDto.Request request) {
+        if (request.getEmail() == null || request.getPw() == null || request.getName() == null
+                || request.getWeight() == null || request.getHeight() == null)
+            throw new CustomException(REGISTER_INFO_NULL);
+
+        if (userRepository.existsByEmail(request.getEmail()))
+            throw new CustomException(DUPLICATE_USER);
+
+        if (!request.getEmail().contains("@"))
+            throw new CustomException(NOT_EMAIL_FORM);
+
+        if (!(request.getPw().length() > 5))
+            throw new CustomException(PASSWORD_SIZE_ERROR);
+
+        if (!(request.getPw().contains("!") || request.getPw().contains("@") || request.getPw().contains("#")
+                || request.getPw().contains("$") || request.getPw().contains("%") || request.getPw().contains("^")
+                || request.getPw().contains("&") || request.getPw().contains("*") || request.getPw().contains("(")
+                || request.getPw().contains(")"))
+        ) {
+            throw new CustomException(NOT_CONTAINS_EXCLAMATIONMARK);
+        }
     }
 }
