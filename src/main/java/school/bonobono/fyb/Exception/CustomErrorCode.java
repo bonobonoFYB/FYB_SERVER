@@ -33,6 +33,10 @@ public enum CustomErrorCode {
 
     // 장바구니
     WISHLIST_EMPTY("장바구니가 비어있습니다."),
+    WISHLIST_PNAME_IS_NULL("상품 이름을 입력하지 않았습니다."),
+    WISHLIST_PURL_IS_NULL("상품을 판매하는 주소를 입력하지 않았습니다."),
+    WISHLIST_PID_IS_NULL("PID 값이 넘어오지 않았습니다. (웹 / 서버 오류)"),
+
 
     // 핸드폰 인증
     PHONE_NUM_ERROR("핸드폰 번호가 잘못되었습니다."),
