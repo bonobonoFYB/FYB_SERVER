@@ -23,15 +23,12 @@ public class FybUser {
     protected Long id;
 
     @Column(name = "email", length = 50)
-    @NotNull
     private String email;
 
     @Column(name = "pw")
-    @NotNull
     private String pw;
 
     @Column(name = "name", length = 15)
-    @NotNull
     private String name;
 
     @Column(name = "gender")
