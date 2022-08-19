@@ -22,7 +22,7 @@ import java.lang.constant.Constable;
 import java.util.*;
 
 import static school.bonobono.fyb.Exception.CustomErrorCode.*;
-import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
+import static school.bonobono.fyb.Model.Model.*;
 import static school.bonobono.fyb.Model.StatusTrue.*;
 
 @Service
@@ -33,6 +33,7 @@ public class UserService {
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private String randNum = "";
 
     // validate 및 단순 메소드화
     private TokenInfoResponseDto getTokenInfo() {
@@ -42,6 +43,12 @@ public class UserService {
                                 userRepository::findOneWithAuthoritiesByEmail)
                         .orElse(null))
         );
+    }
+
+    private void PHONE_NUM_LENGTH_CHECK(PhoneCheckDto.Request request) {
+        if(!(request.getPnum().length() == 13)){
+            throw new CustomException(PHONE_NUM_ERROR);
+        }
     }
 
     private void tokenCredEntialsValidate(HttpServletRequest request) {
@@ -142,10 +149,18 @@ public class UserService {
     }
 
     // 휴대폰 인증
-    public Map<Object, Object> certifiedPhoneNumber(PhoneCheckDto.Request request, String randNum) {
-        String api_key = "NCSBDTMXRMDGUIFD";
-        String api_secret = "S917YGKP2H2IFYE0P9ONJBTFA2EDCV3J";
-        Message coolsms = new Message(api_key, api_secret);
+    public Map<Object, Object> certifiedPhoneNumber(PhoneCheckDto.Request request) throws CoolsmsException {
+        // 핸드폰 번호 - 포함 13글자 지정
+        PHONE_NUM_LENGTH_CHECK(request);
+
+        Random rand = new Random();
+
+        for (int i = 0; i < 4; i++) {
+            String ran = Integer.toString(rand.nextInt(10));
+            randNum += ran;
+        }
+
+        Message coolsms = new Message(CHECK_API_KEY, CHEKC_API_SECRET);
 
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("to", request.getPnum());
@@ -154,27 +169,20 @@ public class UserService {
         params.put("text", "FYB 휴대폰인증 : 인증번호는" + "[" + randNum + "]" + "입니다.");
         params.put("app_version", "test app 1.2");
 
-        try {
-            JSONObject obj = (JSONObject) coolsms.send(params);
-            System.out.println(obj.toString());
-        } catch (CoolsmsException e) {
-            System.out.println(e.getMessage());
-            System.out.println(e.getCode());
-        }
+        JSONObject obj = (JSONObject) coolsms.send(params);
 
         Map<Object, Object> send = new HashMap<>();
         send.put("randNum", randNum);
         return send;
     }
 
+    // 비밀번호 변경
     public Constable PwChangeUser(PwChangeDto.Request request, HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
 
         userRepository.findByEmail(request.getEmail())
-                .orElseThrow(
-                        () -> new CustomException(NOT_FOUND_USER)
-                );
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
             throw new CustomException(PASSWORD_CHANGE_STATUS_FALSE);
@@ -201,6 +209,8 @@ public class UserService {
         return PASSWORD_CHANGE_STATUS_TRUE;
     }
 
+
+    // 비밀번호 잃어버린경우
     public Constable PwLostChange(PwChangeDto.lostRequest request) {
 
         userRepository.findByEmail(request.getEmail())
@@ -238,6 +248,7 @@ public class UserService {
         return PASSWORD_CHANGE_STATUS_TRUE;
     }
 
+    // 회원탈퇴
     public Constable delete(PwDeleteDto.Request request, HttpServletRequest headerRequest) {
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
