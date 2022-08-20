@@ -24,6 +24,7 @@ import school.bonobono.fyb.Repository.UserRepository;
 
 import javax.validation.Valid;
 
+import static school.bonobono.fyb.Exception.CustomErrorCode.NOT_EMAIL_FORM;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 
 @RestController
@@ -40,20 +41,7 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<StatusTrue> authorize(@Valid @RequestBody UserLoginDto.Request request) {
 
-        userRepository.findByEmail(request.getEmail())
-                .orElseThrow(
-                        () -> new CustomException(LOGIN_FALSE)
-                );
-
-        if (!passwordEncoder.matches(
-                request.getPw(),
-                userRepository.findByEmail(request.getEmail())
-                        .get()
-                        .getPw()
-        )
-        ) {
-            throw new CustomException(LOGIN_FALSE);
-        }
+        LOGIN_VALIDATION(request);
 
         // 토큰 생성
         UsernamePasswordAuthenticationToken authenticationToken =
@@ -73,5 +61,25 @@ public class LoginController {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + jwt);
         return new ResponseEntity<>(StatusTrue.LOGIN_STATUS_TRUE, httpHeaders, HttpStatus.OK);
+    }
+
+    private void LOGIN_VALIDATION(UserLoginDto.Request request) {
+        if (!request.getEmail().contains("@"))
+            throw new CustomException(NOT_EMAIL_FORM);
+
+        userRepository.findByEmail(request.getEmail())
+                .orElseThrow(
+                        () -> new CustomException(LOGIN_FALSE)
+                );
+
+        if (!passwordEncoder.matches(
+                request.getPw(),
+                userRepository.findByEmail(request.getEmail())
+                        .get()
+                        .getPw()
+        )
+        ) {
+            throw new CustomException(LOGIN_FALSE);
+        }
     }
 }

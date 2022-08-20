@@ -110,6 +110,7 @@ public class WishlistService {
                         .orElse(null))
         );
     }
+
     private void tokenCredEntialsValidate(HttpServletRequest request) {
         tokenRepository
                 .findById(request.getHeader(AUTHORIZATION_HEADER))
@@ -117,10 +118,12 @@ public class WishlistService {
                         () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
                 );
     }
+
     private void GET_WISHLIST_INFO_VALIDATION(List<WishlistDto.Response> list) {
         if (list.isEmpty())
             throw new CustomException(WISHLIST_EMPTY);
     }
+
     private void ADD_WISHLIST_INFO_VALIDATION(WishlistDto.Request request) {
         if (request.getPname() == null)
             throw new CustomException(WISHLIST_PNAME_IS_NULL);
@@ -133,7 +136,7 @@ public class WishlistService {
             throw new CustomException(WISHLIST_PNAME_IS_NULL);
         if (request.getPurl() == null)
             throw new CustomException(WISHLIST_PURL_IS_NULL);
-        if(request.getPid() == null)
+        if (request.getPid() == null)
             throw new CustomException(WISHLIST_PID_IS_NULL);
     }
 }
