@@ -39,8 +39,6 @@ public class UserService {
             .build();
 
     private String randNum = "";
-    private String[] number = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
-
     // Service
     // 회원가입
     @Transactional
@@ -128,7 +126,7 @@ public class UserService {
 
         Random rand = new Random();
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 6; i++) {
             String ran = Integer.toString(rand.nextInt(10));
             randNum += ran;
         }
@@ -139,7 +137,7 @@ public class UserService {
         params.put("to", request.getPnum());
         params.put("from", "010-4345-4377");
         params.put("type", "SMS");
-        params.put("text", "FYB 휴대폰인증 : 인증번호는" + "[" + randNum + "]" + "입니다.");
+        params.put("text", "FYB 휴대폰인증 인증번호는" + "[ " + randNum + " ]" + "입니다.");
         params.put("app_version", "test app 1.2");
 
         JSONObject obj = (JSONObject) coolsms.send(params);
