@@ -44,10 +44,7 @@ public class WishlistService {
         List<WishlistDto.Response> list = wishlistRepository
                 .findByUid(getTokenInfo().getId())
                 .stream()
-                .map(WishlistDto.Response::response)
-                .collect(
-                        Collectors.toList()
-                );
+                .map(WishlistDto.Response::response).toList();
 
         GET_WISHLIST_INFO_VALIDATION(list);
 
