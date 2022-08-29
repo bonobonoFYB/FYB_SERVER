@@ -41,7 +41,7 @@ public enum CustomErrorCode {
     PHONE_NUM_ERROR("핸드폰 번호가 잘못되었습니다."),
 
     // 내 옷장
-    MYCLOSET_EMPTY("내 옷장이 비어있습니다."),
+    MY_CLOSET_EMPTY("내 옷장이 비어있습니다."),
 
     // 알수 없는 오류의 처리
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."),
