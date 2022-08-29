@@ -13,17 +13,28 @@ public class MyClosetDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
+    public static class addRequest{
+        private String pname;
+        private String pnotes;
+        private String pkind;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class readResponse{
-        private Long uid;
+        private Long id;
         private String pname;
         private String pnotes;
         private String pkind;
 
         public static MyClosetDto.readResponse Response(@NotNull MyCloset myCloset){
             return readResponse.builder()
+                    .id(myCloset.getId())
                     .pname(myCloset.getPname())
                     .pkind(myCloset.getPkind())
-                    .uid(myCloset.getUid())
                     .pnotes(myCloset.getPnotes())
                     .build();
         }
