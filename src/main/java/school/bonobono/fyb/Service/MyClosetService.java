@@ -21,6 +21,7 @@ import static school.bonobono.fyb.Exception.CustomErrorCode.JWT_CREDENTIALS_STAT
 import static school.bonobono.fyb.Exception.CustomErrorCode.MY_CLOSET_EMPTY;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 import static school.bonobono.fyb.Model.StatusTrue.MY_CLOSET_ADD_STATUS_TRUE;
+import static school.bonobono.fyb.Model.StatusTrue.MY_CLOSET_DELETE_STATUS_TRUE;
 
 @Service
 @RequiredArgsConstructor
@@ -84,7 +85,11 @@ public class MyClosetService {
         return MY_CLOSET_ADD_STATUS_TRUE;
     }
 
-    public Constable deleteCloset(Long id, HttpServletRequest headerRequest) {
-        
+    public Constable deleteCloset(MyClosetDto.deleteRequest request, HttpServletRequest headerRequest) {
+        tokenCredEntialsValidate(headerRequest);
+
+        myClosetRepository.deleteById(request.getId());
+
+        return MY_CLOSET_DELETE_STATUS_TRUE;
     }
 }
