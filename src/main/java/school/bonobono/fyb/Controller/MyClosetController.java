@@ -34,8 +34,8 @@ public class MyClosetController {
     // 옷장 삭제
     @PostMapping("delete")
     public Constable deleteMyCloset(
-            @RequestParam(name = "id") final Long id, HttpServletRequest headerRequest
+            @RequestBody final MyClosetDto.deleteRequest request, HttpServletRequest headerRequest
     ){
-        return myClosetService.deleteCloset(id,headerRequest);
+        return myClosetService.deleteCloset(request,headerRequest);
     }
 }

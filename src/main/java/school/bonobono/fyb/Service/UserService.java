@@ -46,7 +46,6 @@ public class UserService {
 
         REGISTER_VALIDATION(request);
 
-
         userRepository.save(
                 FybUser.builder()
                         .email(request.getEmail())
@@ -288,7 +287,6 @@ public class UserService {
                 .orElseThrow(
                         () -> new CustomException(NOT_FOUND_USER)
                 );
-
         if(passwordEncoder.matches(request.getNewPw(),pw)){
             throw new CustomException(PASSWORD_IS_NOT_CHANGE);
         }
