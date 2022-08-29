@@ -18,6 +18,7 @@ public enum StatusTrue {
     WISHLIST_UPDATE_STATUS_TRUE("WISHLIST_UPDATE_STATUS_TRUE", "장바구니 업데이트 성공"),
     PHONE_CHECK_STATUS_TRUE("PHONE_CHECK_STATUS_TRUE", "휴대폰 인증번호 보내기 성공"),
     PASSWORD_CHANGE_STATUS_TRUE("PASSWORD_CHANGE_STATUS_TRUE", "비밀번호 변경 성공"),
+    MY_CLOSET_ADD_STATUS_TRUE("MYCLOSET_ADD_STATUS_TRUE", "내 옷장 추가하기 성공"),
     USER_DELETE_STATUS_TRUE("USER_DELETE_STATUS_TRUE", "회원탈퇴 성공");
 
     private final String status;
