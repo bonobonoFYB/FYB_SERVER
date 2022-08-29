@@ -37,9 +37,11 @@ public enum CustomErrorCode {
     WISHLIST_PURL_IS_NULL("상품을 판매하는 주소를 입력하지 않았습니다."),
     WISHLIST_PID_IS_NULL("PID 값이 넘어오지 않았습니다. (웹 / 서버 오류)"),
 
-
     // 핸드폰 인증
     PHONE_NUM_ERROR("핸드폰 번호가 잘못되었습니다."),
+
+    // 내 옷장
+    MYCLOSET_EMPTY("내 옷장이 비어있습니다."),
 
     // 알수 없는 오류의 처리
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."),
