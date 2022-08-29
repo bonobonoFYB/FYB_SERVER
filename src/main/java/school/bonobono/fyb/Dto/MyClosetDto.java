@@ -24,6 +24,15 @@ public class MyClosetDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
+    public static class deleteRequest{
+        private Long id;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class readResponse{
         private Long id;
         private String pname;
