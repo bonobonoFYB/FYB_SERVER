@@ -17,8 +17,7 @@ import java.lang.constant.Constable;
 import java.util.List;
 import java.util.Objects;
 
-import static school.bonobono.fyb.Exception.CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
-import static school.bonobono.fyb.Exception.CustomErrorCode.MY_CLOSET_EMPTY;
+import static school.bonobono.fyb.Exception.CustomErrorCode.*;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 import static school.bonobono.fyb.Model.StatusTrue.MY_CLOSET_ADD_STATUS_TRUE;
 import static school.bonobono.fyb.Model.StatusTrue.MY_CLOSET_DELETE_STATUS_TRUE;
@@ -56,6 +55,16 @@ public class MyClosetService {
                 );
     }
 
+    private static void addMyClosetValidate(MyClosetDto.addRequest request) {
+        if(request.getPname() == null){
+            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
+        }
+
+        if(request.getPkind() == null){
+            throw new CustomException(MY_CLOSET_PKIND_IS_NULL);
+        }
+    }
+
     // Service
 
     public List<MyClosetDto.readResponse> readMyCloset(HttpServletRequest headerRequest) {
@@ -74,6 +83,8 @@ public class MyClosetService {
     public Constable addMyCloset(MyClosetDto.addRequest request,HttpServletRequest headerRequest) {
         tokenCredEntialsValidate(headerRequest);
 
+        addMyClosetValidate(request);
+
         myClosetRepository.save(
                 MyCloset.builder()
                         .uid(getTokenInfo().getId())
@@ -87,6 +98,10 @@ public class MyClosetService {
 
     public Constable deleteCloset(MyClosetDto.deleteRequest request, HttpServletRequest headerRequest) {
         tokenCredEntialsValidate(headerRequest);
+
+        if(request.getId() == null){
+            throw new CustomException(MY_CLOSET_ID_IS_NULL);
+        }
 
         myClosetRepository.deleteById(request.getId());
 
