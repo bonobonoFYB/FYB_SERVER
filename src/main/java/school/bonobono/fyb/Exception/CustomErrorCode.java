@@ -45,6 +45,7 @@ public enum CustomErrorCode {
     MY_CLOSET_PNAME_IS_NULL("등록하려는 옷의 이름이 작성되지 않았습니다."),
     MY_CLOSET_PKIND_IS_NULL("등록하려는 옷의 종류가 선택되지 않았습니다."),
     MY_CLOSET_ID_IS_NULL("아무 항목도 삭제하지 않습니다."),
+    MY_CLOSET_DATA_ID_IS_NULL("프론트, 서버오류 : 유저의 Data Id 값이 넘어오지 않았습니다."),
 
     // 알수 없는 오류의 처리
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."),
