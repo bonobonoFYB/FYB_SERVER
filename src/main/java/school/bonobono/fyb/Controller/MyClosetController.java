@@ -38,4 +38,12 @@ public class MyClosetController {
     ){
         return myClosetService.deleteCloset(request,headerRequest);
     }
+
+    // 옷장 업데이트
+    @PostMapping("update")
+    public Constable deleteMyCloset(
+            @RequestBody final MyClosetDto.readResponse request, HttpServletRequest headerRequest
+    ){
+     return myClosetService.updateCloset(request,headerRequest);
+    }
 }
