@@ -19,8 +19,7 @@ import java.util.Objects;
 
 import static school.bonobono.fyb.Exception.CustomErrorCode.*;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
-import static school.bonobono.fyb.Model.StatusTrue.MY_CLOSET_ADD_STATUS_TRUE;
-import static school.bonobono.fyb.Model.StatusTrue.MY_CLOSET_DELETE_STATUS_TRUE;
+import static school.bonobono.fyb.Model.StatusTrue.*;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +64,21 @@ public class MyClosetService {
         }
     }
 
+    private static void updateValidate(MyClosetDto.readResponse request) {
+        if(request.getId() == null){
+            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
+        }
+
+        if(request.getPname() == null){
+            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
+        }
+
+        if(request.getPkind() == null){
+            throw new CustomException(MY_CLOSET_PKIND_IS_NULL);
+        }
+
+    }
+
     // Service
 
     public List<MyClosetDto.readResponse> readMyCloset(HttpServletRequest headerRequest) {
@@ -106,5 +120,22 @@ public class MyClosetService {
         myClosetRepository.deleteById(request.getId());
 
         return MY_CLOSET_DELETE_STATUS_TRUE;
+    }
+
+    public Constable updateCloset(MyClosetDto.readResponse request, HttpServletRequest headerRequest) {
+
+        updateValidate(request);
+
+        myClosetRepository.save(
+                MyCloset.builder()
+                        .id(request.getId())
+                        .uid(getTokenInfo().getId())
+                        .pkind(request.getPkind())
+                        .pnotes(request.getPnotes())
+                        .pname(request.getPname())
+                        .build()
+        );
+
+        return MY_CLOSET_UPDATE_STATUS_TRUE;
     }
 }
