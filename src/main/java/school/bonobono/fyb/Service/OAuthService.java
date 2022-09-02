@@ -47,17 +47,18 @@ public class OAuthService {
             .build();
 
     public ResponseEntity<StatusTrue> googlelogin(String code) throws IOException {
-        //구글로 일회성 코드를 보내 액세스 토큰이 담긴 응답객체를 받아옴
+        // 구글로 일회성 코드를 보내 액세스 토큰이 담긴 응답객체를 받아옴
         ResponseEntity<String> accessTokenResponse = googleOAuth.requestAccessToken(code);
-        //응답 객체가 JSON형식으로 되어 있으므로, 이를 deserialization해서 자바 객체에 담을 것이다.
+        // 응답 객체가 JSON형식으로 되어 있으므로, 이를 deserialization해서 자바 객체에 담을 것이다.
         GoogleOAuthToken oAuthToken = googleOAuth.getAccessToken(accessTokenResponse);
-
+        // accessToken을 담은 후 accessToken 통신
         ResponseEntity<String> userInfoResponse = googleOAuth.requestUserInfo(oAuthToken);
 
         JSONParser jsonParser = new JSONParser();
         String email;
         String name;
 
+        // json parse
         try {
             JSONObject jsonObj = (JSONObject) jsonParser.parse(userInfoResponse.getBody());
             email = (String) jsonObj.get("email");
