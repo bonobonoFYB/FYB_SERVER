@@ -5,21 +5,43 @@ import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import school.bonobono.fyb.Config.GoogleOAuth;
 import school.bonobono.fyb.Dto.*;
+import school.bonobono.fyb.Model.StatusTrue;
+import school.bonobono.fyb.Service.OAuthService;
 import school.bonobono.fyb.Service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.lang.constant.Constable;
 import java.util.Map;
-import java.util.Random;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 public class UserController {
 
+    private final OAuthService oauthService;
+    private final GoogleOAuth googleoauth;
+
     private final UserService userService;
+
+    // 구글 로그인 창 접근
+    @GetMapping("google")
+    public void getGoogleAuthUrl(HttpServletResponse response) throws Exception {
+        response.sendRedirect(googleoauth.getOauthRedirectURL());
+    }
+
+    // 구글 로그인 이후
+    @GetMapping("login/google")
+    public ResponseEntity<StatusTrue> callback(
+            @RequestParam(name = "code") String code) throws IOException {
+        System.out.println(">> 소셜 로그인 API 서버로부터 받은 code :" + code);
+        return oauthService.googlelogin(code);
+    }
+
 
     // 휴대폰 인증
     @PostMapping("check")
