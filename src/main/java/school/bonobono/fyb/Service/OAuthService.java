@@ -19,7 +19,6 @@ import school.bonobono.fyb.Entity.Authority;
 import school.bonobono.fyb.Entity.FybUser;
 import school.bonobono.fyb.Entity.GoogleOAuthToken;
 import school.bonobono.fyb.Entity.userToken;
-import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Jwt.TokenProvider;
 import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.TokenRepository;
@@ -28,7 +27,6 @@ import school.bonobono.fyb.Repository.UserRepository;
 import java.io.IOException;
 import java.util.Collections;
 
-import static school.bonobono.fyb.Exception.CustomErrorCode.GOOGLE_LOGIN_FAIL;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 import static school.bonobono.fyb.Model.StatusTrue.LOGIN_STATUS_TRUE;
 import static school.bonobono.fyb.Model.StatusTrue.REGISTER_STATUS_TRUE;
