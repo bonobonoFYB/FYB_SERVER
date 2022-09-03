@@ -48,6 +48,16 @@ public class OAuthService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     // validate 및 단순 메소드
+    Authority authority = Authority.builder()
+            .authorityName("ROLE_USER")
+            .build();
+
+    // Service
+
+    private static void socialRegisterValidate(UserRegisterDto.socialRequest request) {
+        if (request.getWeight() == null || request.getHeight() == null)
+            throw new CustomException(REGISTER_INFO_NULL);
+    }
 
     private TokenInfoResponseDto getTokenInfo() {
         return TokenInfoResponseDto.Response(
@@ -57,12 +67,6 @@ public class OAuthService {
                         .orElse(null))
         );
     }
-
-    // Service
-
-    Authority authority = Authority.builder()
-            .authorityName("ROLE_USER")
-            .build();
 
     public ResponseEntity<StatusTrue> googlelogin(String code) throws IOException {
         // 구글로 일회성 코드를 보내 액세스 토큰이 담긴 응답객체를 받아옴
@@ -141,8 +145,7 @@ public class OAuthService {
 
     public ResponseEntity<StatusTrue> socialRegister(UserRegisterDto.socialRequest request) {
 
-        if(request.getWeight() == null || request.getHeight() == null)
-            throw new CustomException(REGISTER_INFO_NULL);
+        socialRegisterValidate(request);
 
         userRepository.save(
                 FybUser.builder()
