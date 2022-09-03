@@ -14,6 +14,18 @@ public class UserRegisterDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
+    public static class socialRequest{
+        private Character gender;
+        private Integer height;
+        private Integer weight;
+        private Integer age;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
     public static class Request{
         private String email;
         private String pw;
