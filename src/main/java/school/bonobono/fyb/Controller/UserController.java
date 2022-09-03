@@ -42,6 +42,14 @@ public class UserController {
         return oauthService.googlelogin(code);
     }
 
+    // Sosial 로그인 이후 추가 정보 요청
+    @PostMapping("social/register")
+    public ResponseEntity<StatusTrue> socialRegister(
+            @RequestBody final UserRegisterDto.socialRequest request
+    ){
+        return oauthService.socialRegister(request);
+    }
+
 
     // 휴대폰 인증
     @PostMapping("check")
