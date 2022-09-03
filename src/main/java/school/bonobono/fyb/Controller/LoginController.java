@@ -25,6 +25,7 @@ import school.bonobono.fyb.Repository.UserRepository;
 import javax.validation.Valid;
 
 import static school.bonobono.fyb.Exception.CustomErrorCode.NOT_EMAIL_FORM;
+import static school.bonobono.fyb.Exception.CustomErrorCode.NOT_SOCIAL_LOGIN;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 
 @RestController
@@ -64,6 +65,9 @@ public class LoginController {
     }
 
     private void LOGIN_VALIDATION(UserLoginDto.Request request) {
+        if (request.getPw().equals("google"))
+            throw new CustomException(NOT_SOCIAL_LOGIN);
+
         if (!request.getEmail().contains("@"))
             throw new CustomException(NOT_EMAIL_FORM);
 
