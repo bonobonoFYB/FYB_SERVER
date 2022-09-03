@@ -15,21 +15,26 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import school.bonobono.fyb.Config.GoogleOAuth;
+import school.bonobono.fyb.Dto.TokenInfoResponseDto;
+import school.bonobono.fyb.Dto.UserRegisterDto;
 import school.bonobono.fyb.Entity.Authority;
 import school.bonobono.fyb.Entity.FybUser;
 import school.bonobono.fyb.Entity.GoogleOAuthToken;
 import school.bonobono.fyb.Entity.userToken;
+import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Jwt.TokenProvider;
 import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
+import school.bonobono.fyb.Util.SecurityUtil;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Objects;
 
+import static school.bonobono.fyb.Exception.CustomErrorCode.REGISTER_INFO_NULL;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
-import static school.bonobono.fyb.Model.StatusTrue.LOGIN_STATUS_TRUE;
-import static school.bonobono.fyb.Model.StatusTrue.REGISTER_STATUS_TRUE;
+import static school.bonobono.fyb.Model.StatusTrue.*;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +46,19 @@ public class OAuthService {
     private final GoogleOAuth googleOAuth;
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    // validate 및 단순 메소드
+
+    private TokenInfoResponseDto getTokenInfo() {
+        return TokenInfoResponseDto.Response(
+                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
+                        .flatMap(
+                                userRepository::findOneWithAuthoritiesByEmail)
+                        .orElse(null))
+        );
+    }
+
+    // Service
 
     Authority authority = Authority.builder()
             .authorityName("ROLE_USER")
@@ -71,7 +89,7 @@ public class OAuthService {
         // 데이터베이스에 이메일이 존재하는 경우 로그인
         if (userRepository.existsByEmail(email)) {
             UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(email, "googlelogin1234");
+                    new UsernamePasswordAuthenticationToken(email, "google");
 
             Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -92,7 +110,7 @@ public class OAuthService {
             userRepository.save(
                     FybUser.builder()
                             .email(email)
-                            .pw(passwordEncoder.encode("googlelogin1234"))
+                            .pw(passwordEncoder.encode("google"))
                             .name(name)
                             .authorities(Collections.singleton(authority))
                             .gender(null)
@@ -101,7 +119,45 @@ public class OAuthService {
                             .age(null)
                             .build()
             );
-            return new ResponseEntity<>(REGISTER_STATUS_TRUE, HttpStatus.OK);
+
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(email, "google");
+
+            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = tokenProvider.createToken(authentication);
+
+            // 토큰 유효성 검증을 위한 데이터 저장 (로그아웃을 위한 장치)
+            tokenRepository.save(userToken.builder()
+                    .token("Bearer " + jwt)
+                    .build());
+
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + jwt);
+
+            return new ResponseEntity<>(GOOGLE_REGISTER_STATUS_TRUE, httpHeaders, HttpStatus.OK);
         }
+    }
+
+    public ResponseEntity<StatusTrue> socialRegister(UserRegisterDto.socialRequest request) {
+
+        if(request.getWeight() == null || request.getHeight() == null)
+            throw new CustomException(REGISTER_INFO_NULL);
+
+        userRepository.save(
+                FybUser.builder()
+                        .id(getTokenInfo().getId())
+                        .email(getTokenInfo().getEmail())
+                        .pw(getTokenInfo().getPw())
+                        .name(getTokenInfo().getName())
+                        .authorities(Collections.singleton(authority))
+                        .gender(request.getGender())
+                        .height(request.getHeight())
+                        .weight(request.getWeight())
+                        .age(request.getWeight())
+                        .createAt(getTokenInfo().getCreateAt())
+                        .build()
+        );
+        return new ResponseEntity<>(SOCIAL_REGISTER_STATUS_TRUE, HttpStatus.OK);
     }
 }
