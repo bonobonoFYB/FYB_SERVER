@@ -9,6 +9,7 @@ public enum CustomErrorCode {
     //로그인 & 로그아웃 검증
     JWT_CREDENTIALS_STATUS_FALSE("로그인이 유효하지 않습니다."),
     LOGIN_FALSE("아이디 또는 비밀번호를 잘못 입력하였습니다."),
+    NOT_SOCIAL_LOGIN("소셜 아이디로 회원가입된 유저입니다."),
 
     //회원가입
     REGISTER_INFO_NULL("필수 항목을 입력하지 않았습니다."),
