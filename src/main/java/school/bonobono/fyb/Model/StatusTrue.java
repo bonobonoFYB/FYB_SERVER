@@ -9,6 +9,8 @@ import lombok.Getter;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum StatusTrue {
     REGISTER_STATUS_TRUE("REGISTER_STATUS_TRUE", "회원가입 성공"),
+    GOOGLE_REGISTER_STATUS_TRUE("GOOGLE_REGISTER_STATUS_TRUE", "구글 회원가입 성공"),
+    SOCIAL_REGISTER_STATUS_TRUE("SOCIAL_REGISTER_STATUS_TRUE", "추가 정보 요청 성공"),
     LOGIN_STATUS_TRUE("LOGIN_STATUS_TRUE", "로그인 성공"),
     READ_STATUS_TRUE("READ_STATUS_TRUE", "정보 불러오기 성공"),
     LOGOUT_STATUS_TRUE("LOGOUT_STATUS_TRUE", "로그아웃 성공"),
