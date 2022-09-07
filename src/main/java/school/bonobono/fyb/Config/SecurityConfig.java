@@ -49,7 +49,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()
                 .authorizeRequests()
-                .antMatchers("/auth/google").permitAll()
+                .antMatchers("/auth/google", "/auth/kakao", "/auth/login/kakao").permitAll()
                 .antMatchers("/auth/login/google").permitAll()
                 .antMatchers("/auth/login").permitAll()
                 .antMatchers("/auth/register").permitAll()

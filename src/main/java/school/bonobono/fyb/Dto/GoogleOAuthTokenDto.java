@@ -1,11 +1,11 @@
-package school.bonobono.fyb.Entity;
+package school.bonobono.fyb.Dto;
 
 import lombok.*;
 
 @AllArgsConstructor
 @Getter
 @Setter
-public class GoogleOAuthToken {
+public class GoogleOAuthTokenDto {
     private String access_token;
     private Integer expires_in;
     private String scope;
