@@ -1,6 +1,7 @@
 package school.bonobono.fyb.Controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +22,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
+@Slf4j
 public class UserController {
 
     private final OAuthService oauthService;
@@ -38,7 +40,7 @@ public class UserController {
     @GetMapping("login/google")
     public ResponseEntity<StatusTrue> callback(
             @RequestParam(name = "code") String code) throws IOException {
-        System.out.println(">> 소셜 로그인 API 서버로부터 받은 code :" + code);
+        log.info("구글 API 서버 code : " + code);
         return oauthService.googlelogin(code);
     }
 

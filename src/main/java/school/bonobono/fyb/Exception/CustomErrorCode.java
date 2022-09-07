@@ -6,6 +6,7 @@ import lombok.Getter;
 @AllArgsConstructor // enum에 하나의 프로퍼티가 있는데 프로퍼티를 사용해서 enum을 하나 생성해줄때 메세지를 넣어서 생성해주는 생성자가 없어서 선언해줘야함
 @Getter
 public enum CustomErrorCode {
+
     //로그인 & 로그아웃 검증
     JWT_CREDENTIALS_STATUS_FALSE("로그인이 유효하지 않습니다."),
     LOGIN_FALSE("아이디 또는 비밀번호를 잘못 입력하였습니다."),

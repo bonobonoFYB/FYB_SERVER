@@ -53,7 +53,6 @@ public class OAuthService {
             .build();
 
     // Service
-
     private static void socialRegisterValidate(UserRegisterDto.socialRequest request) {
         if (request.getWeight() == null || request.getHeight() == null)
             throw new CustomException(REGISTER_INFO_NULL);
@@ -157,7 +156,7 @@ public class OAuthService {
                         .gender(request.getGender())
                         .height(request.getHeight())
                         .weight(request.getWeight())
-                        .age(request.getWeight())
+                        .age(request.getAge())
                         .createAt(getTokenInfo().getCreateAt())
                         .build()
         );
