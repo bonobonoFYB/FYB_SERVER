@@ -15,11 +15,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import school.bonobono.fyb.Config.GoogleOAuth;
-import school.bonobono.fyb.Dto.TokenInfoResponseDto;
-import school.bonobono.fyb.Dto.UserRegisterDto;
+import school.bonobono.fyb.Config.KakaoOAuth;
+import school.bonobono.fyb.Dto.*;
 import school.bonobono.fyb.Entity.Authority;
 import school.bonobono.fyb.Entity.FybUser;
-import school.bonobono.fyb.Entity.GoogleOAuthToken;
 import school.bonobono.fyb.Entity.userToken;
 import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Jwt.TokenProvider;
@@ -43,19 +42,43 @@ public class OAuthService {
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final KakaoOAuth kakaoOAuth;
     private final GoogleOAuth googleOAuth;
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    UsernamePasswordAuthenticationToken authenticationToken = null;
 
     // validate 및 단순 메소드
     Authority authority = Authority.builder()
             .authorityName("ROLE_USER")
             .build();
 
-    // Service
     private static void socialRegisterValidate(UserRegisterDto.socialRequest request) {
         if (request.getWeight() == null || request.getHeight() == null)
             throw new CustomException(REGISTER_INFO_NULL);
+    }
+
+    private ResponseEntity<StatusTrue> Login(String email) {
+        if (email.contains("gmail")) {
+            authenticationToken = new UsernamePasswordAuthenticationToken(email, "google");
+        }
+        if (email.contains("daum")) {
+            authenticationToken = new UsernamePasswordAuthenticationToken(email, "kakao");
+        }
+
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = tokenProvider.createToken(authentication);
+
+        // 토큰 유효성 검증을 위한 데이터 저장 (로그아웃을 위한 장치)
+        tokenRepository.save(userToken.builder()
+                .token("Bearer " + jwt)
+                .build());
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + jwt);
+
+        return new ResponseEntity<>(LOGIN_STATUS_TRUE, httpHeaders, HttpStatus.OK);
     }
 
     private TokenInfoResponseDto getTokenInfo() {
@@ -67,49 +90,29 @@ public class OAuthService {
         );
     }
 
+    // Service
+
+    // 구글 로그인 서비스
     public ResponseEntity<StatusTrue> googlelogin(String code) throws IOException {
         // 구글로 일회성 코드를 보내 액세스 토큰이 담긴 응답객체를 받아옴
         ResponseEntity<String> accessTokenResponse = googleOAuth.requestAccessToken(code);
-        // 응답 객체가 JSON형식으로 되어 있으므로, 이를 deserialization해서 자바 객체에 담을 것이다.
-        GoogleOAuthToken oAuthToken = googleOAuth.getAccessToken(accessTokenResponse);
+        // 응답 객체가 JSON 형식으로 되어 있으므로, 이를 deserialization해서 자바 객체에 담을 것이다.
+        GoogleOAuthTokenDto oAuthToken = googleOAuth.getAccessToken(accessTokenResponse);
         // accessToken을 담은 후 accessToken 통신
         ResponseEntity<String> userInfoResponse = googleOAuth.requestUserInfo(oAuthToken);
-
         JSONParser jsonParser = new JSONParser();
         String email;
         String name;
-
         // json parse
         try {
             JSONObject jsonObj = (JSONObject) jsonParser.parse(userInfoResponse.getBody());
             email = (String) jsonObj.get("email");
             name = (String) jsonObj.get("name");
-
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-
         // 데이터베이스에 이메일이 존재하는 경우 로그인
-        if (userRepository.existsByEmail(email)) {
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(email, "google");
-
-            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = tokenProvider.createToken(authentication);
-
-            // 토큰 유효성 검증을 위한 데이터 저장 (로그아웃을 위한 장치)
-            tokenRepository.save(userToken.builder()
-                    .token("Bearer " + jwt)
-                    .build());
-
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + jwt);
-            return new ResponseEntity<>(LOGIN_STATUS_TRUE, httpHeaders, HttpStatus.OK);
-        }
-
-        // 데이터베이스에 이메일이 존재하지 않는 경우 회원가입
-        else {
+        if (!userRepository.existsByEmail(email)) {
             userRepository.save(
                     FybUser.builder()
                             .email(email)
@@ -122,26 +125,43 @@ public class OAuthService {
                             .age(null)
                             .build()
             );
-
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(email, "google");
-
-            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = tokenProvider.createToken(authentication);
-
-            // 토큰 유효성 검증을 위한 데이터 저장 (로그아웃을 위한 장치)
-            tokenRepository.save(userToken.builder()
-                    .token("Bearer " + jwt)
-                    .build());
-
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + jwt);
-
-            return new ResponseEntity<>(GOOGLE_REGISTER_STATUS_TRUE, httpHeaders, HttpStatus.OK);
+            Login(email);
+            return new ResponseEntity<>(SOCIAL_REGISTER_STATUS_TRUE, HttpStatus.OK);
         }
+        // 데이터베이스에 이메일이 존재하지 않는 경우 회원가입 후 로그인
+        return Login(email);
     }
 
+    // 카카오 로그인 서비스
+    public ResponseEntity<StatusTrue> kakaoLogin(String code) throws IOException {
+        ResponseEntity<String> accessTokenResponse = kakaoOAuth.requestAccessToken(code);
+        KakaoOAuthTokenDto oAuthToken = kakaoOAuth.getAccessToken(accessTokenResponse);
+        ResponseEntity<String> userInfoResponse = kakaoOAuth.requestUserInfo(oAuthToken);
+        KakaoUserInfoDto kakaoUser = kakaoOAuth.getUserInfo(userInfoResponse);
+        String email = kakaoUser.getKakao_account().getEmail();
+        String name = kakaoUser.getProperties().getNickname();
+
+        // 회원가입
+        if (!userRepository.existsByEmail(email)) {
+            userRepository.save(
+                    FybUser.builder()
+                            .email(email)
+                            .pw(passwordEncoder.encode("kakao"))
+                            .name(name)
+                            .authorities(Collections.singleton(authority))
+                            .gender(null)
+                            .height(null)
+                            .weight(null)
+                            .age(null)
+                            .build()
+            );
+            Login(email);
+            return new ResponseEntity<>(SOCIAL_REGISTER_STATUS_TRUE, HttpStatus.OK);
+        }
+        return Login(email);
+    }
+
+    // 추가 정보 요청 서비스
     public ResponseEntity<StatusTrue> socialRegister(UserRegisterDto.socialRequest request) {
 
         socialRegisterValidate(request);
@@ -160,6 +180,6 @@ public class OAuthService {
                         .createAt(getTokenInfo().getCreateAt())
                         .build()
         );
-        return new ResponseEntity<>(SOCIAL_REGISTER_STATUS_TRUE, HttpStatus.OK);
+        return new ResponseEntity<>(SOCIAL_ADD_INFO_STAUTS_TRUE, HttpStatus.OK);
     }
 }
