@@ -4,17 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import school.bonobono.fyb.Dto.ShopDataDto;
 import school.bonobono.fyb.Dto.ShopDto;
 import school.bonobono.fyb.Dto.UserReadDto;
 import school.bonobono.fyb.Entity.Shop;
+import school.bonobono.fyb.Entity.ShopData;
 import school.bonobono.fyb.Exception.CustomErrorCode;
 import school.bonobono.fyb.Exception.CustomException;
+import school.bonobono.fyb.Repository.ShopDataRepository;
 import school.bonobono.fyb.Repository.ShopRepository;
 import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -31,6 +35,7 @@ public class ShopService {
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
+    private final ShopDataRepository shopDataRepository;
 
 
     // Validation
@@ -89,4 +94,43 @@ public class ShopService {
         return shopList;
     }
 
+    @Transactional
+    public HashMap<Object, Object> saveShopData(ShopDataDto.Request request) {
+        ShopData shopData = shopDataRepository.findById(request.getSid()).get();
+        Integer clickAgeA = 0;
+        Integer clickAgeB = 0;
+        Integer clickMen = 0;
+        Integer clickWomen = 0;
+
+        if (request.getGender() == 'M') {
+            clickMen++;
+        } else if (request.getGender() == 'W') {
+            clickWomen++;
+        }
+
+        if (request.getAge() <= 29) {
+            clickAgeA++;
+        } else if (request.getAge() >= 30) {
+            clickAgeB++;
+        }
+
+        shopDataRepository.save(
+                ShopData.builder()
+                        .sid(request.getSid())
+                        .surl(request.getSurl())
+                        .clickAgeA(shopData.getClickAgeA() + clickAgeA)
+                        .clickAgeB(shopData.getClickAgeB() + clickAgeB)
+                        .clickMen(shopData.getClickMen() + clickMen)
+                        .clickWomen(shopData.getClickWomen() + clickWomen)
+                        .clickAll(shopData.getClickAll() + 1)
+                        .build()
+        );
+
+        HashMap<Object, Object> statusAndInfo = new HashMap<>();
+
+        statusAndInfo.put("status", "REDIRECT_TRUE");
+        statusAndInfo.put("redirect_url", request.getSurl());
+
+        return statusAndInfo;
+    }
 }
