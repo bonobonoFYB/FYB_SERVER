@@ -4,15 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import school.bonobono.fyb.Dto.ShopDataDto;
 import school.bonobono.fyb.Dto.ShopDto;
 import school.bonobono.fyb.Entity.Shop;
 import school.bonobono.fyb.Service.ShopService;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
-
-import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,17 +29,26 @@ public class ShopController {
         return shopService.getAllShopAndUserInfo(request);
     }
 
+    // 쇼핑몰 클릭시 쇼핑몰 이용자의 빅데이터 분석
+    @PostMapping
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public HashMap<Object, Object> saveShopData(
+            @RequestBody final ShopDataDto.Request request, HttpServletResponse response
+    ) {
+        return shopService.saveShopData(request);
+    }
+
     // Search 페이지 Get
     @GetMapping("/search")
-    public List<Shop> getAllShop(){
+    public List<Shop> getAllShop() {
         return shopService.getAllShopInfo();
     }
 
     // Search 페이지 Post
     @PostMapping("/search")
     public List<Shop> getSearchShop(
-             @RequestBody final ShopDto.Request request
-    ){
+            @RequestBody final ShopDto.Request request
+    ) {
         return shopService.getSearchShop(request);
     }
 }
