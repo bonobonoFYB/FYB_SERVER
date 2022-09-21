@@ -27,7 +27,6 @@ public class UserController {
 
     private final OAuthService oauthService;
     private final GoogleOAuth googleoauth;
-
     private final UserService userService;
 
     // 구글 로그인 창 접근

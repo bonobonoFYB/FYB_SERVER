@@ -100,17 +100,9 @@ public class OAuthService {
         GoogleOAuthTokenDto oAuthToken = googleOAuth.getAccessToken(accessTokenResponse);
         // accessToken을 담은 후 accessToken 통신
         ResponseEntity<String> userInfoResponse = googleOAuth.requestUserInfo(oAuthToken);
-        JSONParser jsonParser = new JSONParser();
-        String email;
-        String name;
-        // json parse
-        try {
-            JSONObject jsonObj = (JSONObject) jsonParser.parse(userInfoResponse.getBody());
-            email = (String) jsonObj.get("email");
-            name = (String) jsonObj.get("name");
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        GoogleUserInfoDto googleUser = googleOAuth.getUserInfo(userInfoResponse);
+        String email = googleUser.getEmail();
+        String name = googleUser.getName();
         // 데이터베이스에 이메일이 존재하는 경우 로그인
         if (!userRepository.existsByEmail(email)) {
             userRepository.save(
