@@ -132,6 +132,7 @@ public class OAuthService {
         KakaoUserInfoDto kakaoUser = kakaoOAuth.getUserInfo(userInfoResponse);
         String email = kakaoUser.getKakao_account().getEmail();
         String name = kakaoUser.getProperties().getNickname();
+        String profileImagePath = kakaoUser.getProperties().getProfile_image();
 
         // 회원가입
         if (!userRepository.existsByEmail(email)) {
@@ -141,6 +142,7 @@ public class OAuthService {
                             .pw(passwordEncoder.encode("kakao"))
                             .name(name)
                             .authorities(Collections.singleton(authority))
+                            .profileImagePath(profileImagePath)
                             .gender(null)
                             .height(null)
                             .weight(null)
