@@ -1,7 +1,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/macos,intellij+all,gradle,java,netbeans
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,intellij+all,gradle,java,netbeans
 
-/src/main/resources/application.yml
+/src/main/resources/application.properties
 /src/main/java/school/bonobono/fyb/Config/GoogleOAuth.java
 
 ### Intellij+all ###
