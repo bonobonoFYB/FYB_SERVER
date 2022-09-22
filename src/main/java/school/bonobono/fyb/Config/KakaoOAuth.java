@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import school.bonobono.fyb.Dto.GoogleOAuthTokenDto;
 import school.bonobono.fyb.Dto.KakaoOAuthTokenDto;
 import school.bonobono.fyb.Dto.KakaoUserInfoDto;
 
@@ -21,29 +21,32 @@ import school.bonobono.fyb.Dto.KakaoUserInfoDto;
 @Slf4j
 public class KakaoOAuth {
 
-    final String restApiKey = "38a11682dd52146c4ee5a75287a9c2a0";
-    final String kakaoRedirecUrl = "http://localhost:8080/auth/login/kakao";
-    final String KAKAO_TOKEN_REQUEST_URL = "https://kauth.kakao.com/oauth/token";
-    final String grantType = "authorization_code";
-    String accessTokenResponse = "";
-    String refreshTokenResponse = "";
+    @Value("${app.kakao.restApiKey}")
+    private String restApiKey;
+    @Value("${app.kakao.redirectUrl}")
+    private String kakaoRedirecUrl;
+    private final String KAKAO_TOKEN_REQUEST_URL = "https://kauth.kakao.com/oauth/token";
 
+    public String responseUrl(){
+        String kakaoLoginUrl = "https://kauth.kakao.com/oauth/authorize?client_id=" + restApiKey + "&redirect_uri=" + kakaoRedirecUrl + "&response_type=code";
+        return kakaoLoginUrl;
+    }
     public ResponseEntity<String> requestAccessToken(String code) {
-        RestTemplate restTemplate=new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
         //Access Token받기
         HttpHeaders headersAccess = new HttpHeaders();
         headersAccess.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
-        params.add("client_id",restApiKey);
-        params.add("redirect_uri",kakaoRedirecUrl);
+        params.add("client_id", restApiKey);
+        params.add("redirect_uri", kakaoRedirecUrl);
         params.add("code", code);
 
         HttpEntity<MultiValueMap<String, String>> kakaoRequest = new HttpEntity<>(params, headersAccess);
 
-        ResponseEntity<String> responseEntity=restTemplate.postForEntity(KAKAO_TOKEN_REQUEST_URL,
-                kakaoRequest,String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(KAKAO_TOKEN_REQUEST_URL,
+                kakaoRequest, String.class);
         return responseEntity;
     }
 
@@ -55,12 +58,12 @@ public class KakaoOAuth {
 
     public ResponseEntity<String> requestUserInfo(KakaoOAuthTokenDto oAuthToken) {
         HttpHeaders headers = new HttpHeaders();
-        RestTemplate restTemplate=new RestTemplate();
-        headers.add("Authorization","Bearer "+oAuthToken.getAccess_token());
+        RestTemplate restTemplate = new RestTemplate();
+        headers.add("Authorization", "Bearer " + oAuthToken.getAccess_token());
 
         //HttpEntity를 하나 생성해 헤더를 담아서 후
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
-        ResponseEntity<String> response = restTemplate.exchange("https://kapi.kakao.com/v2/user/me", HttpMethod.GET,request,String.class);
+        ResponseEntity<String> response = restTemplate.exchange("https://kapi.kakao.com/v2/user/me", HttpMethod.GET, request, String.class);
         return response;
     }
 
