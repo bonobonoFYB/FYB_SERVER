@@ -69,13 +69,13 @@ public class UserController {
         return userService.registerUser(request);
     }
 
-/*    // 프로필 이미지 설정
+    // 프로필 이미지 설정
     @PostMapping("update/image")
     public Constable updateImage(
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile multipartFile
     ){
-        return userService.updateImage(file);
-    }*/
+        return userService.updateImage(multipartFile);
+    }
 
     // 내 정보 조회
     @GetMapping("info")
