@@ -42,6 +42,9 @@ public class FybUser {
     @Column(name = "age")
     private Integer age;
 
+    @Column(name = "profileImagePath")
+    private String profileImagePath;
+
     @CreatedDate
     @Column(name = "createAt")
     private LocalDateTime createAt;
