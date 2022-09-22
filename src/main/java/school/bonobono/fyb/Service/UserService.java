@@ -6,13 +6,24 @@ import lombok.extern.slf4j.Slf4j;
 import net.nurigo.java_sdk.api.Message;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.Dto.*;
 import school.bonobono.fyb.Entity.Authority;
 import school.bonobono.fyb.Entity.FybUser;
+import school.bonobono.fyb.Entity.userToken;
 import school.bonobono.fyb.Exception.CustomException;
+import school.bonobono.fyb.Jwt.TokenProvider;
+import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
@@ -34,15 +45,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final TokenProvider tokenProvider;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
     Authority authority = Authority.builder()
             .authorityName("ROLE_USER")
             .build();
-
+    @Value("${app.upload.dir}")
+    private String uploadDir;
     private String randNum = "";
+
     // Service
     // 회원가입
     @Transactional
-    public Constable registerUser(UserRegisterDto.Request request) {
+    public ResponseEntity<StatusTrue> registerUser(UserRegisterDto.Request request) {
 
         REGISTER_VALIDATION(request);
 
@@ -59,7 +75,24 @@ public class UserService {
                         .build()
         );
 
-        return REGISTER_STATUS_TRUE;
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPw());
+
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String jwt = tokenProvider.createToken(authentication);
+
+        // 토큰 유효성 검증을 위한 데이터 저장 (로그아웃을 위한 장치)
+        tokenRepository.save(userToken.builder()
+                .token("Bearer " + jwt)
+                .build());
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + jwt);
+
+        return new ResponseEntity<>(REGISTER_STATUS_TRUE, httpHeaders, HttpStatus.OK);
     }
 
     // 내 정보 조회
@@ -183,7 +216,7 @@ public class UserService {
                                 userRepository::findOneWithAuthoritiesByEmail)
                         .orElse(null))
         );
-        PWLOSTCHANGE_VALIDATION(request,userInfo.getPw());
+        PWLOSTCHANGE_VALIDATION(request, userInfo.getPw());
 
 
         Authority authority = Authority.builder()
@@ -287,8 +320,25 @@ public class UserService {
                 .orElseThrow(
                         () -> new CustomException(NOT_FOUND_USER)
                 );
-        if(passwordEncoder.matches(request.getNewPw(),pw)){
+        if (passwordEncoder.matches(request.getNewPw(), pw)) {
             throw new CustomException(PASSWORD_IS_NOT_CHANGE);
         }
     }
+
+/*    public Constable updateImage(MultipartFile multipartFile) {
+        // File.seperator 는 OS종속적이다.
+        // Spring에서 제공하는 cleanPath()를 통해서 ../ 내부 점들에 대해서 사용을 억제한다
+        Path copyOfLocation = Paths.get(uploadDir + File.separator + StringUtils.cleanPath(multipartFile.getOriginalFilename()));
+
+        userRepository.save();
+        try {
+            // inputStream을 가져와서
+            // copyOfLocation (저장위치)로 파일을 쓴다.
+            // copy의 옵션은 기존에 존재하면 REPLACE(대체한다), 오버라이딩 한다
+            Files.copy(multipartFile.getInputStream(), copyOfLocation, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new Exception("Could not store file : " + multipartFile.getOriginalFilename());
+        }
+    }*/
 }
