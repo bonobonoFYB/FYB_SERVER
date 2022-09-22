@@ -17,6 +17,7 @@ public class TokenInfoResponseDto {
         private String pw;
         private String email;
         private String name;
+        private String profileImagePath;
         private Character gender;
         private Integer height;
         private Integer weight;
@@ -34,6 +35,7 @@ public class TokenInfoResponseDto {
                 .weight(user.getWeight())
                 .age(user.getAge())
                 .id(user.getId())
+                .profileImagePath(user.getProfileImagePath())
                 .createAt(user.getCreateAt())
                 .build();
     }
