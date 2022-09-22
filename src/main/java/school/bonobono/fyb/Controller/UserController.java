@@ -6,6 +6,7 @@ import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.Config.GoogleOAuth;
 import school.bonobono.fyb.Dto.*;
 import school.bonobono.fyb.Model.StatusTrue;
@@ -62,11 +63,19 @@ public class UserController {
 
     // 회원가입
     @PostMapping("register")
-    public Constable registerUser(
+    public ResponseEntity<StatusTrue> registerUser(
             @Valid @RequestBody final UserRegisterDto.Request request
     ) {
         return userService.registerUser(request);
     }
+
+/*    // 프로필 이미지 설정
+    @PostMapping("update/image")
+    public Constable updateImage(
+            @RequestParam("file") MultipartFile file
+    ){
+        return userService.updateImage(file);
+    }*/
 
     // 내 정보 조회
     @GetMapping("info")
