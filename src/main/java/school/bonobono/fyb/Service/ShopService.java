@@ -94,9 +94,15 @@ public class ShopService {
         return shopList;
     }
 
+    // 쇼핑몰 사용자 데이터 저장
     @Transactional
     public HashMap<Object, Object> saveShopData(ShopDataDto.Request request) {
-        ShopData shopData = shopDataRepository.findById(request.getSid()).get();
+
+        ShopData shopData = shopDataRepository.findById(request.getSid())
+                .orElseThrow(
+                        () -> new NullPointerException()
+                );
+
         Integer clickAgeA = 0;
         Integer clickAgeB = 0;
         Integer clickMen = 0;
