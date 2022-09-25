@@ -96,7 +96,10 @@ public class ShopService {
 
     // 쇼핑몰 사용자 데이터 저장
     @Transactional
-    public HashMap<Object, Object> saveShopData(ShopDataDto.Request request) {
+    public HashMap<Object, Object> saveShopData(ShopDataDto.Request request, HttpServletRequest headerRequest) {
+
+        // 데이터 저장된 토큰 검증을 위한 Validation
+        tokenCredEntialsValidate(headerRequest);
 
         ShopData shopData = shopDataRepository.findById(request.getSid())
                 .orElseThrow(

@@ -33,9 +33,9 @@ public class ShopController {
     @PostMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public HashMap<Object, Object> saveShopData(
-            @RequestBody final ShopDataDto.Request request, HttpServletResponse response
+            @RequestBody final ShopDataDto.Request request, HttpServletRequest headerRequest
     ) {
-        return shopService.saveShopData(request);
+        return shopService.saveShopData(request,headerRequest);
     }
 
     // Search 페이지 Get
