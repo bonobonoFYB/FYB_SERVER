@@ -16,11 +16,10 @@ import school.bonobono.fyb.Jwt.JwtAuthenticationEntryPoint;
 import school.bonobono.fyb.Jwt.JwtSecurityConfig;
 import school.bonobono.fyb.Jwt.TokenProvider;
 
-@EnableWebSecurity // 기본적인 웹 보안을 활성화 시킬거라는 어노테이션
-@EnableGlobalMethodSecurity(prePostEnabled = true) //PreAuthorize 어노테이션을 메소드 단위로 사용하기 위해 선언
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    // 생성한 jwt 설정들 의존성 주입
     private final TokenProvider tokenProvider;
     private final CorsFilter corsFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -28,7 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // 패스워드는 Bcrypt 사용
+        return new BCryptPasswordEncoder();
     }
 
     @Override
@@ -42,21 +41,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
 
-
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
                 .and()
                 .authorizeRequests()
-                .antMatchers("/auth/google", "/auth/kakao", "/auth/login/kakao").permitAll()
-                .antMatchers("/auth/login/google").permitAll()
-                .antMatchers("/auth/login").permitAll()
-                .antMatchers("/auth/register").permitAll()
-                .antMatchers("/main/search").permitAll()
-                .antMatchers("/auth/check").permitAll()
-                .antMatchers("/auth/lost/pwchange").permitAll()
-                .antMatchers("/main/search").permitAll()
+                .antMatchers("/auth/google", "/auth/kakao", "/auth/login/kakao", "/auth/login/google").permitAll()
+                .antMatchers("/auth", "/auth/log", "/auth/check", "/auth/password").permitAll()
+                .antMatchers("/main/shop").permitAll()
                 .anyRequest().authenticated()
 
                 .and()
