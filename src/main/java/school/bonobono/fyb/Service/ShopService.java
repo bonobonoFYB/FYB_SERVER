@@ -103,7 +103,7 @@ public class ShopService {
 
         ShopData shopData = shopDataRepository.findById(request.getSid())
                 .orElseThrow(
-                        () -> new NullPointerException()
+                        NullPointerException::new
                 );
 
         Integer clickAgeA = 0;

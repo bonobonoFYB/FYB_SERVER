@@ -3,6 +3,7 @@ package school.bonobono.fyb.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.Dto.MyClosetDto;
 import school.bonobono.fyb.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.Entity.MyCloset;
@@ -30,11 +31,35 @@ public class MyClosetService {
     private final TokenRepository tokenRepository;
 
     // Validation 및 단순화
-
     private static void readMyClosetValidate(List<MyClosetDto.readResponse> list) {
         if (list.isEmpty()) {
             throw new CustomException(MY_CLOSET_EMPTY);
         }
+    }
+
+    private static void addMyClosetValidate(MyClosetDto.addRequest request) {
+        if (request.getPname() == null) {
+            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
+        }
+
+        if (request.getPkind() == null) {
+            throw new CustomException(MY_CLOSET_PKIND_IS_NULL);
+        }
+    }
+
+    private static void updateValidate(MyClosetDto.readResponse request) {
+        if (request.getId() == null) {
+            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
+        }
+
+        if (request.getPname() == null) {
+            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
+        }
+
+        if (request.getPkind() == null) {
+            throw new CustomException(MY_CLOSET_PKIND_IS_NULL);
+        }
+
     }
 
     private TokenInfoResponseDto getTokenInfo() {
@@ -54,33 +79,9 @@ public class MyClosetService {
                 );
     }
 
-    private static void addMyClosetValidate(MyClosetDto.addRequest request) {
-        if(request.getPname() == null){
-            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
-        }
-
-        if(request.getPkind() == null){
-            throw new CustomException(MY_CLOSET_PKIND_IS_NULL);
-        }
-    }
-
-    private static void updateValidate(MyClosetDto.readResponse request) {
-        if(request.getId() == null){
-            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
-        }
-
-        if(request.getPname() == null){
-            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
-        }
-
-        if(request.getPkind() == null){
-            throw new CustomException(MY_CLOSET_PKIND_IS_NULL);
-        }
-
-    }
-
     // Service
 
+    @Transactional
     public List<MyClosetDto.readResponse> readMyCloset(HttpServletRequest headerRequest) {
         tokenCredEntialsValidate(headerRequest);
 
@@ -94,7 +95,8 @@ public class MyClosetService {
         return list;
     }
 
-    public Constable addMyCloset(MyClosetDto.addRequest request,HttpServletRequest headerRequest) {
+    @Transactional
+    public Constable addMyCloset(MyClosetDto.addRequest request, HttpServletRequest headerRequest) {
         tokenCredEntialsValidate(headerRequest);
 
         addMyClosetValidate(request);
@@ -110,10 +112,11 @@ public class MyClosetService {
         return MY_CLOSET_ADD_STATUS_TRUE;
     }
 
+    @Transactional
     public Constable deleteCloset(MyClosetDto.deleteRequest request, HttpServletRequest headerRequest) {
         tokenCredEntialsValidate(headerRequest);
 
-        if(request.getId() == null){
+        if (request.getId() == null) {
             throw new CustomException(MY_CLOSET_ID_IS_NULL);
         }
 
@@ -122,6 +125,7 @@ public class MyClosetService {
         return MY_CLOSET_DELETE_STATUS_TRUE;
     }
 
+    @Transactional
     public Constable updateCloset(MyClosetDto.readResponse request, HttpServletRequest headerRequest) {
 
         updateValidate(request);

@@ -1,10 +1,8 @@
 package school.bonobono.fyb.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.Config.GoogleOAuth;
 import school.bonobono.fyb.Config.KakaoOAuth;
 import school.bonobono.fyb.Dto.*;
@@ -90,17 +89,27 @@ public class OAuthService {
         );
     }
 
-    // Service
+    private KakaoUserInfoDto getKakaoUserInfoDto(String code) throws JsonProcessingException {
+        ResponseEntity<String> accessTokenResponse = kakaoOAuth.requestAccessToken(code);
+        KakaoOAuthTokenDto oAuthToken = kakaoOAuth.getAccessToken(accessTokenResponse);
+        ResponseEntity<String> userInfoResponse = kakaoOAuth.requestUserInfo(oAuthToken);
+        KakaoUserInfoDto kakaoUser = kakaoOAuth.getUserInfo(userInfoResponse);
+        return kakaoUser;
+    }
 
-    // 구글 로그인 서비스
-    public ResponseEntity<StatusTrue> googlelogin(String code) throws IOException {
-        // 구글로 일회성 코드를 보내 액세스 토큰이 담긴 응답객체를 받아옴
+    private GoogleUserInfoDto getGoogleUserInfoDto(String code) throws JsonProcessingException {
         ResponseEntity<String> accessTokenResponse = googleOAuth.requestAccessToken(code);
-        // 응답 객체가 JSON 형식으로 되어 있으므로, 이를 deserialization해서 자바 객체에 담을 것이다.
         GoogleOAuthTokenDto oAuthToken = googleOAuth.getAccessToken(accessTokenResponse);
-        // accessToken을 담은 후 accessToken 통신
         ResponseEntity<String> userInfoResponse = googleOAuth.requestUserInfo(oAuthToken);
         GoogleUserInfoDto googleUser = googleOAuth.getUserInfo(userInfoResponse);
+        return googleUser;
+    }
+
+    // Service
+    // 구글 로그인 서비스
+    @Transactional
+    public ResponseEntity<StatusTrue> googlelogin(String code) throws IOException {
+        GoogleUserInfoDto googleUser = getGoogleUserInfoDto(code);
         String email = googleUser.getEmail();
         String name = googleUser.getName();
         // 데이터베이스에 이메일이 존재하는 경우 로그인
@@ -124,12 +133,11 @@ public class OAuthService {
         return Login(email);
     }
 
+
     // 카카오 로그인 서비스
+    @Transactional
     public ResponseEntity<StatusTrue> kakaoLogin(String code) throws IOException {
-        ResponseEntity<String> accessTokenResponse = kakaoOAuth.requestAccessToken(code);
-        KakaoOAuthTokenDto oAuthToken = kakaoOAuth.getAccessToken(accessTokenResponse);
-        ResponseEntity<String> userInfoResponse = kakaoOAuth.requestUserInfo(oAuthToken);
-        KakaoUserInfoDto kakaoUser = kakaoOAuth.getUserInfo(userInfoResponse);
+        KakaoUserInfoDto kakaoUser = getKakaoUserInfoDto(code);
         String email = kakaoUser.getKakao_account().getEmail();
         String name = kakaoUser.getProperties().getNickname();
         String profileImagePath = kakaoUser.getProperties().getProfile_image();
@@ -155,7 +163,9 @@ public class OAuthService {
         return Login(email);
     }
 
+
     // 추가 정보 요청 서비스
+    @Transactional
     public ResponseEntity<StatusTrue> socialRegister(UserRegisterDto.socialRequest request) {
 
         socialRegisterValidate(request);
