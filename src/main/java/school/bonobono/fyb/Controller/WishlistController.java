@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.lang.constant.Constable;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,34 +23,28 @@ public class WishlistController {
     // 회원 장바구니 조회
     @GetMapping("wishlist")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public List<WishlistDto.Response> getWishlistInfo(HttpServletRequest headerRequest){
+    public List<WishlistDto.Response> getWishlistInfo(HttpServletRequest headerRequest) {
         return wishlistService.getWishlistInfo(headerRequest);
     }
 
     // 회원 장바구니 등록
-    @PostMapping("wishlist/add")
+    @PostMapping("wishlist")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Constable addWishlistInfo(
-            @Valid @RequestBody WishlistDto.Request request, HttpServletRequest headerRequest
-    ){
-        return wishlistService.addWishlistInfo(request,headerRequest);
+    public Constable addWishlistInfo(@Valid @RequestBody WishlistDto.Request request, HttpServletRequest headerRequest) {
+        return wishlistService.addWishlistInfo(request, headerRequest);
     }
 
     // 회원 장바구니 삭제
-    @PostMapping("wishlist/delete")
+    @DeleteMapping("wishlist")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Constable deleteWishlistInfo(
-            @Valid @RequestBody WishlistDto.deleteRequest request, HttpServletRequest headerRequest
-    ){
-        return wishlistService.deleteWishlistInfo(request,headerRequest);
+    public Constable deleteWishlistInfo(@Valid @RequestBody WishlistDto.deleteRequest request, HttpServletRequest headerRequest) {
+        return wishlistService.deleteWishlistInfo(request, headerRequest);
     }
 
     // 회원 장바구니 수정
-    @PostMapping("wishlist/update")
+    @PatchMapping("wishlist")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Constable updateWishlistInfo(
-            @Valid @RequestBody WishlistDto.Response request, HttpServletRequest headerRequest
-    ){
-        return wishlistService.updateWishlistInfo(request,headerRequest);
+    public Constable updateWishlistInfo(@Valid @RequestBody WishlistDto.Response request, HttpServletRequest headerRequest) {
+        return wishlistService.updateWishlistInfo(request, headerRequest);
     }
 }

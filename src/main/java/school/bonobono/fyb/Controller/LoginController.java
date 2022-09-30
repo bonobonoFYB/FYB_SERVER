@@ -39,7 +39,7 @@ public class LoginController {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    @PostMapping("/login")
+    @PostMapping("log")
     public ResponseEntity<StatusTrue> authorize(@Valid @RequestBody UserLoginDto.Request request) {
 
         LOGIN_VALIDATION(request);

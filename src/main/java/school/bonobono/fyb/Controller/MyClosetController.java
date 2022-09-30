@@ -13,18 +13,18 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/main/closet")
+@RequestMapping("main")
 public class MyClosetController {
     private final MyClosetService myClosetService;
 
     // 옷장 조회
-    @GetMapping("read")
+    @GetMapping("closet")
     public List<MyClosetDto.readResponse> readMyCloset(HttpServletRequest headerRequest){
         return myClosetService.readMyCloset(headerRequest);
     }
 
     // 옷장 추가하기
-    @PostMapping("add")
+    @PostMapping("closet")
     public Constable addMyCloset(
             @RequestBody final MyClosetDto.addRequest request, HttpServletRequest headerRequest
     ){
@@ -32,7 +32,7 @@ public class MyClosetController {
     }
 
     // 옷장 삭제
-    @PostMapping("delete")
+    @DeleteMapping("closet")
     public Constable deleteMyCloset(
             @RequestBody final MyClosetDto.deleteRequest request, HttpServletRequest headerRequest
     ){
@@ -40,7 +40,7 @@ public class MyClosetController {
     }
 
     // 옷장 업데이트
-    @PostMapping("update")
+    @PatchMapping("closet")
     public Constable deleteMyCloset(
             @RequestBody final MyClosetDto.readResponse request, HttpServletRequest headerRequest
     ){

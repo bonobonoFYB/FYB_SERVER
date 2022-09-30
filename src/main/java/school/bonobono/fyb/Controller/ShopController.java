@@ -10,14 +10,13 @@ import school.bonobono.fyb.Entity.Shop;
 import school.bonobono.fyb.Service.ShopService;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/main")
+@RequestMapping("main")
 public class ShopController {
 
     private final ShopService shopService;
@@ -35,17 +34,17 @@ public class ShopController {
     public HashMap<Object, Object> saveShopData(
             @RequestBody final ShopDataDto.Request request, HttpServletRequest headerRequest
     ) {
-        return shopService.saveShopData(request,headerRequest);
+        return shopService.saveShopData(request, headerRequest);
     }
 
     // Search 페이지 Get
-    @GetMapping("/search")
+    @GetMapping("shop")
     public List<Shop> getAllShop() {
         return shopService.getAllShopInfo();
     }
 
     // Search 페이지 Post
-    @PostMapping("/search")
+    @PostMapping("shop")
     public List<Shop> getSearchShop(
             @RequestBody final ShopDto.Request request
     ) {

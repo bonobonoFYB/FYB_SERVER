@@ -7,51 +7,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import school.bonobono.fyb.Config.GoogleOAuth;
 import school.bonobono.fyb.Dto.*;
 import school.bonobono.fyb.Model.StatusTrue;
-import school.bonobono.fyb.Service.OAuthService;
 import school.bonobono.fyb.Service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.lang.constant.Constable;
 import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth")
+@RequestMapping("auth")
 @Slf4j
 public class UserController {
 
-    private final OAuthService oauthService;
-    private final GoogleOAuth googleoauth;
     private final UserService userService;
-
-    // 구글 로그인 창 접근
-    @GetMapping("google")
-    public void getGoogleAuthUrl(HttpServletResponse response) throws Exception {
-        response.sendRedirect(googleoauth.getOauthRedirectURL());
-    }
-
-    // 구글 로그인 이후
-    @GetMapping("login/google")
-    public ResponseEntity<StatusTrue> callback(
-            @RequestParam(name = "code") String code) throws IOException {
-        log.info("구글 API 서버 code : " + code);
-        return oauthService.googlelogin(code);
-    }
-
-    // Sosial 로그인 이후 추가 정보 요청
-    @PostMapping("social/register")
-    public ResponseEntity<StatusTrue> socialRegister(
-            @RequestBody final UserRegisterDto.socialRequest request
-    ){
-        return oauthService.socialRegister(request);
-    }
-
 
     // 휴대폰 인증
     @PostMapping("check")
@@ -62,7 +33,7 @@ public class UserController {
     }
 
     // 회원가입
-    @PostMapping("register")
+    @PostMapping
     public ResponseEntity<StatusTrue> registerUser(
             @Valid @RequestBody final UserRegisterDto.Request request
     ) {
@@ -70,22 +41,22 @@ public class UserController {
     }
 
     // 프로필 이미지 설정
-    @PostMapping("update/image")
+    @PutMapping("image")
     public Constable updateImage(
             @RequestParam("file") MultipartFile multipartFile
-    ){
+    ) {
         return userService.updateImage(multipartFile);
     }
 
     // 내 정보 조회
-    @GetMapping("info")
+    @GetMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<Object> getMyUserInfo(HttpServletRequest request) {
         return ResponseEntity.ok(userService.getMyInfo(request));
     }
 
     // 내 정보 수정
-    @PutMapping("update")
+    @PatchMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable updateUser(
             @Valid @RequestBody final UserUpdateDto.Request request, HttpServletRequest headerRequest
@@ -94,7 +65,7 @@ public class UserController {
     }
 
     // 비밀번호 변경 ( 로그인 이후 )
-    @PostMapping("pwchange")
+    @PatchMapping("/password")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable pwChangeUser(
             @Valid @RequestBody final PwChangeDto.Request request, HttpServletRequest headerRequest
@@ -103,7 +74,7 @@ public class UserController {
     }
 
     // 비밀번호 변경 ( 로그인 이전 )
-    @PostMapping("lost/pwchange")
+    @PutMapping("/password")
     public Constable pwLostChange(
             @Valid @RequestBody final PwChangeDto.lostRequest request
     ) {
@@ -111,14 +82,14 @@ public class UserController {
     }
 
     // 로그아웃
-    @PostMapping("logout")
+    @DeleteMapping("log")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable logoutUser(HttpServletRequest headerRequest) {
         return userService.logoutUser(headerRequest);
     }
 
     // 회원탈퇴
-    @PostMapping("delete")
+    @DeleteMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable deleteUser(
             @Valid @RequestBody final PwDeleteDto.Request request, HttpServletRequest headerRequest
