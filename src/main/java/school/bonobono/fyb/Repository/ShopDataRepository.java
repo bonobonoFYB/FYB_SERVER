@@ -1,11 +1,9 @@
 package school.bonobono.fyb.Repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import school.bonobono.fyb.Entity.MyCloset;
+import org.springframework.stereotype.Repository;
 import school.bonobono.fyb.Entity.ShopData;
 
-import java.util.Optional;
-
+@Repository
 public interface ShopDataRepository extends JpaRepository<ShopData, Long> {
-    Optional<MyCloset> findBySid(Long sid);
 }
