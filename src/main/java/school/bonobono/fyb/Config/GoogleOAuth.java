@@ -36,7 +36,6 @@ public class GoogleOAuth {
         return reqUrl;
     }
 
-    // 먼저 일회용 코드를 다시 구글로 보내 액세스 토큰을 포함한 JSON String이 담긴 ResponseEntity를 받아온다.
     public ResponseEntity<String> requestAccessToken(String code) {
         RestTemplate restTemplate = new RestTemplate();
         Map<String, Object> params = new HashMap<>();
@@ -55,7 +54,6 @@ public class GoogleOAuth {
         return null;
     }
 
-    // responseEntity에 담긴 JSON String을 역직렬화해 자바 객체에 담는다.
     public GoogleOAuthTokenDto getAccessToken(ResponseEntity<String> response) throws JsonProcessingException {
         System.out.println("response.getBody() = " + response.getBody());
         GoogleOAuthTokenDto googleOAuthTokenDto = objectMapper.readValue(response.getBody(), GoogleOAuthTokenDto.class);
@@ -64,11 +62,9 @@ public class GoogleOAuth {
 
     public ResponseEntity<String> requestUserInfo(GoogleOAuthTokenDto oAuthToken) {
 
-        //header에 accessToken을 담는다.
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + oAuthToken.getAccess_token());
 
-        //HttpEntity를 하나 생성해 헤더를 담아서 후
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(GOOGLE_USERINFO_REQUEST_URL, HttpMethod.GET, request, String.class);
         System.out.println("response.getBody() = " + response.getBody());
