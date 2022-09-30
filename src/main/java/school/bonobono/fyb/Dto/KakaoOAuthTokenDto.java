@@ -8,7 +8,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Setter
 public class KakaoOAuthTokenDto {
     private String access_token;
     private String refresh_token;

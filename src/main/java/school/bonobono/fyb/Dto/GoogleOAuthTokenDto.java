@@ -3,8 +3,8 @@ package school.bonobono.fyb.Dto;
 import lombok.*;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
-@Setter
 public class GoogleOAuthTokenDto {
     private String access_token;
     private Integer expires_in;

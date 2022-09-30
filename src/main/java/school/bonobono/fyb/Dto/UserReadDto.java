@@ -1,13 +1,15 @@
 package school.bonobono.fyb.Dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import school.bonobono.fyb.Entity.FybUser;
 
 import javax.validation.constraints.NotNull;
 
 public class UserReadDto {
     @Getter
-    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder

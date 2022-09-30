@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
 public class MyClosetDto {
 
     @Getter
-    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
@@ -20,7 +19,6 @@ public class MyClosetDto {
     }
 
     @Getter
-    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
@@ -29,7 +27,6 @@ public class MyClosetDto {
     }
 
     @Getter
-    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder

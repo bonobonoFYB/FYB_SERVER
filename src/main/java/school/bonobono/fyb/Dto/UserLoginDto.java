@@ -1,21 +1,18 @@
 package school.bonobono.fyb.Dto;
 
-import lombok.*;
-
-import javax.persistence.Column;
-import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 
 public class UserLoginDto {
     @Getter
-    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class Request{
-        @NotNull
+    public static class Request {
         private String email;
-        @NotNull
         private String pw;
     }
 }

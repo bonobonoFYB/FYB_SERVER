@@ -8,7 +8,6 @@ import javax.validation.constraints.NotNull;
 public class ShopDataDto {
 
     @Getter
-    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder

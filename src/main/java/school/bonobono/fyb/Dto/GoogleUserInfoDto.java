@@ -1,8 +1,12 @@
 package school.bonobono.fyb.Dto;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
 public class GoogleUserInfoDto {
     private String id;
     private String email;

@@ -4,7 +4,6 @@ import lombok.*;
 
 public class PhoneCheckDto {
     @Getter
-    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder

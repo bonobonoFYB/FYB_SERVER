@@ -4,7 +4,6 @@ import lombok.*;
 
 public class PwDeleteDto {
     @Getter
-    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder

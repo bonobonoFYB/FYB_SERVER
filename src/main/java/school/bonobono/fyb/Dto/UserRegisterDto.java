@@ -1,20 +1,18 @@
 package school.bonobono.fyb.Dto;
 
-import lombok.*;
-import school.bonobono.fyb.Entity.FybUser;
-
-import javax.persistence.Column;
-import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 
 public class UserRegisterDto {
 
     @Getter
-    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class socialRequest{
+    public static class socialRequest {
         private Character gender;
         private Integer height;
         private Integer weight;
@@ -22,11 +20,10 @@ public class UserRegisterDto {
     }
 
     @Getter
-    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class Request{
+    public static class Request {
         private String email;
         private String pw;
         private String name;
@@ -35,12 +32,12 @@ public class UserRegisterDto {
         private Integer weight;
         private Integer age;
     }
+
     @Getter
-    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class Response{
+    public static class Response {
         private String email;
         private String pw;
         private String name;
@@ -48,6 +45,5 @@ public class UserRegisterDto {
         private Integer height;
         private Integer weight;
         private Integer age;
-
     }
 }

@@ -1,31 +1,34 @@
 package school.bonobono.fyb.Dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import school.bonobono.fyb.Entity.FybUser;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class TokenInfoResponseDto {
-        @JsonIgnore
-        private Long id;
-        private String pw;
-        private String email;
-        private String name;
-        private String profileImagePath;
-        private Character gender;
-        private Integer height;
-        private Integer weight;
-        private Integer age;
-        private LocalDateTime createAt;
-        private LocalDateTime updateAt;
+    @JsonIgnore
+    private Long id;
+    private String pw;
+    private String email;
+    private String name;
+    private String profileImagePath;
+    private Character gender;
+    private Integer height;
+    private Integer weight;
+    private Integer age;
+    private LocalDateTime createAt;
+    private LocalDateTime updateAt;
 
-    public static TokenInfoResponseDto Response (@NotNull FybUser user){
+    public static TokenInfoResponseDto Response(@NotNull FybUser user) {
         return TokenInfoResponseDto.builder()
                 .email(user.getEmail())
                 .name(user.getName())

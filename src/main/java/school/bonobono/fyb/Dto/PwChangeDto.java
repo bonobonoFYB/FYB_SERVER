@@ -5,7 +5,6 @@ import lombok.*;
 public class PwChangeDto {
 
     @Getter
-    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
@@ -16,7 +15,6 @@ public class PwChangeDto {
     }
 
     @Getter
-    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder

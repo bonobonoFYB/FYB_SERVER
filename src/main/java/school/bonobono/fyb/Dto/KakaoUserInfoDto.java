@@ -1,22 +1,31 @@
 package school.bonobono.fyb.Dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
 public class KakaoUserInfoDto {
     private Long id;
     private String connected_at;
     private Properties properties;
     private KakaoAccount kakao_account;
 
-    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
     public class Properties {
         private String nickname;
         private String profile_image;
         private String thumbnail_image;
     }
 
-    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
     public class KakaoAccount {
         private String email;
         private Boolean profile_nickname_needs_agreement;
@@ -28,7 +37,9 @@ public class KakaoUserInfoDto {
         private Boolean is_email_valid;
         private Boolean is_email_verified;
 
-        @Data
+        @AllArgsConstructor
+        @NoArgsConstructor
+        @Getter
         public class profile {
             private String nickname;
             private String thumbnail_image_url;
