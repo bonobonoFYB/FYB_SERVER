@@ -13,12 +13,15 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import school.bonobono.fyb.Exception.CustomException;
 
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
+
+import static school.bonobono.fyb.Exception.CustomErrorCode.JWT_TIMEOUT;
 
 @Component
 public class TokenProvider implements InitializingBean {
