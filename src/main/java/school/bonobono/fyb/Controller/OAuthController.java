@@ -48,7 +48,7 @@ public class OAuthController {
     }
 
     // Sosial 로그인 이후 추가 정보 요청
-    @PostMapping("social/register")
+    @PostMapping("/")
     public ResponseEntity<StatusTrue> socialRegister(
             @RequestBody final UserRegisterDto.socialRequest request
     ) {
