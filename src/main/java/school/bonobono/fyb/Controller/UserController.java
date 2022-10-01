@@ -14,6 +14,7 @@ import school.bonobono.fyb.Service.UserService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.lang.constant.Constable;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -49,14 +50,14 @@ public class UserController {
     }
 
     // 내 정보 조회
-    @GetMapping
+    @GetMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<Object> getMyUserInfo(HttpServletRequest request) {
-        return ResponseEntity.ok(userService.getMyInfo(request));
+    public ResponseEntity<List<UserReadDto.UserResponse>> getMyUserInfo(HttpServletRequest request) {
+        return userService.getMyInfo(request);
     }
 
     // 내 정보 수정
-    @PatchMapping
+    @PatchMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable updateUser(
             @Valid @RequestBody final UserUpdateDto.Request request, HttpServletRequest headerRequest
@@ -89,7 +90,7 @@ public class UserController {
     }
 
     // 회원탈퇴
-    @DeleteMapping
+    @DeleteMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable deleteUser(
             @Valid @RequestBody final PwDeleteDto.Request request, HttpServletRequest headerRequest
