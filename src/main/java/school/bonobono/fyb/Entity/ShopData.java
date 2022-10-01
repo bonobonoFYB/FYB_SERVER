@@ -32,6 +32,10 @@ public class ShopData {
     @NotNull
     private Integer clickAgeB;
 
+    @Column(name = "shop", length = 15)
+    @NotNull
+    private String shop;
+
     @NotNull
     @Column(name = "shop_url")
     private String surl;
