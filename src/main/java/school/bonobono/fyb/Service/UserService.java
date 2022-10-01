@@ -206,22 +206,18 @@ public class UserService {
 
     // 내 정보 조회
     @Transactional
-    public Object getMyInfo(HttpServletRequest headerRequest) {
+    public ResponseEntity<List<UserReadDto.UserResponse>> getMyInfo(HttpServletRequest headerRequest) {
 
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
 
+        List<UserReadDto.UserResponse> list = userRepository.findById(getTokenInfo().getId())
+                .stream()
+                .map(UserReadDto.UserResponse::Response)
+                .toList();
+
         // getCurrentUsername 은 해당 프젝에서는 email 임 !
-        return UserReadDto.UserResponse.Response(
-                Objects.requireNonNull(
-                        SecurityUtil.getCurrentUsername()
-                                .flatMap(
-                                        userRepository
-                                                ::findOneWithAuthoritiesByEmail
-                                )
-                                .orElse(null)
-                )
-        );
+        return new ResponseEntity<>(list,HttpStatus.OK);
     }
 
     // 내 정보 수정
