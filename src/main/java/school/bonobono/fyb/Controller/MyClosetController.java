@@ -3,6 +3,7 @@ package school.bonobono.fyb.Controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.Dto.MyClosetDto;
 import school.bonobono.fyb.Service.MyClosetService;
 
@@ -23,9 +24,17 @@ public class MyClosetController {
         return myClosetService.readMyCloset(headerRequest);
     }
 
+/*    // 옷 사진 추가 등록
+    @PutMapping("closet")
+    public Constable updateImage(
+            @RequestParam("file") MultipartFile multipartFile
+    ) {
+        return myClosetService.updateImage(multipartFile);
+    }*/
+
     // 옷장 추가하기
     @PostMapping("closet")
-    public Constable addMyCloset(
+    public List<Object> addMyCloset(
             @RequestBody final MyClosetDto.addRequest request, HttpServletRequest headerRequest
     ){
         return myClosetService.addMyCloset(request,headerRequest);
