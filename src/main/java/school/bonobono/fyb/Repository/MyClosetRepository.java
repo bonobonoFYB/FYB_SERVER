@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface MyClosetRepository extends JpaRepository<MyCloset, Long> {
     Optional<MyCloset> findByUid(Long uid);
+
+    Optional<MyCloset> findByPname(String pname);
 }
