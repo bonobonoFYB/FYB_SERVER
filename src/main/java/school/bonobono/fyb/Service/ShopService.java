@@ -149,11 +149,50 @@ public class ShopService {
     }
 
     public ResponseEntity<List<ShopDto.Response>> getMostViewed(HttpServletRequest request) {
+        tokenCredEntialsValidate(request);
         List<ShopDto.Response> list = shopDataRepository.findAll(Sort.by(Sort.Direction.DESC, "clickAll")).stream()
                 .map(ShopDto.Response::dataResponse)
                 .collect(
                         Collectors.toList()
                 );
         return new ResponseEntity<>(list, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<ShopDto.Response>> getAgeViewed(Integer value, HttpServletRequest httpRequest) {
+        tokenCredEntialsValidate(httpRequest);
+        if (value <= 29) {
+            List<ShopDto.Response> list = shopDataRepository.findAll(Sort.by(Sort.Direction.DESC, "clickAgeA")).stream()
+                    .map(ShopDto.Response::dataResponse)
+                    .collect(
+                            Collectors.toList()
+                    );
+            return new ResponseEntity<>(list, HttpStatus.OK);
+        } else {
+            List<ShopDto.Response> list = shopDataRepository.findAll(Sort.by(Sort.Direction.DESC, "clickAgeB")).stream()
+                    .map(ShopDto.Response::dataResponse)
+                    .collect(
+                            Collectors.toList()
+                    );
+            return new ResponseEntity<>(list, HttpStatus.OK);
+        }
+    }
+
+    public ResponseEntity<List<ShopDto.Response>> getGenderViewed(Character value, HttpServletRequest httpRequest) {
+        tokenCredEntialsValidate(httpRequest);
+        if (value == 'M') {
+            List<ShopDto.Response> list = shopDataRepository.findAll(Sort.by(Sort.Direction.DESC, "clickMen")).stream()
+                    .map(ShopDto.Response::dataResponse)
+                    .collect(
+                            Collectors.toList()
+                    );
+            return new ResponseEntity<>(list, HttpStatus.OK);
+        } else {
+            List<ShopDto.Response> list = shopDataRepository.findAll(Sort.by(Sort.Direction.DESC, "clickWomen")).stream()
+                    .map(ShopDto.Response::dataResponse)
+                    .collect(
+                            Collectors.toList()
+                    );
+            return new ResponseEntity<>(list, HttpStatus.OK);
+        }
     }
 }
