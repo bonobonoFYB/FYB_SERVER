@@ -15,8 +15,7 @@ import school.bonobono.fyb.Util.SecurityUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.constant.Constable;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static school.bonobono.fyb.Exception.CustomErrorCode.*;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
@@ -96,7 +95,7 @@ public class MyClosetService {
     }
 
     @Transactional
-    public Constable addMyCloset(MyClosetDto.addRequest request, HttpServletRequest headerRequest) {
+    public List<Object> addMyCloset(MyClosetDto.addRequest request, HttpServletRequest headerRequest) {
         tokenCredEntialsValidate(headerRequest);
 
         addMyClosetValidate(request);
@@ -109,7 +108,19 @@ public class MyClosetService {
                         .pnotes(request.getPnotes())
                         .build()
         );
-        return MY_CLOSET_ADD_STATUS_TRUE;
+
+        MyCloset myCloset = myClosetRepository.findByPname(request.getPname()).orElseThrow(
+                NullPointerException::new
+        );
+
+        HashMap<String,Long> response = new HashMap<>();
+        response.put("id",myCloset.getId());
+
+        List<Object> list = new ArrayList<>();
+        list.add(response);
+        list.add(MY_CLOSET_ADD_STATUS_TRUE);
+
+        return list;
     }
 
     @Transactional
