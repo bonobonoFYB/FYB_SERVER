@@ -199,7 +199,7 @@ public class UserService {
         try {
             Files.copy(multipartFile.getInputStream(), copyOfLocation, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new CustomException(PASSWORD_SIZE_ERROR);
+            throw new CustomException(IMAGE_UPLOAD_FAIL);
         }
         return PROFILE_IMAGE_UPLOAD_TRUE;
     }
@@ -217,7 +217,7 @@ public class UserService {
                 .toList();
 
         // getCurrentUsername 은 해당 프젝에서는 email 임 !
-        return new ResponseEntity<>(list,HttpStatus.OK);
+        return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
     // 내 정보 수정
