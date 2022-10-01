@@ -16,6 +16,7 @@ public class UserReadDto {
     public static class UserResponse {
         private String email;
         private String name;
+        private String profileImagePath;
         private Character gender;
         private Integer height;
         private Integer weight;
@@ -25,6 +26,7 @@ public class UserReadDto {
             return UserReadDto.UserResponse.builder()
                     .email(user.getEmail())
                     .name(user.getName())
+                    .profileImagePath(user.getProfileImagePath())
                     .gender(user.getGender())
                     .height(user.getHeight())
                     .weight(user.getWeight())
