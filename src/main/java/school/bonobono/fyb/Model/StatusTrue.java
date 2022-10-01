@@ -24,6 +24,7 @@ public enum StatusTrue {
     MY_CLOSET_DELETE_STATUS_TRUE("MYCLOSET_DELETE_STATUS_TRUE", "내 옷장 삭제 성공"),
     MY_CLOSET_UPDATE_STATUS_TRUE("MYCLOSET_UPDATE_STATUS_TRUE", "내 옷장 업데이트 성공"),
     PROFILE_IMAGE_UPLOAD_TRUE("PROFILE_IMAGE_UPLOAD_TRUE","프로파일 이미지 업로드 성공"),
+    MY_CLOSET_IMAGE_UPLOAD_TRUE("PROFILE_IMAGE_UPLOAD_TRUE","내 옷장 이미지 업로드 성공"),
     USER_DELETE_STATUS_TRUE("USER_DELETE_STATUS_TRUE", "회원탈퇴 성공");
 
     private final String status;
