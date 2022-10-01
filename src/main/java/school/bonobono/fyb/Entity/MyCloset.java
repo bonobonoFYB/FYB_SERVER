@@ -21,5 +21,7 @@ public class MyCloset {
     private String pname;
     private String pkind;
     private String pnotes;
+    @Column(name = "closetImagePath")
+    private String closetImagePath;
 
 }
