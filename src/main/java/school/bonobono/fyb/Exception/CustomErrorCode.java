@@ -50,6 +50,9 @@ public enum CustomErrorCode {
     MY_CLOSET_ID_IS_NULL("아무 항목도 삭제하지 않습니다."),
     MY_CLOSET_DATA_ID_IS_NULL("프론트, 서버오류 : 유저의 Data Id 값이 넘어오지 않았습니다."),
 
+    // 이미지 관련
+    IMAGE_UPLOAD_FAIL("이미지 업로드에 실패하였습니다."),
+
     // 알수 없는 오류의 처리
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."),
     INVALID_REQUEST("잘못된 요청입니다.");
