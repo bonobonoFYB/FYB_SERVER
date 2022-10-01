@@ -1,9 +1,9 @@
 package school.bonobono.fyb.Dto;
 
-import lombok.*;
-
-import javax.persistence.Column;
-import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 public class ShopDataDto {
 
@@ -11,11 +11,10 @@ public class ShopDataDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class Request{
+    public static class Request {
         private Long sid;
         private Character gender;
         private Integer age;
-        private String surl;
         // 미구현
         private Integer height;
         private Integer weight;

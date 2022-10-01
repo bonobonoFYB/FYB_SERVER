@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import school.bonobono.fyb.Entity.Shop;
+import school.bonobono.fyb.Entity.ShopData;
 
 import javax.validation.constraints.NotNull;
 
@@ -27,6 +28,14 @@ public class ShopDto {
         private String surl;
 
         public static ShopDto.Response response(@NotNull Shop shop) {
+
+            return Response.builder()
+                    .shop(shop.getShop())
+                    .surl(shop.getSurl())
+                    .build();
+        }
+
+        public static ShopDto.Response dataResponse(@NotNull ShopData shop) {
 
             return Response.builder()
                     .shop(shop.getShop())
