@@ -2,6 +2,9 @@ package school.bonobono.fyb.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.Dto.ShopDataDto;
@@ -96,7 +99,7 @@ public class ShopService {
 
     // 쇼핑몰 사용자 데이터 저장
     @Transactional
-    public HashMap<Object, Object> saveShopData(ShopDataDto.Request request, HttpServletRequest headerRequest) {
+    public ResponseEntity<HashMap<Object, Object>> saveShopData(ShopDataDto.Request request, HttpServletRequest headerRequest) {
 
         // 데이터 저장된 토큰 검증을 위한 Validation
         tokenCredEntialsValidate(headerRequest);
@@ -126,7 +129,8 @@ public class ShopService {
         shopDataRepository.save(
                 ShopData.builder()
                         .sid(request.getSid())
-                        .surl(request.getSurl())
+                        .surl(shopData.getSurl())
+                        .shop(shopData.getShop())
                         .clickAgeA(shopData.getClickAgeA() + clickAgeA)
                         .clickAgeB(shopData.getClickAgeB() + clickAgeB)
                         .clickMen(shopData.getClickMen() + clickMen)
@@ -137,9 +141,19 @@ public class ShopService {
 
         HashMap<Object, Object> statusAndInfo = new HashMap<>();
 
+        statusAndInfo.put("redirect_url", shopData.getSurl());
+        statusAndInfo.put("shop", shopData.getShop());
         statusAndInfo.put("status", "REDIRECT_TRUE");
-        statusAndInfo.put("redirect_url", request.getSurl());
 
-        return statusAndInfo;
+        return new ResponseEntity<>(statusAndInfo, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<ShopDto.Response>> getMostViewed(HttpServletRequest request) {
+        List<ShopDto.Response> list = shopDataRepository.findAll(Sort.by(Sort.Direction.DESC, "clickAll")).stream()
+                .map(ShopDto.Response::dataResponse)
+                .collect(
+                        Collectors.toList()
+                );
+        return new ResponseEntity<>(list, HttpStatus.OK);
     }
 }
