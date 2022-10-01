@@ -35,6 +35,7 @@ public class MyClosetDto {
         private String pname;
         private String pnotes;
         private String pkind;
+        private String closetImagePath;
 
         public static MyClosetDto.readResponse Response(@NotNull MyCloset myCloset){
             return readResponse.builder()
@@ -42,6 +43,7 @@ public class MyClosetDto {
                     .pname(myCloset.getPname())
                     .pkind(myCloset.getPkind())
                     .pnotes(myCloset.getPnotes())
+                    .closetImagePath(myCloset.getClosetImagePath())
                     .build();
         }
     }
