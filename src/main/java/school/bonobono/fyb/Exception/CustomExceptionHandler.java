@@ -1,15 +1,17 @@
 package school.bonobono.fyb.Exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static school.bonobono.fyb.Exception.CustomErrorCode.*;
+import static school.bonobono.fyb.Exception.CustomErrorCode.INTERNAL_SERVER_ERROR;
+import static school.bonobono.fyb.Exception.CustomErrorCode.INVALID_REQUEST;
 
 
 @Slf4j
@@ -18,6 +20,7 @@ import static school.bonobono.fyb.Exception.CustomErrorCode.*;
 public class CustomExceptionHandler {
 
     // 글로벌 예외처리
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(CustomException.class)
     public CustomErrorResponse handleException(
             CustomException e,

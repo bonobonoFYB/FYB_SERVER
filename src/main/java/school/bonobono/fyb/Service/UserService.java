@@ -87,6 +87,7 @@ public class UserService {
                 );
     }
 
+
     private void REGISTER_VALIDATION(UserRegisterDto.Request request) {
         if (request.getEmail() == null || request.getPw() == null || request.getName() == null
                 || request.getWeight() == null || request.getHeight() == null)
@@ -171,7 +172,7 @@ public class UserService {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + jwt);
 
-        return new ResponseEntity<>(REGISTER_STATUS_TRUE, httpHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(REGISTER_STATUS_TRUE, httpHeaders, HttpStatus.CREATED);
     }
 
     // 프로필 이미지 업로드
