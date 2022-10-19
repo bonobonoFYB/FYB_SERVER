@@ -170,6 +170,26 @@ public class OAuthService {
 
         socialRegisterValidate(request);
 
+        String bmiGrade;
+        String userForm = request.getForm() + request.getPelvis() + request.getShoulder() + request.getLeg();
+
+        double BMI = ((double)request.getWeight() / (double)request.getHeight() / (double)request.getHeight()) * 10000;
+        if(BMI <= 18.5){
+            bmiGrade = "A";
+        }
+        else if(BMI <= 22.9){
+            bmiGrade = "B";
+        }
+        else if(BMI <= 24.9){
+            bmiGrade = "C";
+        }
+        else if(BMI <= 29.9){
+            bmiGrade = "D";
+        }
+        else {
+            bmiGrade = "E";
+        }
+
         userRepository.save(
                 FybUser.builder()
                         .id(getTokenInfo().getId())
@@ -181,6 +201,7 @@ public class OAuthService {
                         .height(request.getHeight())
                         .weight(request.getWeight())
                         .age(request.getAge())
+                        .userData(request.getGender() + bmiGrade + userForm)
                         .createAt(getTokenInfo().getCreateAt())
                         .build()
         );

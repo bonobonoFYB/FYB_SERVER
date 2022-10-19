@@ -139,9 +139,27 @@ public class UserService {
     // 회원가입
     @Transactional
     public ResponseEntity<StatusTrue> registerUser(UserRegisterDto.Request request) {
-
         REGISTER_VALIDATION(request);
 
+        String bmiGrade;
+        String userForm = request.getForm() + request.getPelvis() + request.getShoulder() + request.getLeg();
+
+        double BMI = ((double)request.getWeight() / (double)request.getHeight() / (double)request.getHeight()) * 10000;
+        if(BMI <= 18.5){
+            bmiGrade = "A";
+        }
+        else if(BMI <= 22.9){
+            bmiGrade = "B";
+        }
+        else if(BMI <= 24.9){
+            bmiGrade = "C";
+        }
+        else if(BMI <= 29.9){
+            bmiGrade = "D";
+        }
+        else {
+            bmiGrade = "E";
+        }
         userRepository.save(
                 FybUser.builder()
                         .email(request.getEmail())
@@ -152,6 +170,7 @@ public class UserService {
                         .height(request.getHeight())
                         .weight(request.getWeight())
                         .age(request.getAge())
+                        .userData(request.getGender() + bmiGrade + userForm)
                         .build()
         );
 
@@ -193,6 +212,7 @@ public class UserService {
                         .height(getTokenInfo().getHeight())
                         .weight(getTokenInfo().getWeight())
                         .age(getTokenInfo().getAge())
+                        .userData(getTokenInfo().getUserData())
                         .profileImagePath(copyOfLocation.toString())
                         .createAt(getTokenInfo().getCreateAt())
                         .build()
@@ -240,6 +260,7 @@ public class UserService {
                         .height(request.getHeight())
                         .weight(request.getWeight())
                         .age(request.getAge())
+                        .userData(getTokenInfo().getUserData())
                         .profileImagePath(getTokenInfo().getProfileImagePath())
                         .createAt(getTokenInfo().getCreateAt())
                         .build()
@@ -310,6 +331,7 @@ public class UserService {
                         .height(getTokenInfo().getHeight())
                         .weight(getTokenInfo().getWeight())
                         .age(getTokenInfo().getAge())
+                        .userData(getTokenInfo().getUserData())
                         .createAt(getTokenInfo().getCreateAt())
                         .build()
         );
@@ -345,6 +367,7 @@ public class UserService {
                         .height(userInfo.getHeight())
                         .weight(userInfo.getWeight())
                         .age(userInfo.getAge())
+                        .userData(userInfo.getUserData())
                         .createAt(userInfo.getCreateAt())
                         .build()
         );
@@ -363,5 +386,11 @@ public class UserService {
         userRepository.deleteById(getTokenInfo().getId());
 
         return USER_DELETE_STATUS_TRUE;
+    }
+
+    public ResponseEntity<Map<String, String>> model(HttpServletRequest headerRequest) {
+        Map<String,String> response = new HashMap<>();
+        response.put("userData", getTokenInfo().getUserData());
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }
