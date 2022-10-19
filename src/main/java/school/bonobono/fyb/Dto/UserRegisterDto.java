@@ -17,6 +17,10 @@ public class UserRegisterDto {
         private Integer height;
         private Integer weight;
         private Integer age;
+        private String form;
+        private String pelvis;
+        private String shoulder;
+        private String leg;
     }
 
     @Getter
@@ -31,6 +35,10 @@ public class UserRegisterDto {
         private Integer height;
         private Integer weight;
         private Integer age;
+        private String form;
+        private String pelvis;
+        private String shoulder;
+        private String leg;
     }
 
     @Getter
