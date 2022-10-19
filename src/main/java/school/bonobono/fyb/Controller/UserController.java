@@ -97,4 +97,11 @@ public class UserController {
     ) {
         return userService.delete(request, headerRequest);
     }
+
+    // 3d 모델링을 위한 userdata 전송
+    @GetMapping("model")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<Map<String,String>> postUserData(HttpServletRequest headerRequest){
+        return userService.model(headerRequest);
+    }
 }
