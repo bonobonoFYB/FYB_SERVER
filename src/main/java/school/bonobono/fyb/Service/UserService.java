@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.nurigo.java_sdk.api.Message;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
+import org.apache.commons.lang.RandomStringUtils;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -38,6 +39,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static school.bonobono.fyb.Exception.CustomErrorCode.*;
 import static school.bonobono.fyb.Model.Model.*;
@@ -60,7 +62,6 @@ public class UserService {
             .build();
     @Value("${app.upload.dir}")
     private String uploadDir;
-    private String randNum = "";
 
     // validate 및 단순 메소드화
 
@@ -286,12 +287,7 @@ public class UserService {
         // 핸드폰 번호 - 포함 13글자 지정
         PHONE_NUM_LENGTH_CHECK(request);
 
-        Random rand = new Random();
-
-        for (int i = 0; i < 6; i++) {
-            String ran = Integer.toString(rand.nextInt(10));
-            randNum += ran;
-        }
+        String randNum = RandomStringUtils.randomNumeric(6);
 
         Message coolsms = new Message(CHECK_API_KEY, CHEKC_API_SECRET);
 
