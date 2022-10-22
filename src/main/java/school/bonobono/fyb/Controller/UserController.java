@@ -83,7 +83,7 @@ public class UserController {
     }
 
     // 로그아웃
-    @DeleteMapping("log")
+    @DeleteMapping("logout")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Constable logoutUser(HttpServletRequest headerRequest) {
         return userService.logoutUser(headerRequest);
