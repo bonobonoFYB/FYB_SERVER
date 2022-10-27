@@ -13,6 +13,7 @@ import school.bonobono.fyb.Service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.lang.constant.Constable;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +44,9 @@ public class UserController {
 
     // 프로필 이미지 설정
     @PutMapping("image")
-    public Constable updateImage(
+    public ResponseEntity<StatusTrue> updateImage(
             @RequestParam("file") MultipartFile multipartFile
-    ) {
+    ) throws IOException {
         return userService.updateImage(multipartFile);
     }
 
