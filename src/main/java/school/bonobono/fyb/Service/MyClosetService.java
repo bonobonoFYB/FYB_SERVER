@@ -1,5 +1,7 @@
 package school.bonobono.fyb.Service;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,24 +14,15 @@ import school.bonobono.fyb.Dto.MyClosetDto;
 import school.bonobono.fyb.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.Entity.MyCloset;
 import school.bonobono.fyb.Exception.CustomException;
-import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.MyClosetRepository;
 import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.io.IOException;
 import java.lang.constant.Constable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static school.bonobono.fyb.Exception.CustomErrorCode.*;
 import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
@@ -42,8 +35,9 @@ public class MyClosetService {
     private final MyClosetRepository myClosetRepository;
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
-    @Value("${app.upload.closet.dir}")
-    private String uploadDir;
+    private final AmazonS3Client amazonS3Client;
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     // Validation 및 단순화
     private static void readMyClosetValidate(List<MyClosetDto.readResponse> list) {
@@ -125,7 +119,7 @@ public class MyClosetService {
                         .build()
         );
 
-        MyCloset myCloset = myClosetRepository.findByPname(request.getPname()).orElseThrow(
+        MyCloset myCloset = myClosetRepository.findByPnameAndUid(request.getPname(), getTokenInfo().getId()).orElseThrow(
                 NullPointerException::new
         );
 
@@ -171,13 +165,18 @@ public class MyClosetService {
         return MY_CLOSET_UPDATE_STATUS_TRUE;
     }
 
-    public ResponseEntity<Object> updateImage(MultipartFile multipartFile, Long id) {
-        String ext = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
-        Path copyOfLocation = Paths.get(uploadDir + File.separator + getTokenInfo().getName() + getTokenInfo().getCreateAt() + ext);
+    public ResponseEntity<Object> updateImage(MultipartFile multipartFile, Long id) throws IOException {
+        UUID uuid = UUID.randomUUID();
+
+        String mycloset_image_name = "mycloset/" + uuid;
+        ObjectMetadata objMeta = new ObjectMetadata();
+        objMeta.setContentLength(multipartFile.getInputStream().available());
+        amazonS3Client.putObject(bucket, mycloset_image_name, multipartFile.getInputStream(), objMeta);
 
         MyCloset myCloset = myClosetRepository.findById(id).orElseThrow(
                 NullPointerException::new
         );
+
 
         myClosetRepository.save(
                 MyCloset.builder()
@@ -186,15 +185,10 @@ public class MyClosetService {
                         .pkind(myCloset.getPkind())
                         .pnotes(myCloset.getPnotes())
                         .pname(myCloset.getPname())
-                        .closetImagePath(copyOfLocation.toString())
+                        .closetImagePath(amazonS3Client.getUrl(bucket, mycloset_image_name).toString())
                         .build()
         );
 
-        try {
-            Files.copy(multipartFile.getInputStream(), copyOfLocation, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new CustomException(IMAGE_UPLOAD_FAIL);
-        }
         return new ResponseEntity<>(MY_CLOSET_IMAGE_UPLOAD_TRUE, HttpStatus.OK);
     }
 }
