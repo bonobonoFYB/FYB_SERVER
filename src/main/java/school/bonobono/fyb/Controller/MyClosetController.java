@@ -10,6 +10,7 @@ import school.bonobono.fyb.Dto.MyClosetDto;
 import school.bonobono.fyb.Service.MyClosetService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.lang.constant.Constable;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class MyClosetController {
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<Object> updateImage(
             @RequestParam("file") MultipartFile multipartFile, @RequestParam("id") Long id
-    ) {
+    ) throws IOException {
         return myClosetService.updateImage(multipartFile,id);
     }
 
