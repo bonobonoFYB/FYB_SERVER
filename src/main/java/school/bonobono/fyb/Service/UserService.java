@@ -1,6 +1,8 @@
 package school.bonobono.fyb.Service;
 
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.nurigo.java_sdk.api.Message;
@@ -31,15 +33,9 @@ import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.io.IOException;
 import java.lang.constant.Constable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static school.bonobono.fyb.Exception.CustomErrorCode.*;
 import static school.bonobono.fyb.Model.Model.*;
@@ -56,12 +52,12 @@ public class UserService {
 
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-
+    private final AmazonS3Client amazonS3Client;
     Authority authority = Authority.builder()
             .authorityName("ROLE_USER")
             .build();
-    @Value("${app.upload.dir}")
-    private String uploadDir;
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     // validate 및 단순 메소드화
 
@@ -145,20 +141,16 @@ public class UserService {
         String bmiGrade;
         String userForm = request.getForm() + request.getPelvis() + request.getShoulder() + request.getLeg();
 
-        double BMI = ((double)request.getWeight() / (double)request.getHeight() / (double)request.getHeight()) * 10000;
-        if(BMI <= 18.5){
+        double BMI = ((double) request.getWeight() / (double) request.getHeight() / (double) request.getHeight()) * 10000;
+        if (BMI <= 18.5) {
             bmiGrade = "A";
-        }
-        else if(BMI <= 22.9){
+        } else if (BMI <= 22.9) {
             bmiGrade = "B";
-        }
-        else if(BMI <= 24.9){
+        } else if (BMI <= 24.9) {
             bmiGrade = "C";
-        }
-        else if(BMI <= 29.9){
+        } else if (BMI <= 29.9) {
             bmiGrade = "D";
-        }
-        else {
+        } else {
             bmiGrade = "E";
         }
         userRepository.save(
@@ -197,10 +189,12 @@ public class UserService {
 
     // 프로필 이미지 업로드
     @Transactional
-    public Constable updateImage(MultipartFile multipartFile) {
+    public ResponseEntity<StatusTrue> updateImage(MultipartFile multipartFile) throws IOException {
 
-        String ext = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
-        Path copyOfLocation = Paths.get(uploadDir + File.separator + getTokenInfo().getName() + getTokenInfo().getCreateAt() + ext);
+        String profile_image_name = "profile/" + getTokenInfo().getEmail();
+        ObjectMetadata objMeta = new ObjectMetadata();
+        objMeta.setContentLength(multipartFile.getInputStream().available());
+        amazonS3Client.putObject(bucket, profile_image_name, multipartFile.getInputStream(), objMeta);
 
         userRepository.save(
                 FybUser.builder()
@@ -214,16 +208,12 @@ public class UserService {
                         .weight(getTokenInfo().getWeight())
                         .age(getTokenInfo().getAge())
                         .userData(getTokenInfo().getUserData())
-                        .profileImagePath(copyOfLocation.toString())
+                        .profileImagePath(amazonS3Client.getUrl(bucket, profile_image_name).toString())
                         .createAt(getTokenInfo().getCreateAt())
                         .build()
         );
-        try {
-            Files.copy(multipartFile.getInputStream(), copyOfLocation, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new CustomException(IMAGE_UPLOAD_FAIL);
-        }
-        return PROFILE_IMAGE_UPLOAD_TRUE;
+
+        return new ResponseEntity<>(PROFILE_IMAGE_UPLOAD_TRUE, HttpStatus.OK);
     }
 
     // 내 정보 조회
@@ -385,8 +375,8 @@ public class UserService {
     }
 
     public ResponseEntity<Map<String, String>> model(HttpServletRequest headerRequest) {
-        Map<String,String> response = new HashMap<>();
+        Map<String, String> response = new HashMap<>();
         response.put("userData", getTokenInfo().getUserData());
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
