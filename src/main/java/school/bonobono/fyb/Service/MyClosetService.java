@@ -14,18 +14,15 @@ import school.bonobono.fyb.Dto.MyClosetDto;
 import school.bonobono.fyb.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.Entity.MyCloset;
 import school.bonobono.fyb.Exception.CustomException;
+import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Repository.MyClosetRepository;
-import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.lang.constant.Constable;
 import java.util.*;
 
 import static school.bonobono.fyb.Exception.CustomErrorCode.*;
-import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 import static school.bonobono.fyb.Model.StatusTrue.*;
 
 @Service
@@ -34,7 +31,6 @@ import static school.bonobono.fyb.Model.StatusTrue.*;
 public class MyClosetService {
     private final MyClosetRepository myClosetRepository;
     private final UserRepository userRepository;
-    private final TokenRepository tokenRepository;
     private final AmazonS3Client amazonS3Client;
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -80,20 +76,10 @@ public class MyClosetService {
         );
     }
 
-    private void tokenCredEntialsValidate(HttpServletRequest request) {
-        tokenRepository
-                .findById(request.getHeader(AUTHORIZATION_HEADER))
-                .orElseThrow(
-                        () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
-                );
-    }
-
     // Service
 
     @Transactional
-    public List<MyClosetDto.readResponse> readMyCloset(HttpServletRequest headerRequest) {
-        tokenCredEntialsValidate(headerRequest);
-
+    public List<MyClosetDto.readResponse> readMyCloset() {
         List<MyClosetDto.readResponse> list = myClosetRepository
                 .findByUid(getTokenInfo().getId())
                 .stream()
@@ -105,9 +91,7 @@ public class MyClosetService {
     }
 
     @Transactional
-    public List<Object> addMyCloset(MyClosetDto.addRequest request, HttpServletRequest headerRequest) {
-        tokenCredEntialsValidate(headerRequest);
-
+    public List<Object> addMyCloset(MyClosetDto.addRequest request) {
         addMyClosetValidate(request);
 
         myClosetRepository.save(
@@ -134,20 +118,18 @@ public class MyClosetService {
     }
 
     @Transactional
-    public Constable deleteCloset(MyClosetDto.deleteRequest request, HttpServletRequest headerRequest) {
-        tokenCredEntialsValidate(headerRequest);
-
+    public ResponseEntity<StatusTrue> deleteCloset(MyClosetDto.deleteRequest request) {
         if (request.getId() == null) {
             throw new CustomException(MY_CLOSET_ID_IS_NULL);
         }
 
         myClosetRepository.deleteById(request.getId());
 
-        return MY_CLOSET_DELETE_STATUS_TRUE;
+        return new ResponseEntity<>(MY_CLOSET_DELETE_STATUS_TRUE, HttpStatus.OK);
     }
 
     @Transactional
-    public Constable updateCloset(MyClosetDto.readResponse request, HttpServletRequest headerRequest) {
+    public ResponseEntity<StatusTrue> updateCloset(MyClosetDto.readResponse request) {
 
         updateValidate(request);
 
@@ -162,12 +144,11 @@ public class MyClosetService {
                         .build()
         );
 
-        return MY_CLOSET_UPDATE_STATUS_TRUE;
+        return new ResponseEntity<>(MY_CLOSET_UPDATE_STATUS_TRUE, HttpStatus.OK);
     }
 
     public ResponseEntity<Object> updateImage(MultipartFile multipartFile, Long id) throws IOException {
         UUID uuid = UUID.randomUUID();
-
         String mycloset_image_name = "mycloset/" + uuid;
         ObjectMetadata objMeta = new ObjectMetadata();
         objMeta.setContentLength(multipartFile.getInputStream().available());

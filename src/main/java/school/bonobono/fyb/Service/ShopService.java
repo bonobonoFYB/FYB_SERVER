@@ -16,18 +16,15 @@ import school.bonobono.fyb.Exception.CustomErrorCode;
 import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Repository.ShopDataRepository;
 import school.bonobono.fyb.Repository.ShopRepository;
-import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static school.bonobono.fyb.Exception.CustomErrorCode.JWT_CREDENTIALS_STATUS_FALSE;
-import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 
 @Service
 @RequiredArgsConstructor
@@ -35,29 +32,16 @@ import static school.bonobono.fyb.Model.Model.AUTHORIZATION_HEADER;
 public class ShopService {
 
     public static final CustomErrorCode SEARCH_EMPTY = CustomErrorCode.SEARCH_EMPTY;
-    private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
     private final ShopDataRepository shopDataRepository;
 
 
-    // Validation
-    private void tokenCredEntialsValidate(HttpServletRequest request) {
-        tokenRepository
-                .findById(request.getHeader(AUTHORIZATION_HEADER))
-                .orElseThrow(
-                        () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
-                );
-    }
-
     // Service
 
     // Main 홈 조회 페이지
     @Transactional
-    public List<Object> getAllShopAndUserInfo(HttpServletRequest headerRequest) {
-
-        // 데이터 저장된 토큰 검증을 위한 Validation
-        tokenCredEntialsValidate(headerRequest);
+    public List<Object> getAllShopAndUserInfo() {
 
         List<Object> list = shopRepository
                 .findAll()
@@ -99,10 +83,7 @@ public class ShopService {
 
     // 쇼핑몰 사용자 데이터 저장
     @Transactional
-    public ResponseEntity<HashMap<Object, Object>> saveShopData(ShopDataDto.Request request, HttpServletRequest headerRequest) {
-
-        // 데이터 저장된 토큰 검증을 위한 Validation
-        tokenCredEntialsValidate(headerRequest);
+    public ResponseEntity<HashMap<Object, Object>> saveShopData(ShopDataDto.Request request) {
 
         ShopData shopData = shopDataRepository.findById(request.getSid())
                 .orElseThrow(
@@ -148,8 +129,7 @@ public class ShopService {
         return new ResponseEntity<>(statusAndInfo, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<ShopDto.Response>> getMostViewed(HttpServletRequest request) {
-        tokenCredEntialsValidate(request);
+    public ResponseEntity<List<ShopDto.Response>> getMostViewed() {
         List<ShopDto.Response> list = shopDataRepository.findAll(Sort.by(Sort.Direction.DESC, "clickAll")).stream()
                 .map(ShopDto.Response::dataResponse)
                 .collect(
@@ -158,8 +138,7 @@ public class ShopService {
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<ShopDto.Response>> getAgeViewed(Integer value, HttpServletRequest httpRequest) {
-        tokenCredEntialsValidate(httpRequest);
+    public ResponseEntity<List<ShopDto.Response>> getAgeViewed(Integer value) {
         if (value <= 29) {
             List<ShopDto.Response> list = shopDataRepository.findAll(Sort.by(Sort.Direction.DESC, "clickAgeA")).stream()
                     .map(ShopDto.Response::dataResponse)
@@ -177,8 +156,7 @@ public class ShopService {
         }
     }
 
-    public ResponseEntity<List<ShopDto.Response>> getGenderViewed(Character value, HttpServletRequest httpRequest) {
-        tokenCredEntialsValidate(httpRequest);
+    public ResponseEntity<List<ShopDto.Response>> getGenderViewed(Character value) {
         if (value == 'M') {
             List<ShopDto.Response> list = shopDataRepository.findAll(Sort.by(Sort.Direction.DESC, "clickMen")).stream()
                     .map(ShopDto.Response::dataResponse)

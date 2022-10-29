@@ -21,20 +21,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import school.bonobono.fyb.Config.RedisDao;
 import school.bonobono.fyb.Dto.*;
 import school.bonobono.fyb.Entity.Authority;
 import school.bonobono.fyb.Entity.FybUser;
-import school.bonobono.fyb.Entity.userToken;
 import school.bonobono.fyb.Exception.CustomException;
 import school.bonobono.fyb.Jwt.TokenProvider;
 import school.bonobono.fyb.Model.StatusTrue;
-import school.bonobono.fyb.Repository.TokenRepository;
 import school.bonobono.fyb.Repository.UserRepository;
 import school.bonobono.fyb.Util.SecurityUtil;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.lang.constant.Constable;
+import java.time.Duration;
 import java.util.*;
 
 import static school.bonobono.fyb.Exception.CustomErrorCode.*;
@@ -46,10 +44,10 @@ import static school.bonobono.fyb.Model.StatusTrue.*;
 @Slf4j
 public class UserService {
 
-    private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final RedisDao redisDao;
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final AmazonS3Client amazonS3Client;
@@ -75,15 +73,6 @@ public class UserService {
             throw new CustomException(PHONE_NUM_ERROR);
         }
     }
-
-    private void tokenCredEntialsValidate(HttpServletRequest request) {
-        tokenRepository
-                .findById(request.getHeader(AUTHORIZATION_HEADER))
-                .orElseThrow(
-                        () -> new CustomException(JWT_CREDENTIALS_STATUS_FALSE)
-                );
-    }
-
 
     private void REGISTER_VALIDATION(UserRegisterDto.Request request) {
         if (request.getEmail() == null || request.getPw() == null || request.getName() == null
@@ -132,7 +121,48 @@ public class UserService {
         }
     }
 
+    private void LOGIN_VALIDATION(UserLoginDto.Request request) {
+        if (request.getPw().equals("google"))
+            throw new CustomException(NOT_SOCIAL_LOGIN);
+
+        if (!request.getEmail().contains("@"))
+            throw new CustomException(NOT_EMAIL_FORM);
+
+        userRepository.findByEmail(request.getEmail())
+                .orElseThrow(
+                        () -> new CustomException(LOGIN_FALSE)
+                );
+
+        if (!passwordEncoder.matches(
+                request.getPw(),
+                userRepository.findByEmail(request.getEmail())
+                        .get()
+                        .getPw()
+        )
+        ) {
+            throw new CustomException(LOGIN_FALSE);
+        }
+    }
+
     // Service
+    // 로그인
+    public ResponseEntity<StatusTrue> loginUser(UserLoginDto.Request request) {
+        LOGIN_VALIDATION(request);
+
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPw());
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String atk = tokenProvider.createToken(authentication);
+        String rtk = tokenProvider.createRefreshToken(request.getEmail());
+
+        redisDao.setValues(request.getEmail(), rtk, Duration.ofDays(14));
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + atk);
+        return new ResponseEntity<>(StatusTrue.LOGIN_STATUS_TRUE, httpHeaders, HttpStatus.OK);
+    }
+
     // 회원가입
     @Transactional
     public ResponseEntity<StatusTrue> registerUser(UserRegisterDto.Request request) {
@@ -169,20 +199,15 @@ public class UserService {
 
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPw());
-
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        String atk = tokenProvider.createToken(authentication);
+        String rtk = tokenProvider.createRefreshToken(request.getEmail());
 
-        String jwt = tokenProvider.createToken(authentication);
-
-        // 토큰 유효성 검증을 위한 데이터 저장 (로그아웃을 위한 장치)
-        tokenRepository.save(userToken.builder()
-                .token("Bearer " + jwt)
-                .build());
+        redisDao.setValues(request.getEmail(), rtk, Duration.ofDays(14));
 
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + jwt);
+        httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + atk);
 
         return new ResponseEntity<>(REGISTER_STATUS_TRUE, httpHeaders, HttpStatus.CREATED);
     }
@@ -218,10 +243,7 @@ public class UserService {
 
     // 내 정보 조회
     @Transactional
-    public ResponseEntity<List<UserReadDto.UserResponse>> getMyInfo(HttpServletRequest headerRequest) {
-
-        // 데이터 저장된 토큰 검증을 위한 Validation
-        tokenCredEntialsValidate(headerRequest);
+    public ResponseEntity<List<UserReadDto.UserResponse>> getMyInfo() {
 
         List<UserReadDto.UserResponse> list = userRepository.findById(getTokenInfo().getId())
                 .stream()
@@ -234,9 +256,7 @@ public class UserService {
 
     // 내 정보 수정
     @Transactional
-    public Constable updateUser(UserUpdateDto.Request request, HttpServletRequest headerRequest) {
-        // 데이터 저장된 토큰 검증을 위한 Validation
-        tokenCredEntialsValidate(headerRequest);
+    public ResponseEntity<StatusTrue> updateUser(UserUpdateDto.Request request) {
 
         UPDATE_VALIDATION(request);
 
@@ -257,18 +277,25 @@ public class UserService {
                         .build()
         );
 
-        return UPDATE_STATUS_TURE;
+        return new ResponseEntity<>(UPDATE_STATUS_TURE, HttpStatus.OK);
     }
 
     // 로그아웃
     @Transactional
-    public Constable logoutUser(HttpServletRequest headerRequest) {
-        // 데이터 저장된 토큰 검증을 위한 Validation
-        tokenCredEntialsValidate(headerRequest);
+    public ResponseEntity<StatusTrue> logoutUser(String auth) {
+        String atk = auth.substring(7);
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+        if (redisDao.getValues(email) != null) {
+            redisDao.deleteValues(email);
+        }
 
-        String getToken = headerRequest.getHeader(AUTHORIZATION_HEADER);
-        tokenRepository.deleteById(getToken);
-        return LOGOUT_STATUS_TRUE;
+        redisDao.setValues(atk, "logout", Duration.ofMillis(
+                tokenProvider.getExpiration(atk)
+        ));
+
+        return new ResponseEntity<>(LOGOUT_STATUS_TRUE, HttpStatus.OK);
     }
 
     // 휴대폰 인증
@@ -297,9 +324,7 @@ public class UserService {
 
     // 비밀번호 변경
     @Transactional
-    public Constable PwChangeUser(PwChangeDto.Request request, HttpServletRequest headerRequest) {
-        // 데이터 저장된 토큰 검증을 위한 Validation
-        tokenCredEntialsValidate(headerRequest);
+    public ResponseEntity<StatusTrue> PwChangeUser(PwChangeDto.Request request) {
         PWCHANGE_VALIDATION(request);
 
         Authority authority = Authority.builder()
@@ -321,12 +346,12 @@ public class UserService {
                         .createAt(getTokenInfo().getCreateAt())
                         .build()
         );
-        return PASSWORD_CHANGE_STATUS_TRUE;
+        return new ResponseEntity<>(PASSWORD_CHANGE_STATUS_TRUE, HttpStatus.OK);
     }
 
     // 비밀번호 잃어버린경우
     @Transactional
-    public Constable PwLostChange(PwChangeDto.lostRequest request) {
+    public ResponseEntity<StatusTrue> PwLostChange(PwChangeDto.lostRequest request) {
 
         Optional<String> email = Optional.of(request.getEmail());
         TokenInfoResponseDto userInfo = TokenInfoResponseDto.Response(
@@ -357,26 +382,35 @@ public class UserService {
                         .createAt(userInfo.getCreateAt())
                         .build()
         );
-        return PASSWORD_CHANGE_STATUS_TRUE;
+        return new ResponseEntity<>(PASSWORD_CHANGE_STATUS_TRUE, HttpStatus.OK);
     }
 
     // 회원탈퇴
     @Transactional
-    public Constable delete(PwDeleteDto.Request request, HttpServletRequest headerRequest) {
-        // 데이터 저장된 토큰 검증을 위한 Validation
-        tokenCredEntialsValidate(headerRequest);
+    public ResponseEntity<StatusTrue> delete(PwDeleteDto.Request request) {
 
         if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
             throw new CustomException(USER_DELETE_STATUS_FALSE);
         }
         userRepository.deleteById(getTokenInfo().getId());
 
-        return USER_DELETE_STATUS_TRUE;
+        return new ResponseEntity<>(USER_DELETE_STATUS_TRUE, HttpStatus.OK);
     }
 
-    public ResponseEntity<Map<String, String>> model(HttpServletRequest headerRequest) {
+    public ResponseEntity<Map<String, String>> model() {
         Map<String, String> response = new HashMap<>();
         response.put("userData", getTokenInfo().getUserData());
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public ResponseEntity<Map<String, String>> reissue(String rtk) {
+        Map<String, String> response = new HashMap<>();
+        String username = tokenProvider.getRefreshTokenInfo(rtk);
+        String rtkInRedis = redisDao.getValues(username);
+        if (Objects.isNull(rtkInRedis) || !rtkInRedis.equals(rtk))
+            throw new CustomException(REFRESH_TOKEN_IS_BAD_REQUEST);
+        response.put("atk", tokenProvider.reCreateToken(username));
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }
