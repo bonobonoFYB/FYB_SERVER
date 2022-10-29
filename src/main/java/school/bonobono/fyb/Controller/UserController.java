@@ -34,12 +34,26 @@ public class UserController {
         return userService.certifiedPhoneNumber(request);
     }
 
+    // 로그인
+    @PostMapping("log")
+    public ResponseEntity<StatusTrue> loginUser(@Valid @RequestBody UserLoginDto.Request request){
+        return userService.loginUser(request);
+    }
+
     // 회원가입
     @PostMapping
     public ResponseEntity<StatusTrue> registerUser(
             @Valid @RequestBody final UserRegisterDto.Request request
     ) {
         return userService.registerUser(request);
+    }
+
+    // 로그인 만료시 atk 재발급
+    @GetMapping
+    public ResponseEntity<Map<String,String>> reissue(
+            @RequestHeader(value = "REFRESH_TOKEN") String rtk
+    ) {
+        return userService.reissue(rtk);
     }
 
     // 프로필 이미지 설정
@@ -53,31 +67,32 @@ public class UserController {
     // 내 정보 조회
     @GetMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<List<UserReadDto.UserResponse>> getMyUserInfo(HttpServletRequest request) {
-        return userService.getMyInfo(request);
+    public ResponseEntity<List<UserReadDto.UserResponse>> getMyUserInfo(
+    ) {
+        return userService.getMyInfo();
     }
 
     // 내 정보 수정
     @PatchMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Constable updateUser(
-            @Valid @RequestBody final UserUpdateDto.Request request, HttpServletRequest headerRequest
+    public ResponseEntity<StatusTrue> updateUser(
+            @Valid @RequestBody final UserUpdateDto.Request request
     ) {
-        return userService.updateUser(request, headerRequest);
+        return userService.updateUser(request);
     }
 
     // 비밀번호 변경 ( 로그인 이후 )
     @PatchMapping("/password")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Constable pwChangeUser(
-            @Valid @RequestBody final PwChangeDto.Request request, HttpServletRequest headerRequest
+    public ResponseEntity<StatusTrue> pwChangeUser(
+            @Valid @RequestBody final PwChangeDto.Request request
     ) {
-        return userService.PwChangeUser(request, headerRequest);
+        return userService.PwChangeUser(request);
     }
 
     // 비밀번호 변경 ( 로그인 이전 )
     @PutMapping("/password")
-    public Constable pwLostChange(
+    public ResponseEntity<StatusTrue> pwLostChange(
             @Valid @RequestBody final PwChangeDto.lostRequest request
     ) {
         return userService.PwLostChange(request);
@@ -86,23 +101,26 @@ public class UserController {
     // 로그아웃
     @DeleteMapping("logout")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Constable logoutUser(HttpServletRequest headerRequest) {
-        return userService.logoutUser(headerRequest);
+    public ResponseEntity<StatusTrue> logoutUser(
+            @RequestHeader(value = "Authorization") String auth
+    ) {
+        return userService.logoutUser(auth);
     }
 
     // 회원탈퇴
     @DeleteMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Constable deleteUser(
-            @Valid @RequestBody final PwDeleteDto.Request request, HttpServletRequest headerRequest
+    public ResponseEntity<StatusTrue> deleteUser(
+            @Valid @RequestBody final PwDeleteDto.Request request
     ) {
-        return userService.delete(request, headerRequest);
+        return userService.delete(request);
     }
 
     // 3d 모델링을 위한 userdata 전송
     @GetMapping("model")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<Map<String,String>> postUserData(HttpServletRequest headerRequest){
-        return userService.model(headerRequest);
+    public ResponseEntity<Map<String,String>> postUserData(
+    ){
+        return userService.model();
     }
 }
