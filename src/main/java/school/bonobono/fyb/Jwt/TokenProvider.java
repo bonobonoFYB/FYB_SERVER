@@ -27,15 +27,21 @@ public class TokenProvider implements InitializingBean {
     private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
     private final String secret;
     private final long tokenValidityInMilliseconds;
+    private final long refreshTokenValidityInMilliseconds;
 
+    @Value("${jwt.auth.secret}")
+    String auth;
     private Key key;
 
 
     public TokenProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
+            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds,
+            @Value("${jwt.refresh-token-validity-in-seconds}") long refreshTokenValidityInSeconds
+    ) {
         this.secret = secret;
         this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
+        this.refreshTokenValidityInMilliseconds = refreshTokenValidityInSeconds * 1000;
     }
 
     @Override
@@ -60,6 +66,42 @@ public class TokenProvider implements InitializingBean {
                 .compact();
     }
 
+    public String reCreateToken(String username) {
+
+        long now = (new Date()).getTime();
+        Date validity = new Date(now + this.tokenValidityInMilliseconds);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .claim(AUTHORITIES_KEY, auth)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .setExpiration(validity)
+                .compact();
+    }
+
+    public String createRefreshToken(String username) {
+        long now = (new Date()).getTime();
+        Date validity = new Date(now + this.refreshTokenValidityInMilliseconds);
+        return Jwts.builder()
+                .setSubject(username)
+                .setExpiration(validity)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    public Long getExpiration(String accessToken) {
+        // accessToken 남은 유효시간
+        Date expiration = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(accessToken)
+                .getBody()
+                .getExpiration();
+        // 현재 시간
+        Long now = new Date().getTime();
+        return (expiration.getTime() - now);
+    }
+
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts
                 .parserBuilder()
@@ -76,6 +118,17 @@ public class TokenProvider implements InitializingBean {
         User principal = new User(claims.getSubject(), "", authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+    }
+
+    public String getRefreshTokenInfo(String token) {
+        Claims claims = Jwts
+                .parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getSubject();
     }
 
     public boolean validateToken(String token) {
