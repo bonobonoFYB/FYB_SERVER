@@ -11,6 +11,7 @@ public enum CustomErrorCode {
     JWT_CREDENTIALS_STATUS_FALSE("로그인이 유효하지 않습니다."),
     JWT_TIMEOUT( "만료된 JWT 토큰입니다."),
     LOGIN_FALSE("아이디 또는 비밀번호를 잘못 입력하였습니다."),
+    REFRESH_TOKEN_IS_BAD_REQUEST("잘못된 RefreshToken 입니다 : null 이거나  not equals"),
     NOT_SOCIAL_LOGIN("소셜 아이디로 회원가입된 유저입니다."),
 
     //회원가입
