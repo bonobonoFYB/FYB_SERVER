@@ -7,11 +7,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.Dto.MyClosetDto;
+import school.bonobono.fyb.Model.StatusTrue;
 import school.bonobono.fyb.Service.MyClosetService;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.lang.constant.Constable;
 import java.util.List;
 
 @RestController
@@ -24,8 +23,9 @@ public class MyClosetController {
     // 옷장 조회
     @GetMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public List<MyClosetDto.readResponse> readMyCloset(HttpServletRequest headerRequest){
-        return myClosetService.readMyCloset(headerRequest);
+    public List<MyClosetDto.readResponse> readMyCloset(
+    ) {
+        return myClosetService.readMyCloset();
     }
 
     // 옷 사진 추가 등록
@@ -34,33 +34,33 @@ public class MyClosetController {
     public ResponseEntity<Object> updateImage(
             @RequestParam("file") MultipartFile multipartFile, @RequestParam("id") Long id
     ) throws IOException {
-        return myClosetService.updateImage(multipartFile,id);
+        return myClosetService.updateImage(multipartFile, id);
     }
 
     // 옷장 추가하기
     @PostMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public List<Object> addMyCloset(
-            @RequestBody final MyClosetDto.addRequest request, HttpServletRequest headerRequest
-    ){
-        return myClosetService.addMyCloset(request,headerRequest);
+            @RequestBody final MyClosetDto.addRequest request
+    ) {
+        return myClosetService.addMyCloset(request);
     }
 
     // 옷장 삭제
     @DeleteMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Constable deleteMyCloset(
-            @RequestBody final MyClosetDto.deleteRequest request, HttpServletRequest headerRequest
-    ){
-        return myClosetService.deleteCloset(request,headerRequest);
+    public ResponseEntity<StatusTrue> deleteMyCloset(
+            @RequestBody final MyClosetDto.deleteRequest request
+    ) {
+        return myClosetService.deleteCloset(request);
     }
 
     // 옷장 업데이트
     @PatchMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public Constable deleteMyCloset(
-            @RequestBody final MyClosetDto.readResponse request, HttpServletRequest headerRequest
-    ){
-     return myClosetService.updateCloset(request,headerRequest);
+    public ResponseEntity<StatusTrue> updateMyCloset(
+            @RequestBody final MyClosetDto.readResponse request
+    ) {
+        return myClosetService.updateCloset(request);
     }
 }
