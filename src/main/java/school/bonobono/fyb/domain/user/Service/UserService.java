@@ -21,15 +21,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import school.bonobono.fyb.global.Config.Redis.RedisDao;
+import school.bonobono.fyb.domain.user.Dto.*;
 import school.bonobono.fyb.domain.user.Entity.Authority;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
-import school.bonobono.fyb.global.Exception.CustomException;
-import school.bonobono.fyb.global.Config.Jwt.TokenProvider;
-import school.bonobono.fyb.global.Model.StatusTrue;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
-import school.bonobono.fyb.domain.user.Dto.*;
+import school.bonobono.fyb.global.Config.Jwt.TokenProvider;
+import school.bonobono.fyb.global.Config.Redis.RedisDao;
+import school.bonobono.fyb.global.Exception.CustomException;
+import school.bonobono.fyb.global.Model.StatusTrue;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -216,7 +216,8 @@ public class UserService {
     @Transactional
     public ResponseEntity<StatusTrue> updateImage(MultipartFile multipartFile) throws IOException {
 
-        String profile_image_name = "profile/" + getTokenInfo().getEmail();
+        // String ext = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+        String profile_image_name = "profile/" + getTokenInfo().getEmail() + ".jpg";
         ObjectMetadata objMeta = new ObjectMetadata();
         objMeta.setContentLength(multipartFile.getInputStream().available());
         amazonS3Client.putObject(bucket, profile_image_name, multipartFile.getInputStream(), objMeta);
@@ -411,6 +412,6 @@ public class UserService {
             throw new CustomException(REFRESH_TOKEN_IS_BAD_REQUEST);
         response.put("atk", tokenProvider.reCreateToken(username));
 
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

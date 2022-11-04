@@ -11,13 +11,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.domain.closet.Dto.MyClosetDto;
-import school.bonobono.fyb.domain.user.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.domain.closet.Entity.MyCloset;
-import school.bonobono.fyb.global.Exception.CustomException;
-import school.bonobono.fyb.global.Model.StatusTrue;
 import school.bonobono.fyb.domain.closet.Repository.MyClosetRepository;
+import school.bonobono.fyb.domain.user.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
+import school.bonobono.fyb.global.Exception.CustomException;
+import school.bonobono.fyb.global.Model.StatusTrue;
 
 import java.io.IOException;
 import java.util.*;
@@ -148,8 +148,9 @@ public class MyClosetService {
     }
 
     public ResponseEntity<Object> updateImage(MultipartFile multipartFile, Long id) throws IOException {
+        // String ext = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
         UUID uuid = UUID.randomUUID();
-        String mycloset_image_name = "mycloset/" + uuid;
+        String mycloset_image_name = "mycloset/" + uuid + ".jpg";
         ObjectMetadata objMeta = new ObjectMetadata();
         objMeta.setContentLength(multipartFile.getInputStream().available());
         amazonS3Client.putObject(bucket, mycloset_image_name, multipartFile.getInputStream(), objMeta);
