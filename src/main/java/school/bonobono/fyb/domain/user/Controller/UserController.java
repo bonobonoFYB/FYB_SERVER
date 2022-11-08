@@ -100,9 +100,9 @@ public class UserController {
     @DeleteMapping("logout")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<StatusTrue> logoutUser(
-            @RequestHeader(value = "Authorization") String auth
+            @Valid @RequestBody final PwDeleteDto.Request2 request2
     ) {
-        return userService.logoutUser(auth);
+        return userService.logoutUser(request2);
     }
 
     // 회원탈퇴

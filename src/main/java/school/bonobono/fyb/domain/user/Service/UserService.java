@@ -283,8 +283,8 @@ public class UserService {
 
     // 로그아웃
     @Transactional
-    public ResponseEntity<StatusTrue> logoutUser(String auth) {
-        String atk = auth.substring(7);
+    public ResponseEntity<StatusTrue> logoutUser(PwDeleteDto.Request2 request) {
+        String atk = request.getToken().substring(7);
         String email = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getName();
