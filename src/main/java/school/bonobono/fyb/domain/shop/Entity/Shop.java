@@ -26,4 +26,8 @@ public class Shop {
     @Column(name = "shop_url")
     @NotNull
     private String surl;
+
+    @Column(name = "simg")
+    @NotNull
+    private String simg;
 }

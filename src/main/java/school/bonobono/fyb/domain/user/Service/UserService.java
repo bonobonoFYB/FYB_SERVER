@@ -217,7 +217,7 @@ public class UserService {
     public ResponseEntity<StatusTrue> updateImage(MultipartFile multipartFile) throws IOException {
 
         // String ext = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
-        String profile_image_name = "profile/" + getTokenInfo().getEmail() + ".jpg";
+        String profile_image_name = "profile/" + getTokenInfo().getEmail();
         ObjectMetadata objMeta = new ObjectMetadata();
         objMeta.setContentLength(multipartFile.getInputStream().available());
         amazonS3Client.putObject(bucket, profile_image_name, multipartFile.getInputStream(), objMeta);

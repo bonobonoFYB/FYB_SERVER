@@ -23,6 +23,7 @@ public class ShopData {
 
     @NotNull
     private Integer clickMen;
+
     @NotNull
     private Integer clickWomen;
 
@@ -40,5 +41,8 @@ public class ShopData {
     @Column(name = "shop_url")
     private String surl;
 
+    @Column(name = "simg")
+    @NotNull
+    private String simg;
 
 }

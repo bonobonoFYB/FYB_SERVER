@@ -150,7 +150,7 @@ public class MyClosetService {
     public ResponseEntity<Object> updateImage(MultipartFile multipartFile, Long id) throws IOException {
         // String ext = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
         UUID uuid = UUID.randomUUID();
-        String mycloset_image_name = "mycloset/" + uuid + ".jpg";
+        String mycloset_image_name = "mycloset/" + uuid ;
         ObjectMetadata objMeta = new ObjectMetadata();
         objMeta.setContentLength(multipartFile.getInputStream().available());
         amazonS3Client.putObject(bucket, mycloset_image_name, multipartFile.getInputStream(), objMeta);

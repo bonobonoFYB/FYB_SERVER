@@ -26,12 +26,14 @@ public class ShopDto {
     public static class Response {
         private String shop;
         private String surl;
+        private String simg;
 
         public static ShopDto.Response response(@NotNull Shop shop) {
 
             return Response.builder()
                     .shop(shop.getShop())
                     .surl(shop.getSurl())
+                    .simg(shop.getSimg())
                     .build();
         }
 
@@ -40,6 +42,7 @@ public class ShopDto {
             return Response.builder()
                     .shop(shop.getShop())
                     .surl(shop.getSurl())
+                    .simg(shop.getSimg())
                     .build();
         }
     }
