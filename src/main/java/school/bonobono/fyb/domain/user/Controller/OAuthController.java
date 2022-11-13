@@ -12,6 +12,8 @@ import school.bonobono.fyb.domain.user.Service.OAuthService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,8 +26,10 @@ public class OAuthController {
     private final GoogleOAuth googleOAuth;
 
     @GetMapping("/kakao")
-    public void getKakakoAuthUrl(HttpServletResponse response) throws IOException {
-        response.sendRedirect(kakaoOAuth.responseUrl());
+    public Map<Object,Object> getKakakoAuthUrl() {
+        Map<Object,Object> url = new HashMap<>();
+        url.put("url",kakaoOAuth.responseUrl());
+        return url;
     }
 
     @GetMapping("login/kakao")
