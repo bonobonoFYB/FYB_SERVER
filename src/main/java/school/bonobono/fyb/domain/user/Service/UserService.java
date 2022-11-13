@@ -345,6 +345,7 @@ public class UserService {
                         .age(getTokenInfo().getAge())
                         .userData(getTokenInfo().getUserData())
                         .createAt(getTokenInfo().getCreateAt())
+                        .profileImagePath(getTokenInfo().getProfileImagePath())
                         .build()
         );
         return new ResponseEntity<>(PASSWORD_CHANGE_STATUS_TRUE, HttpStatus.OK);
