@@ -88,6 +88,8 @@ public class ShopService {
                         NullPointerException::new
                 );
 
+        log.info(shopData.getSurl());
+
         Integer clickAgeA = 0;
         Integer clickAgeB = 0;
         Integer clickMen = 0;
@@ -115,6 +117,7 @@ public class ShopService {
                         .clickMen(shopData.getClickMen() + clickMen)
                         .clickWomen(shopData.getClickWomen() + clickWomen)
                         .clickAll(shopData.getClickAll() + 1)
+                        .simg(shopData.getSimg())
                         .build()
         );
 
