@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import school.bonobono.fyb.domain.shop.Dto.ShopDto;
 import school.bonobono.fyb.domain.shop.Service.ShopService;
@@ -57,10 +59,11 @@ public class ShopController {
     // 쇼핑몰 클릭시 쇼핑몰 이용자의 빅데이터 분석
     @PostMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<HashMap<Object, Object>> saveShopData(
-            @RequestBody final ShopDataDto.Request request
-    ) {
-        return shopService.saveShopData(request);
+    public CustomResponseEntity<ShopDto.SaveDto> saveShopData(
+            @RequestBody ShopDto.SaveDto request,
+            @AuthenticationPrincipal final UserDetails userDetails
+            ) {
+        return CustomResponseEntity.success(shopService.saveShopData(request, userDetails));
     }
 
     // Search 페이지 Post

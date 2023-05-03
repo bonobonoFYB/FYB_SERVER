@@ -55,6 +55,9 @@ public enum Result {
     // 이미지 관련
     IMAGE_UPLOAD_FAIL(-5001,"이미지 업로드에 실패하였습니다."),
 
+    // 매장 관련
+    NOT_FOUND_SHOP(-6001, "해당 매장은 존재하지 않습니다"),
+
     // 알수 없는 오류의 처리
     INTERNAL_SERVER_ERROR(-1,"서버에 오류가 발생했습니다."),
     INVALID_REQUEST(-1, "잘못된 요청입니다.");

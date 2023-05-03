@@ -36,4 +36,12 @@ public class ShopDto {
                     .build();
         }
     }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class SaveDto {
+        private Long id;
+    }
 }

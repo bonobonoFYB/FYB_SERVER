@@ -5,12 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.domain.shop.Dto.ShopDto;
 import school.bonobono.fyb.domain.shop.Entity.Shop;
 import school.bonobono.fyb.domain.shop.Repository.ShopRepository;
+import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
+import school.bonobono.fyb.global.Config.Redis.RedisDao;
 import school.bonobono.fyb.global.Exception.CustomException;
 import school.bonobono.fyb.global.Model.Result;
 
@@ -25,6 +28,7 @@ public class ShopService {
 
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
+    private final RedisDao redisDao;
     // Service
     // Main 홈 조회 페이지
     @Transactional
@@ -48,30 +52,31 @@ public class ShopService {
 
     // 쇼핑몰 사용자 데이터 저장
     @Transactional
-    public ResponseEntity<HashMap<Object, Object>> saveShopData(ShopDataDto.Request request) {
+    public ResponseEntity<HashMap<Object, Object>> saveShopData(ShopDto.SaveDto request, UserDetails userDetails) {
 
-        ShopData shopData = shopDataRepository.findById(request.getSid())
-                .orElseThrow(
-                        NullPointerException::new
-                );
+        FybUser user = getUser(userDetails.getUsername());
+        Shop shop = shopRepository.findById(request.getId()).orElseThrow(
+                () ->  new CustomException(Result.S)
+        )
 
         Integer clickAgeA = 0;
         Integer clickAgeB = 0;
         Integer clickMen = 0;
         Integer clickWomen = 0;
 
-        if (request.getGender() == 'M') {
+        if (user.getGender() == 'M') {
             clickMen++;
-        } else if (request.getGender() == 'W') {
+        } else if (user.getGender() == 'W') {
             clickWomen++;
         }
 
-        if (request.getAge() <= 29) {
+        if (user.getAge() <= 29) {
             clickAgeA++;
-        } else if (request.getAge() >= 30) {
+        } else if (user.getAge() <= 39) {
             clickAgeB++;
         }
 
+        redisDao.setValues();
         shopDataRepository.save(
                 ShopData.builder()
                         .shop()
@@ -135,5 +140,11 @@ public class ShopService {
                     );
             return new ResponseEntity<>(list, HttpStatus.OK);
         }
+    }
+
+    private FybUser getUser(String email) {
+        return userRepository.findOneWithAuthoritiesByEmail(
+                email).orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER)
+        );
     }
 }
