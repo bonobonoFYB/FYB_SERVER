@@ -251,15 +251,8 @@ public class UserService {
 
     // 내 정보 조회
     @Transactional
-    public ResponseEntity<List<UserReadDto.UserResponse>> getMyInfo() {
-
-        List<UserReadDto.UserResponse> list = userRepository.findById(getTokenInfo().getId())
-                .stream()
-                .map(UserReadDto.UserResponse::Response)
-                .toList();
-
-        // getCurrentUsername 은 해당 프젝에서는 email 임 !
-        return new ResponseEntity<>(list, HttpStatus.OK);
+    public UserDto.UserDetailDto getMyInfo(UserDetails userDetails) {
+        return UserDto.UserDetailDto.response(getUser(userDetails.getUsername()));
     }
 
     // 내 정보 수정

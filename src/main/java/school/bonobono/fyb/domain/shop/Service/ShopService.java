@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.domain.shop.Dto.ShopDataDto;
 import school.bonobono.fyb.domain.shop.Dto.ShopDto;
-import school.bonobono.fyb.domain.user.Dto.UserReadDto;
 import school.bonobono.fyb.domain.shop.Entity.Shop;
 import school.bonobono.fyb.domain.shop.Entity.ShopData;
 import school.bonobono.fyb.domain.shop.Repository.ShopDataRepository;
 import school.bonobono.fyb.domain.shop.Repository.ShopRepository;
+import school.bonobono.fyb.domain.user.Dto.UserDto;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
 import school.bonobono.fyb.global.Exception.CustomException;
@@ -48,7 +48,7 @@ public class ShopService {
                         Collectors.toList()
                 );
 
-        list.add(UserReadDto.UserResponse.Response(
+        list.add(UserDto.UserDetailDto.response(
                         Objects.requireNonNull(
                                 SecurityUtil.getCurrentUsername()
                                         .flatMap(

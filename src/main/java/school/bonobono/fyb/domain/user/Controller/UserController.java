@@ -71,9 +71,10 @@ public class UserController {
     // 내 정보 조회
     @GetMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<List<UserReadDto.UserResponse>> getMyUserInfo(
+    public CustomResponseEntity<UserDto.UserDetailDto> getMyUserInfo(
+            @AuthenticationPrincipal final UserDetails userDetails
     ) {
-        return userService.getMyInfo();
+        return CustomResponseEntity.success(userService.getMyInfo(userDetails));
     }
 
     // 내 정보 수정
