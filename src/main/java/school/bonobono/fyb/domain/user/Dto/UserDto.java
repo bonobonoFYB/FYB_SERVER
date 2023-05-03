@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 
+import javax.validation.constraints.NotNull;
+
 public class UserDto {
     @Getter
     @AllArgsConstructor
@@ -50,6 +52,33 @@ public class UserDto {
         private String leg;
         private String atk;
         private String rtk;
+
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class UserDetailDto{
+        private String email;
+        private String name;
+        private String profileImagePath;
+        private Character gender;
+        private Integer height;
+        private Integer weight;
+        private Integer age;
+
+        public static UserDetailDto response(@NotNull FybUser user) {
+            return UserDetailDto.builder()
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .profileImagePath(user.getProfileImagePath())
+                    .gender(user.getGender())
+                    .height(user.getHeight())
+                    .weight(user.getWeight())
+                    .age(user.getAge())
+                    .build();
+        }
     }
 
 }

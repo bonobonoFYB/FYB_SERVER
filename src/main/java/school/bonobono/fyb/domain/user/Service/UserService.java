@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -165,9 +166,14 @@ public class UserService {
 
         redisDao.setValues(request.getEmail(), rtk, Duration.ofDays(14));
 
-        FybUser user = userRepository.findOneWithAuthoritiesByEmail(request.getEmail()).orElseThrow(() -> new CustomException(Result.FAIL));
+        FybUser user = getUser(request.getEmail());
 
         return UserDto.LoginDto.response(user,atk,rtk);
+    }
+
+    private FybUser getUser(String email) {
+        FybUser user = userRepository.findOneWithAuthoritiesByEmail(email).orElseThrow(() -> new CustomException(Result.FAIL));
+        return user;
     }
 
     // 회원가입
@@ -223,32 +229,24 @@ public class UserService {
 
     // 프로필 이미지 업로드
     @Transactional
-    public ResponseEntity<StatusTrue> updateImage(MultipartFile multipartFile) throws IOException {
+    public UserDto.UserDetailDto updateImage(MultipartFile multipartFile, UserDetails userDetails) {
+        FybUser user = getUser(userDetails.getUsername());
+        String myProfileImagePath = uploadProfileImage(multipartFile);
+        user.uploadProfileImage(myProfileImagePath);
+        return UserDto.UserDetailDto.response(user);
+    }
 
-        // String ext = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+    private String uploadProfileImage(MultipartFile multipartFile) {
         String profile_image_name = "profile/" + getTokenInfo().getEmail();
         ObjectMetadata objMeta = new ObjectMetadata();
-        objMeta.setContentLength(multipartFile.getInputStream().available());
-        amazonS3Client.putObject(bucket, profile_image_name, multipartFile.getInputStream(), objMeta);
-
-        userRepository.save(
-                FybUser.builder()
-                        .id(getTokenInfo().getId())
-                        .email(getTokenInfo().getEmail())
-                        .pw(getTokenInfo().getPw())
-                        .name(getTokenInfo().getName())
-                        .authorities(getUserAuthority())
-                        .gender(getTokenInfo().getGender())
-                        .height(getTokenInfo().getHeight())
-                        .weight(getTokenInfo().getWeight())
-                        .age(getTokenInfo().getAge())
-                        .userData(getTokenInfo().getUserData())
-                        .profileImagePath(amazonS3Client.getUrl(bucket, profile_image_name).toString())
-                        .createAt(getTokenInfo().getCreateAt())
-                        .build()
-        );
-
-        return new ResponseEntity<>(PROFILE_IMAGE_UPLOAD_TRUE, HttpStatus.OK);
+        try {
+            objMeta.setContentLength(multipartFile.getInputStream().available());
+            amazonS3Client.putObject(bucket, profile_image_name, multipartFile.getInputStream(), objMeta);
+        } catch (IOException e) {
+            log.info(e.getMessage());
+            throw new CustomException(Result.FAIL);
+        }
+        return amazonS3Client.getUrl(bucket, profile_image_name).toString();
     }
 
     // 내 정보 조회

@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.domain.user.Dto.*;
@@ -26,26 +28,27 @@ public class UserController {
 
     private final UserService userService;
 
+    // 로그인
+
+    @PostMapping("log")
+    public CustomResponseEntity<UserDto.LoginDto> loginUser(@Valid @RequestBody UserDto.LoginDto request) {
+        return CustomResponseEntity.success(userService.loginUser(request));
+    }
+    // 회원가입
+
+    @PostMapping
+    public CustomResponseEntity<UserDto.RegisterDto> registerUser(
+            @Valid @RequestBody final UserDto.RegisterDto request
+    ) {
+        return CustomResponseEntity.success(userService.registerUser(request));
+    }
+
     // 휴대폰 인증
     @PostMapping("check")
     public Map<Object, Object> certifiedPhoneNumber(
             @Valid @RequestBody final PhoneCheckDto.Request request
     ) throws CoolsmsException {
         return userService.certifiedPhoneNumber(request);
-    }
-
-    // 로그인
-    @PostMapping("log")
-    public CustomResponseEntity<UserDto.LoginDto> loginUser(@Valid @RequestBody UserDto.LoginDto request) {
-        return CustomResponseEntity.success(userService.loginUser(request));
-    }
-
-    // 회원가입
-    @PostMapping
-    public CustomResponseEntity<UserDto.RegisterDto> registerUser(
-            @Valid @RequestBody final UserDto.RegisterDto request
-    ) {
-        return CustomResponseEntity.success(userService.registerUser(request));
     }
 
     // 로그인 만료시 atk 재발급
@@ -58,10 +61,11 @@ public class UserController {
 
     // 프로필 이미지 설정
     @PutMapping("image")
-    public ResponseEntity<StatusTrue> updateImage(
-            @RequestParam("file") MultipartFile multipartFile
-    ) throws IOException {
-        return userService.updateImage(multipartFile);
+    public CustomResponseEntity<UserDto.UserDetailDto> updateImage(
+            @RequestParam("file") MultipartFile multipartFile,
+            @AuthenticationPrincipal final UserDetails userDetails
+    ) {
+        return CustomResponseEntity.success(userService.updateImage(multipartFile, userDetails));
     }
 
     // 내 정보 조회

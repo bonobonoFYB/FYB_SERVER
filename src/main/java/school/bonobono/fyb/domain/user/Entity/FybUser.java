@@ -98,4 +98,8 @@ public class FybUser {
             joinColumns = {@JoinColumn(name = "id", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "authority_name")})
     private Set<Authority> authorities;
+
+    public void uploadProfileImage(String profileImagePath) {
+        this.profileImagePath = profileImagePath;
+    }
 }
