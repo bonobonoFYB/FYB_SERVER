@@ -13,15 +13,12 @@ import school.bonobono.fyb.domain.shop.Entity.Shop;
 import school.bonobono.fyb.domain.shop.Entity.ShopData;
 import school.bonobono.fyb.domain.shop.Repository.ShopDataRepository;
 import school.bonobono.fyb.domain.shop.Repository.ShopRepository;
-import school.bonobono.fyb.domain.user.Dto.UserDto;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
-import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
 import school.bonobono.fyb.global.Exception.CustomException;
 import school.bonobono.fyb.global.Model.Result;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,32 +32,13 @@ public class ShopService {
 
 
     // Service
-
     // Main 홈 조회 페이지
     @Transactional
-    public List<Object> getAllShopAndUserInfo() {
-
-        List<Object> list = shopRepository
-                .findAll()
-                .stream()
-                .map(ShopDto.Response::response)
-                .collect(
-                        Collectors.toList()
-                );
-
-        list.add(UserDto.DetailDto.response(
-                        Objects.requireNonNull(
-                                SecurityUtil.getCurrentUsername()
-                                        .flatMap(
-                                                userRepository
-                                                        ::findOneWithAuthoritiesByEmail
-                                        )
-                                        .orElse(null))
-                )
-        );
-        return list;
+    public List<ShopDto.DetailListDto> getAllShopAndUserInfo() {
+        return shopRepository.findAll().stream()
+                .map(ShopDto.DetailListDto::response)
+                .collect(Collectors.toList());
     }
-
 
     // Search 페이지 전체 조회
     @Transactional
@@ -71,7 +49,7 @@ public class ShopService {
     // Search 페이지 검색 (문자열 포함 기반)
     @Transactional
     public List<Shop> getSearchShop(ShopDto.Request request) {
-        List<Shop> shopList = shopRepository.findByShopContaining(request.getShop());
+        List<Shop> shopList = shopRepository.findByShopNameContaining(request.getShop());
         if (shopList.isEmpty()) {
             throw new CustomException(Result.SEARCH_EMPTY);
         }

@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface ShopRepository extends JpaRepository<Shop, Long> {
-    List<Shop> findByShopContaining(@Param("shop") String shop);
+    List<Shop> findByShopNameContaining(String shopName);
 }

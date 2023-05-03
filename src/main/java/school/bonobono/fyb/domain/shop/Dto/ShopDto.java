@@ -28,7 +28,7 @@ public class ShopDto {
         private String surl;
         private String simg;
 
-        public static ShopDto.Response response(@NotNull Shop shop) {
+        public static ShopDto.Response dataResponse(@NotNull ShopData shop) {
 
             return Response.builder()
                     .shop(shop.getShop())
@@ -36,13 +36,23 @@ public class ShopDto {
                     .simg(shop.getSimg())
                     .build();
         }
+    }
 
-        public static ShopDto.Response dataResponse(@NotNull ShopData shop) {
-
-            return Response.builder()
-                    .shop(shop.getShop())
-                    .surl(shop.getSurl())
-                    .simg(shop.getSimg())
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class DetailListDto {
+        private Long id;
+        private String shopName;
+        private String shopUrl;
+        private String shopImage;
+        public static DetailListDto response(Shop shop) {
+            return DetailListDto.builder()
+                    .id(shop.getId())
+                    .shopName(shop.getShopName())
+                    .shopUrl(shop.getShopUrl())
+                    .shopImage(shop.getShopImage())
                     .build();
         }
     }

@@ -9,6 +9,7 @@ import school.bonobono.fyb.domain.shop.Dto.ShopDataDto;
 import school.bonobono.fyb.domain.shop.Dto.ShopDto;
 import school.bonobono.fyb.domain.shop.Entity.Shop;
 import school.bonobono.fyb.domain.shop.Service.ShopService;
+import school.bonobono.fyb.global.Model.CustomResponseEntity;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,9 +25,9 @@ public class ShopController {
     // Main 홈 페이지
     @GetMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public List<Object> getAllShopAndUserInfo(
+    public CustomResponseEntity<List<ShopDto.DetailListDto>> getAllShopAndUserInfo(
     ) {
-        return shopService.getAllShopAndUserInfo();
+        return CustomResponseEntity.success(shopService.getAllShopAndUserInfo());
     }
 
     // 사용자 최다조회수 API

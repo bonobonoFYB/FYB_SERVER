@@ -28,7 +28,7 @@ public class UserDto {
                     .id(user.getId())
                     .email(user.getEmail())
                     .accessToken(atk)
-                    .accessToken(rtk)
+                    .refreshToken(rtk)
                     .build();
         }
     }
