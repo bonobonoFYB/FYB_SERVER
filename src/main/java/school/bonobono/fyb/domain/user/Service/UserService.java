@@ -119,12 +119,12 @@ public class UserService {
         }
     }
 
-    private void PWLOSTCHANGE_VALIDATION(PwChangeDto.lostRequest request, String pw) {
+    private void PWLOSTCHANGE_VALIDATION(UserDto.LostPasswordResetDto request, String pw) {
         userRepository.findByEmail(request.getEmail())
                 .orElseThrow(
                         () -> new CustomException(Result.NOT_FOUND_USER)
                 );
-        if (passwordEncoder.matches(request.getNewPw(), pw)) {
+        if (passwordEncoder.matches(request.getNewPassword(), pw)) {
             throw new CustomException(Result.PASSWORD_IS_NOT_CHANGE);
         }
     }
@@ -172,8 +172,9 @@ public class UserService {
     }
 
     private FybUser getUser(String email) {
-        FybUser user = userRepository.findOneWithAuthoritiesByEmail(email).orElseThrow(() -> new CustomException(Result.FAIL));
-        return user;
+        return userRepository.findOneWithAuthoritiesByEmail(
+                email).orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER)
+        );
     }
 
     // 회원가입
@@ -229,11 +230,11 @@ public class UserService {
 
     // 프로필 이미지 업로드
     @Transactional
-    public UserDto.UserDetailDto updateImage(MultipartFile multipartFile, UserDetails userDetails) {
+    public UserDto.DetailDto updateImage(MultipartFile multipartFile, UserDetails userDetails) {
         FybUser user = getUser(userDetails.getUsername());
         String myProfileImagePath = uploadProfileImage(multipartFile);
         user.uploadProfileImage(myProfileImagePath);
-        return UserDto.UserDetailDto.response(user);
+        return UserDto.DetailDto.response(user);
     }
 
     private String uploadProfileImage(MultipartFile multipartFile) {
@@ -251,20 +252,20 @@ public class UserService {
 
     // 내 정보 조회
     @Transactional
-    public UserDto.UserDetailDto getMyInfo(UserDetails userDetails) {
-        return UserDto.UserDetailDto.response(getUser(userDetails.getUsername()));
+    public UserDto.DetailDto getMyInfo(UserDetails userDetails) {
+        return UserDto.DetailDto.response(getUser(userDetails.getUsername()));
     }
 
     // 내 정보 수정
     @Transactional
-    public UserDto.UserDetailDto updateUser(UserUpdateDto.Request request, UserDetails userDetails) {
+    public UserDto.DetailDto updateUser(UserUpdateDto.Request request, UserDetails userDetails) {
         UPDATE_VALIDATION(request);
         FybUser user = getUser(userDetails.getUsername());
         user.updateUserInfo(
                 request.getName(),request.getGender(),request.getHeight(),
                 request.getWeight(),request.getAge()
         );
-        return UserDto.UserDetailDto.response(user);
+        return UserDto.DetailDto.response(user);
     }
 
     // 로그아웃
@@ -339,38 +340,11 @@ public class UserService {
 
     // 비밀번호 잃어버린경우
     @Transactional
-    public ResponseEntity<StatusTrue> PwLostChange(PwChangeDto.lostRequest request) {
-
-        Optional<String> email = Optional.of(request.getEmail());
-        TokenInfoResponseDto userInfo = TokenInfoResponseDto.Response(
-                Objects.requireNonNull(email
-                        .flatMap(
-                                userRepository::findOneWithAuthoritiesByEmail)
-                        .orElse(null))
-        );
-        PWLOSTCHANGE_VALIDATION(request, userInfo.getPw());
-
-
-        Authority authority = Authority.builder()
-                .authorityName("ROLE_USER")
-                .build();
-
-        userRepository.save(
-                FybUser.builder()
-                        .id(userInfo.getId())
-                        .email(userInfo.getEmail())
-                        .pw(passwordEncoder.encode(request.getNewPw()))
-                        .name(userInfo.getName())
-                        .authorities(Collections.singleton(authority))
-                        .gender(userInfo.getGender())
-                        .height(userInfo.getHeight())
-                        .weight(userInfo.getWeight())
-                        .age(userInfo.getAge())
-                        .userData(userInfo.getUserData())
-                        .createAt(userInfo.getCreateAt())
-                        .build()
-        );
-        return new ResponseEntity<>(PASSWORD_CHANGE_STATUS_TRUE, HttpStatus.OK);
+    public UserDto.LostPasswordResetDto PwLostChange(UserDto.LostPasswordResetDto request) {
+        FybUser user = getUser(request.getEmail());
+        PWLOSTCHANGE_VALIDATION(request, user.getPw());
+        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+        return new UserDto.LostPasswordResetDto();
     }
 
     // 회원탈퇴

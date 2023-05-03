@@ -110,4 +110,8 @@ public class FybUser {
         this.weight = weight;
         this.age = age;
     }
+
+    public void updatePassword(String password) {
+        this.pw = password;
+    }
 }

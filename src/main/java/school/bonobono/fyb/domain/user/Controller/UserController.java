@@ -61,7 +61,7 @@ public class UserController {
 
     // 프로필 이미지 설정
     @PutMapping("image")
-    public CustomResponseEntity<UserDto.UserDetailDto> updateImage(
+    public CustomResponseEntity<UserDto.DetailDto> updateImage(
             @RequestParam("file") MultipartFile multipartFile,
             @AuthenticationPrincipal final UserDetails userDetails
     ) {
@@ -71,7 +71,7 @@ public class UserController {
     // 내 정보 조회
     @GetMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public CustomResponseEntity<UserDto.UserDetailDto> getMyUserInfo(
+    public CustomResponseEntity<UserDto.DetailDto> getMyUserInfo(
             @AuthenticationPrincipal final UserDetails userDetails
     ) {
         return CustomResponseEntity.success(userService.getMyInfo(userDetails));
@@ -80,7 +80,7 @@ public class UserController {
     // 내 정보 수정
     @PatchMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public CustomResponseEntity<UserDto.UserDetailDto> updateUser(
+    public CustomResponseEntity<UserDto.DetailDto> updateUser(
             @Valid @RequestBody final UserUpdateDto.Request request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
@@ -98,10 +98,10 @@ public class UserController {
 
     // 비밀번호 변경 ( 로그인 이전 )
     @PutMapping("/password")
-    public ResponseEntity<StatusTrue> pwLostChange(
-            @Valid @RequestBody final PwChangeDto.lostRequest request
+    public CustomResponseEntity<UserDto.LostPasswordResetDto> pwLostChange(
+            @Valid @RequestBody final UserDto.LostPasswordResetDto request
     ) {
-        return userService.PwLostChange(request);
+        return CustomResponseEntity.success(userService.PwLostChange(request));
     }
 
     // 로그아웃

@@ -59,7 +59,7 @@ public class UserDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class UserDetailDto{
+    public static class DetailDto{
         private String email;
         private String name;
         private String profileImagePath;
@@ -68,8 +68,8 @@ public class UserDto {
         private Integer weight;
         private Integer age;
 
-        public static UserDetailDto response(@NotNull FybUser user) {
-            return UserDetailDto.builder()
+        public static DetailDto response(@NotNull FybUser user) {
+            return DetailDto.builder()
                     .email(user.getEmail())
                     .name(user.getName())
                     .profileImagePath(user.getProfileImagePath())
@@ -79,6 +79,16 @@ public class UserDto {
                     .age(user.getAge())
                     .build();
         }
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Builder
+    public static class LostPasswordResetDto{
+        private String email;
+        private String newPassword;
     }
 
 }
