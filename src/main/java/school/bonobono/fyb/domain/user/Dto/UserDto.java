@@ -130,7 +130,7 @@ public class UserDto {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Builder
-    public class PhoneVerificationDto {
+    public static class PhoneVerificationDto {
         String phoneNumber;
         String number;
         public static PhoneVerificationDto response(String number) {
