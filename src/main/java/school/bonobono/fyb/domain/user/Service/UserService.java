@@ -29,14 +29,13 @@ import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
 import school.bonobono.fyb.global.Config.Jwt.TokenProvider;
 import school.bonobono.fyb.global.Config.Redis.RedisDao;
 import school.bonobono.fyb.global.Exception.CustomException;
+import school.bonobono.fyb.global.Model.Result;
 import school.bonobono.fyb.global.Model.StatusTrue;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
 
-import static school.bonobono.fyb.global.Exception.CustomErrorCode.*;
-import static school.bonobono.fyb.global.Model.Model.*;
 import static school.bonobono.fyb.global.Model.StatusTrue.*;
 
 @Service
@@ -51,13 +50,21 @@ public class UserService {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final AmazonS3Client amazonS3Client;
-    Authority authority = Authority.builder()
-            .authorityName("ROLE_USER")
-            .build();
+
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
+    @Value("${coolsms.apiKey}")
+    private String smsKey;
+    @Value("${coolsms.secretKey}")
+    private String smsSecretKey;
 
     // validate 및 단순 메소드화
+
+    private Set<Authority> getUserAuthority() {
+        return Collections.singleton(Authority.builder()
+                .authorityName("ROLE_USER")
+                .build());
+    }
 
     private TokenInfoResponseDto getTokenInfo() {
         return TokenInfoResponseDto.Response(
@@ -70,67 +77,67 @@ public class UserService {
 
     private void PHONE_NUM_LENGTH_CHECK(PhoneCheckDto.Request request) {
         if (!(request.getPnum().length() == 13)) {
-            throw new CustomException(PHONE_NUM_ERROR);
+            throw new CustomException(Result.PHONE_NUM_ERROR);
         }
     }
 
     private void REGISTER_VALIDATION(UserRegisterDto.Request request) {
         if (request.getEmail() == null || request.getPw() == null || request.getName() == null
                 || request.getWeight() == null || request.getHeight() == null)
-            throw new CustomException(REGISTER_INFO_NULL);
+            throw new CustomException(Result.REGISTER_INFO_NULL);
 
         if (userRepository.existsByEmail(request.getEmail()))
-            throw new CustomException(DUPLICATE_USER);
+            throw new CustomException(Result.DUPLICATE_USER);
 
         if (!request.getEmail().contains("@"))
-            throw new CustomException(NOT_EMAIL_FORM);
+            throw new CustomException(Result.NOT_EMAIL_FORM);
 
         if (!(request.getPw().length() > 5))
-            throw new CustomException(PASSWORD_SIZE_ERROR);
+            throw new CustomException(Result.PASSWORD_SIZE_ERROR);
 
         if (!(request.getPw().contains("!") || request.getPw().contains("@") || request.getPw().contains("#")
                 || request.getPw().contains("$") || request.getPw().contains("%") || request.getPw().contains("^")
                 || request.getPw().contains("&") || request.getPw().contains("*") || request.getPw().contains("(")
                 || request.getPw().contains(")"))
         ) {
-            throw new CustomException(NOT_CONTAINS_EXCLAMATIONMARK);
+            throw new CustomException(Result.NOT_CONTAINS_EXCLAMATIONMARK);
         }
     }
 
     private void UPDATE_VALIDATION(UserUpdateDto.Request request) {
         if (request.getName() == null || request.getWeight() == null || request.getHeight() == null)
-            throw new CustomException(UPDATE_INFO_NULL);
+            throw new CustomException(Result.UPDATE_INFO_NULL);
     }
 
     private void PWCHANGE_VALIDATION(PwChangeDto.Request request) {
         userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
+                .orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER));
 
         if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
-            throw new CustomException(PASSWORD_CHANGE_STATUS_FALSE);
+            throw new CustomException(Result.PASSWORD_CHANGE_STATUS_FALSE);
         }
     }
 
     private void PWLOSTCHANGE_VALIDATION(PwChangeDto.lostRequest request, String pw) {
         userRepository.findByEmail(request.getEmail())
                 .orElseThrow(
-                        () -> new CustomException(NOT_FOUND_USER)
+                        () -> new CustomException(Result.NOT_FOUND_USER)
                 );
         if (passwordEncoder.matches(request.getNewPw(), pw)) {
-            throw new CustomException(PASSWORD_IS_NOT_CHANGE);
+            throw new CustomException(Result.PASSWORD_IS_NOT_CHANGE);
         }
     }
 
-    private void LOGIN_VALIDATION(UserLoginDto.Request request) {
+    private void LOGIN_VALIDATION(UserDto.LoginDto request) {
         if (request.getPw().equals("google"))
-            throw new CustomException(NOT_SOCIAL_LOGIN);
+            throw new CustomException(Result.NOT_SOCIAL_LOGIN);
 
         if (!request.getEmail().contains("@"))
-            throw new CustomException(NOT_EMAIL_FORM);
+            throw new CustomException(Result.NOT_EMAIL_FORM);
 
         userRepository.findByEmail(request.getEmail())
                 .orElseThrow(
-                        () -> new CustomException(LOGIN_FALSE)
+                        () -> new CustomException(Result.LOGIN_FALSE)
                 );
 
         if (!passwordEncoder.matches(
@@ -140,13 +147,13 @@ public class UserService {
                         .getPw()
         )
         ) {
-            throw new CustomException(LOGIN_FALSE);
+            throw new CustomException(Result.LOGIN_FALSE);
         }
     }
 
     // Service
     // 로그인
-    public ResponseEntity<StatusTrue> loginUser(UserLoginDto.Request request) {
+    public UserDto.LoginDto loginUser(UserDto.LoginDto request) {
         LOGIN_VALIDATION(request);
 
         UsernamePasswordAuthenticationToken authenticationToken =
@@ -158,9 +165,9 @@ public class UserService {
 
         redisDao.setValues(request.getEmail(), rtk, Duration.ofDays(14));
 
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + atk);
-        return new ResponseEntity<>(StatusTrue.LOGIN_STATUS_TRUE, httpHeaders, HttpStatus.OK);
+        FybUser user = userRepository.findOneWithAuthoritiesByEmail(request.getEmail()).orElseThrow(() -> new CustomException(Result.FAIL));
+
+        return UserDto.LoginDto.response(user,atk,rtk);
     }
 
     // 회원가입
@@ -188,7 +195,7 @@ public class UserService {
                         .email(request.getEmail())
                         .pw(passwordEncoder.encode(request.getPw()))
                         .name(request.getName())
-                        .authorities(Collections.singleton(authority))
+                        .authorities(getUserAuthority())
                         .gender(request.getGender())
                         .height(request.getHeight())
                         .weight(request.getWeight())
@@ -207,7 +214,7 @@ public class UserService {
         redisDao.setValues(request.getEmail(), rtk, Duration.ofDays(14));
 
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + atk);
+        httpHeaders.add("Authorization", "Bearer " + atk);
 
         return new ResponseEntity<>(REGISTER_STATUS_TRUE, httpHeaders, HttpStatus.CREATED);
     }
@@ -228,7 +235,7 @@ public class UserService {
                         .email(getTokenInfo().getEmail())
                         .pw(getTokenInfo().getPw())
                         .name(getTokenInfo().getName())
-                        .authorities(Collections.singleton(authority))
+                        .authorities(getUserAuthority())
                         .gender(getTokenInfo().getGender())
                         .height(getTokenInfo().getHeight())
                         .weight(getTokenInfo().getWeight())
@@ -267,7 +274,7 @@ public class UserService {
                         .email(getTokenInfo().getEmail())
                         .pw(getTokenInfo().getPw())
                         .name(request.getName())
-                        .authorities(Collections.singleton(authority))
+                        .authorities(getUserAuthority())
                         .gender(request.getGender())
                         .height(request.getHeight())
                         .weight(request.getWeight())
@@ -307,7 +314,7 @@ public class UserService {
 
         String randNum = RandomStringUtils.randomNumeric(6);
 
-        Message coolsms = new Message(CHECK_API_KEY, CHEKC_API_SECRET);
+        Message coolsms = new Message(smsKey, smsSecretKey);
 
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("to", request.getPnum());
@@ -392,7 +399,7 @@ public class UserService {
     public ResponseEntity<StatusTrue> delete(PwDeleteDto.Request request) {
 
         if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
-            throw new CustomException(USER_DELETE_STATUS_FALSE);
+            throw new CustomException(Result.USER_DELETE_STATUS_FALSE);
         }
         userRepository.deleteById(getTokenInfo().getId());
 
@@ -410,7 +417,7 @@ public class UserService {
         String username = tokenProvider.getRefreshTokenInfo(rtk);
         String rtkInRedis = redisDao.getValues(username);
         if (Objects.isNull(rtkInRedis) || !rtkInRedis.equals(rtk))
-            throw new CustomException(REFRESH_TOKEN_IS_BAD_REQUEST);
+            throw new CustomException(Result.REFRESH_TOKEN_IS_BAD_REQUEST);
         response.put("atk", tokenProvider.reCreateToken(username));
 
         return new ResponseEntity<>(response, HttpStatus.OK);

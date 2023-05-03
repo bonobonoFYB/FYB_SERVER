@@ -7,9 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import school.bonobono.fyb.global.Model.StatusTrue;
 import school.bonobono.fyb.domain.user.Dto.*;
 import school.bonobono.fyb.domain.user.Service.UserService;
+import school.bonobono.fyb.global.Model.CustomResponseEntity;
+import school.bonobono.fyb.global.Model.StatusTrue;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -34,8 +35,8 @@ public class UserController {
 
     // 로그인
     @PostMapping("log")
-    public ResponseEntity<StatusTrue> loginUser(@Valid @RequestBody UserLoginDto.Request request){
-        return userService.loginUser(request);
+    public CustomResponseEntity<UserDto.LoginDto> loginUser(@Valid @RequestBody UserDto.LoginDto request) {
+        return CustomResponseEntity.success(userService.loginUser(request));
     }
 
     // 회원가입
@@ -48,7 +49,7 @@ public class UserController {
 
     // 로그인 만료시 atk 재발급
     @GetMapping
-    public ResponseEntity<Map<String,String>> reissue(
+    public ResponseEntity<Map<String, String>> reissue(
             @RequestHeader(value = "REFRESH_TOKEN") String rtk
     ) {
         return userService.reissue(rtk);
@@ -117,8 +118,8 @@ public class UserController {
     // 3d 모델링을 위한 userdata 전송
     @GetMapping("model")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<Map<String,String>> postUserData(
-    ){
+    public ResponseEntity<Map<String, String>> postUserData(
+    ) {
         return userService.model();
     }
 }
