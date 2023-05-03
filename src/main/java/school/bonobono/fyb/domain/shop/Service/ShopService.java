@@ -48,7 +48,7 @@ public class ShopService {
                         Collectors.toList()
                 );
 
-        list.add(UserDto.UserDetailDto.response(
+        list.add(UserDto.DetailDto.response(
                         Objects.requireNonNull(
                                 SecurityUtil.getCurrentUsername()
                                         .flatMap(
