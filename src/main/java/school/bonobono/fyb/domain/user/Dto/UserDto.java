@@ -91,4 +91,15 @@ public class UserDto {
         private String newPassword;
     }
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Builder
+    public static class PasswordResetDto{
+        private String email;
+        private String password;
+        private String newPassword;
+    }
+
 }

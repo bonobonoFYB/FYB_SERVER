@@ -90,10 +90,11 @@ public class UserController {
     // 비밀번호 변경 ( 로그인 이후 )
     @PatchMapping("/password")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<StatusTrue> pwChangeUser(
-            @Valid @RequestBody final PwChangeDto.Request request
+    public CustomResponseEntity<UserDto.PasswordResetDto> pwChangeUser(
+            @Valid @RequestBody final UserDto.PasswordResetDto request,
+            @AuthenticationPrincipal final UserDetails userDetails
     ) {
-        return userService.PwChangeUser(request);
+        return CustomResponseEntity.success(userService.PwChangeUser(request,userDetails));
     }
 
     // 비밀번호 변경 ( 로그인 이전 )

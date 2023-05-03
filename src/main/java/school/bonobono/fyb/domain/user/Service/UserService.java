@@ -110,11 +110,11 @@ public class UserService {
             throw new CustomException(Result.UPDATE_INFO_NULL);
     }
 
-    private void PWCHANGE_VALIDATION(PwChangeDto.Request request) {
+    private void PWCHANGE_VALIDATION(UserDto.PasswordResetDto request) {
         userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER));
 
-        if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
+        if (!passwordEncoder.matches(request.getPassword(), getUser(request.getEmail()).getPw())) {
             throw new CustomException(Result.PASSWORD_CHANGE_STATUS_FALSE);
         }
     }
@@ -312,30 +312,11 @@ public class UserService {
 
     // 비밀번호 변경
     @Transactional
-    public ResponseEntity<StatusTrue> PwChangeUser(PwChangeDto.Request request) {
+    public UserDto.PasswordResetDto PwChangeUser(UserDto.PasswordResetDto request, UserDetails userDetails) {
         PWCHANGE_VALIDATION(request);
-
-        Authority authority = Authority.builder()
-                .authorityName("ROLE_USER")
-                .build();
-
-        userRepository.save(
-                FybUser.builder()
-                        .id(getTokenInfo().getId())
-                        .email(getTokenInfo().getEmail())
-                        .pw(passwordEncoder.encode(request.getNewPw()))
-                        .name(getTokenInfo().getName())
-                        .authorities(Collections.singleton(authority))
-                        .gender(getTokenInfo().getGender())
-                        .height(getTokenInfo().getHeight())
-                        .weight(getTokenInfo().getWeight())
-                        .age(getTokenInfo().getAge())
-                        .userData(getTokenInfo().getUserData())
-                        .createAt(getTokenInfo().getCreateAt())
-                        .profileImagePath(getTokenInfo().getProfileImagePath())
-                        .build()
-        );
-        return new ResponseEntity<>(PASSWORD_CHANGE_STATUS_TRUE, HttpStatus.OK);
+        FybUser user = getUser(userDetails.getUsername());
+        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+        return new UserDto.PasswordResetDto();
     }
 
     // 비밀번호 잃어버린경우
