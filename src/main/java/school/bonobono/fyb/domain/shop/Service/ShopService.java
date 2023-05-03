@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import school.bonobono.fyb.domain.shop.Dto.ShopDataDto;
 import school.bonobono.fyb.domain.shop.Dto.ShopDto;
 import school.bonobono.fyb.domain.shop.Entity.Shop;
 import school.bonobono.fyb.domain.shop.Repository.ShopRepository;
@@ -26,9 +25,6 @@ public class ShopService {
 
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
-    private final ShopDataRepository shopDataRepository;
-
-
     // Service
     // Main 홈 조회 페이지
     @Transactional

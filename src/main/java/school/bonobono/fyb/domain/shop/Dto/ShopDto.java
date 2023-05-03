@@ -22,25 +22,6 @@ public class ShopDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class Response {
-        private String shop;
-        private String surl;
-        private String simg;
-
-        public static ShopDto.Response dataResponse(@NotNull ShopData shop) {
-
-            return Response.builder()
-                    .shop(shop.getShop())
-                    .surl(shop.getSurl())
-                    .simg(shop.getSimg())
-                    .build();
-        }
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Builder
     public static class DetailListDto {
         private Long id;
         private String shopName;
