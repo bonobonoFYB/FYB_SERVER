@@ -8,9 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.nurigo.java_sdk.api.Message;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.apache.commons.lang.RandomStringUtils;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,13 +29,10 @@ import school.bonobono.fyb.global.Config.Jwt.TokenProvider;
 import school.bonobono.fyb.global.Config.Redis.RedisDao;
 import school.bonobono.fyb.global.Exception.CustomException;
 import school.bonobono.fyb.global.Model.Result;
-import school.bonobono.fyb.global.Model.StatusTrue;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
-
-import static school.bonobono.fyb.global.Model.StatusTrue.*;
 
 @Service
 @RequiredArgsConstructor
@@ -331,10 +326,9 @@ public class UserService {
         return new UserDto.WithdrawalDto();
     }
 
-    public ResponseEntity<Map<String, String>> model() {
-        Map<String, String> response = new HashMap<>();
-        response.put("userData", getTokenInfo().getUserData());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public UserDto.UserDataDto model(UserDetails userDetails) {
+        FybUser user = getUser(userDetails.getUsername());
+        return UserDto.UserDataDto.response(user.getUserData());
     }
 
     public UserDto.AccessTokenRefreshDto reissue(String rtk) {

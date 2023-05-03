@@ -139,4 +139,17 @@ public class UserDto {
                     .build();
         }
     }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UserDataDto {
+        String userData;
+        public static UserDataDto response(String userData) {
+            return UserDataDto.builder()
+                    .userData(userData)
+                    .build();
+        }
+    }
 }

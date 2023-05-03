@@ -27,13 +27,12 @@ public class UserController {
     private final UserService userService;
 
     // 로그인
-
     @PostMapping("log")
     public CustomResponseEntity<UserDto.LoginDto> loginUser(@Valid @RequestBody UserDto.LoginDto request) {
         return CustomResponseEntity.success(userService.loginUser(request));
     }
-    // 회원가입
 
+    // 회원가입
     @PostMapping
     public CustomResponseEntity<UserDto.RegisterDto> registerUser(
             @Valid @RequestBody final UserDto.RegisterDto request
@@ -126,8 +125,9 @@ public class UserController {
     // 3d 모델링을 위한 userdata 전송
     @GetMapping("model")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<Map<String, String>> postUserData(
+    public CustomResponseEntity<UserDto.UserDataDto> postUserData(
+            @AuthenticationPrincipal final UserDetails userDetails
     ) {
-        return userService.model();
+        return CustomResponseEntity.success(userService.model(userDetails));
     }
 }
