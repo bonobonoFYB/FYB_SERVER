@@ -6,12 +6,12 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import school.bonobono.fyb.global.Exception.CustomErrorResponse;
+import school.bonobono.fyb.global.Model.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static school.bonobono.fyb.global.Exception.CustomErrorCode.JWT_TIMEOUT;
 
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -29,7 +29,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
         CustomErrorResponse error = new CustomErrorResponse();
-        error.setStatus(JWT_TIMEOUT);
+        error.setStatus(Result.JWT_TIMEOUT.getCode());
         error.setStatusMessage("만료된 JWT 토큰입니다.");
 
         // {"username":"loop-study", "age":20}

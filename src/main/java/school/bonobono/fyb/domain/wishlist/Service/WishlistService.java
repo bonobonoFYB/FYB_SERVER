@@ -10,6 +10,7 @@ import school.bonobono.fyb.domain.user.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.domain.wishlist.Dto.WishlistDto;
 import school.bonobono.fyb.domain.wishlist.Entity.Wishlist;
 import school.bonobono.fyb.global.Exception.CustomException;
+import school.bonobono.fyb.global.Model.Result;
 import school.bonobono.fyb.global.Model.StatusTrue;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.domain.wishlist.Repository.WishlistRepository;
@@ -18,7 +19,6 @@ import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
 import java.util.List;
 import java.util.Objects;
 
-import static school.bonobono.fyb.global.Exception.CustomErrorCode.*;
 import static school.bonobono.fyb.global.Model.StatusTrue.*;
 
 @Service
@@ -39,21 +39,21 @@ public class WishlistService {
     }
     private void GET_WISHLIST_INFO_VALIDATION(List<WishlistDto.Response> list) {
         if (list.isEmpty())
-            throw new CustomException(WISHLIST_EMPTY);
+            throw new CustomException(Result.WISHLIST_EMPTY);
     }
     private void ADD_WISHLIST_INFO_VALIDATION(WishlistDto.Request request) {
         if (request.getPname() == null)
-            throw new CustomException(WISHLIST_PNAME_IS_NULL);
+            throw new CustomException(Result.WISHLIST_PNAME_IS_NULL);
         if (request.getPurl() == null)
-            throw new CustomException(WISHLIST_PURL_IS_NULL);
+            throw new CustomException(Result.WISHLIST_PURL_IS_NULL);
     }
     private void UPDATE_WISHLIST_INFO_VALIDATION(WishlistDto.Response request) {
         if (request.getPname() == null)
-            throw new CustomException(WISHLIST_PNAME_IS_NULL);
+            throw new CustomException(Result.WISHLIST_PNAME_IS_NULL);
         if (request.getPurl() == null)
-            throw new CustomException(WISHLIST_PURL_IS_NULL);
+            throw new CustomException(Result.WISHLIST_PURL_IS_NULL);
         if (request.getPid() == null)
-            throw new CustomException(WISHLIST_PID_IS_NULL);
+            throw new CustomException(Result.WISHLIST_PID_IS_NULL);
     }
 
     // Service

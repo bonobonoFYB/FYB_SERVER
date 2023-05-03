@@ -17,12 +17,12 @@ import school.bonobono.fyb.domain.user.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
 import school.bonobono.fyb.global.Exception.CustomException;
+import school.bonobono.fyb.global.Model.Result;
 import school.bonobono.fyb.global.Model.StatusTrue;
 
 import java.io.IOException;
 import java.util.*;
 
-import static school.bonobono.fyb.global.Exception.CustomErrorCode.*;
 import static school.bonobono.fyb.global.Model.StatusTrue.*;
 
 @Service
@@ -38,31 +38,31 @@ public class MyClosetService {
     // Validation 및 단순화
     private static void readMyClosetValidate(List<MyClosetDto.readResponse> list) {
         if (list.isEmpty()) {
-            throw new CustomException(MY_CLOSET_EMPTY);
+            throw new CustomException(Result.MY_CLOSET_EMPTY);
         }
     }
 
     private static void addMyClosetValidate(MyClosetDto.addRequest request) {
         if (request.getPname() == null) {
-            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
+            throw new CustomException(Result.MY_CLOSET_PNAME_IS_NULL);
         }
 
         if (request.getPkind() == null) {
-            throw new CustomException(MY_CLOSET_PKIND_IS_NULL);
+            throw new CustomException(Result.MY_CLOSET_PKIND_IS_NULL);
         }
     }
 
     private static void updateValidate(MyClosetDto.readResponse request) {
         if (request.getId() == null) {
-            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
+            throw new CustomException(Result.MY_CLOSET_PNAME_IS_NULL);
         }
 
         if (request.getPname() == null) {
-            throw new CustomException(MY_CLOSET_PNAME_IS_NULL);
+            throw new CustomException(Result.MY_CLOSET_PNAME_IS_NULL);
         }
 
         if (request.getPkind() == null) {
-            throw new CustomException(MY_CLOSET_PKIND_IS_NULL);
+            throw new CustomException(Result.MY_CLOSET_PKIND_IS_NULL);
         }
 
     }
@@ -120,7 +120,7 @@ public class MyClosetService {
     @Transactional
     public ResponseEntity<StatusTrue> deleteCloset(MyClosetDto.deleteRequest request) {
         if (request.getId() == null) {
-            throw new CustomException(MY_CLOSET_ID_IS_NULL);
+            throw new CustomException(Result.MY_CLOSET_ID_IS_NULL);
         }
 
         myClosetRepository.deleteById(request.getId());

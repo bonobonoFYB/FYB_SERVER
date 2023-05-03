@@ -13,25 +13,24 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import school.bonobono.fyb.domain.user.OAuth.GoogleOAuth;
-import school.bonobono.fyb.domain.user.OAuth.KakaoOAuth;
-import school.bonobono.fyb.global.Config.Redis.RedisDao;
 import school.bonobono.fyb.domain.user.Dto.*;
 import school.bonobono.fyb.domain.user.Entity.Authority;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
-import school.bonobono.fyb.global.Exception.CustomException;
-import school.bonobono.fyb.global.Config.Jwt.TokenProvider;
-import school.bonobono.fyb.global.Model.StatusTrue;
+import school.bonobono.fyb.domain.user.OAuth.GoogleOAuth;
+import school.bonobono.fyb.domain.user.OAuth.KakaoOAuth;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
+import school.bonobono.fyb.global.Config.Jwt.TokenProvider;
+import school.bonobono.fyb.global.Config.Redis.RedisDao;
+import school.bonobono.fyb.global.Exception.CustomException;
+import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.Model.StatusTrue;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Objects;
 
-import static school.bonobono.fyb.global.Exception.CustomErrorCode.REGISTER_INFO_NULL;
-import static school.bonobono.fyb.global.Model.Model.AUTHORIZATION_HEADER;
 import static school.bonobono.fyb.global.Model.StatusTrue.*;
 
 @Service
@@ -44,9 +43,8 @@ public class OAuthService {
     private final GoogleOAuth googleOAuth;
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    UsernamePasswordAuthenticationToken authenticationToken = null;
     private final RedisDao redisDao;
-
+    UsernamePasswordAuthenticationToken authenticationToken = null;
     // validate 및 단순 메소드
     Authority authority = Authority.builder()
             .authorityName("ROLE_USER")
@@ -54,7 +52,7 @@ public class OAuthService {
 
     private static void socialRegisterValidate(UserRegisterDto.socialRequest request) {
         if (request.getWeight() == null || request.getHeight() == null)
-            throw new CustomException(REGISTER_INFO_NULL);
+            throw new CustomException(Result.REGISTER_INFO_NULL);
     }
 
     private ResponseEntity<StatusTrue> Login(String email) {
@@ -73,7 +71,7 @@ public class OAuthService {
         redisDao.setValues(email, rtk, Duration.ofDays(14));
 
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(AUTHORIZATION_HEADER, "Bearer " + atk);
+        httpHeaders.add("Authorization", "Bearer " + atk);
 
         return new ResponseEntity<>(LOGIN_STATUS_TRUE, httpHeaders, HttpStatus.OK);
     }
@@ -171,20 +169,16 @@ public class OAuthService {
         String bmiGrade;
         String userForm = request.getForm() + request.getPelvis() + request.getShoulder() + request.getLeg();
 
-        double BMI = ((double)request.getWeight() / (double)request.getHeight() / (double)request.getHeight()) * 10000;
-        if(BMI <= 18.5){
+        double BMI = ((double) request.getWeight() / (double) request.getHeight() / (double) request.getHeight()) * 10000;
+        if (BMI <= 18.5) {
             bmiGrade = "A";
-        }
-        else if(BMI <= 22.9){
+        } else if (BMI <= 22.9) {
             bmiGrade = "B";
-        }
-        else if(BMI <= 24.9){
+        } else if (BMI <= 24.9) {
             bmiGrade = "C";
-        }
-        else if(BMI <= 29.9){
+        } else if (BMI <= 29.9) {
             bmiGrade = "D";
-        }
-        else {
+        } else {
             bmiGrade = "E";
         }
 
