@@ -65,17 +65,11 @@ public class ShopController {
         return shopService.saveShopData(request);
     }
 
-    // Search 페이지 Get
-    @GetMapping("shop")
-    public List<Shop> getAllShop() {
-        return shopService.getAllShopInfo();
-    }
-
     // Search 페이지 Post
     @PostMapping("shop")
-    public List<Shop> getSearchShop(
-            @RequestBody final ShopDto.Request request
+    public CustomResponseEntity<List<ShopDto.DetailListDto>> getSearchShop(
+            @RequestBody final ShopDto.SearchDto request
     ) {
-        return shopService.getSearchShop(request);
+        return CustomResponseEntity.success(shopService.getSearchShop(request));
     }
 }

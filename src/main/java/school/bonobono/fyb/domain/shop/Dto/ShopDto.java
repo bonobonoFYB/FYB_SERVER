@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import school.bonobono.fyb.domain.shop.Entity.Shop;
-import school.bonobono.fyb.domain.shop.Entity.ShopData;
 
 import javax.validation.constraints.NotNull;
 
@@ -15,7 +14,7 @@ public class ShopDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class Request {
+    public static class SearchDto {
         private String shop;
     }
 

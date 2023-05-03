@@ -10,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.domain.shop.Dto.ShopDataDto;
 import school.bonobono.fyb.domain.shop.Dto.ShopDto;
 import school.bonobono.fyb.domain.shop.Entity.Shop;
-import school.bonobono.fyb.domain.shop.Entity.ShopData;
-import school.bonobono.fyb.domain.shop.Repository.ShopDataRepository;
 import school.bonobono.fyb.domain.shop.Repository.ShopRepository;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.global.Exception.CustomException;
@@ -40,20 +38,16 @@ public class ShopService {
                 .collect(Collectors.toList());
     }
 
-    // Search 페이지 전체 조회
-    @Transactional
-    public List<Shop> getAllShopInfo() {
-        return shopRepository.findAll();
-    }
-
     // Search 페이지 검색 (문자열 포함 기반)
     @Transactional
-    public List<Shop> getSearchShop(ShopDto.Request request) {
+    public List<ShopDto.DetailListDto> getSearchShop(ShopDto.SearchDto request) {
         List<Shop> shopList = shopRepository.findByShopNameContaining(request.getShop());
         if (shopList.isEmpty()) {
             throw new CustomException(Result.SEARCH_EMPTY);
         }
-        return shopList;
+        return shopList.stream()
+                .map(ShopDto.DetailListDto::response)
+                .collect(Collectors.toList());
     }
 
     // 쇼핑몰 사용자 데이터 저장
@@ -64,8 +58,6 @@ public class ShopService {
                 .orElseThrow(
                         NullPointerException::new
                 );
-
-        log.info(shopData.getSurl());
 
         Integer clickAgeA = 0;
         Integer clickAgeB = 0;
@@ -86,15 +78,12 @@ public class ShopService {
 
         shopDataRepository.save(
                 ShopData.builder()
-                        .sid(request.getSid())
-                        .surl(shopData.getSurl())
-                        .shop(shopData.getShop())
+                        .shop()
                         .clickAgeA(shopData.getClickAgeA() + clickAgeA)
                         .clickAgeB(shopData.getClickAgeB() + clickAgeB)
                         .clickMen(shopData.getClickMen() + clickMen)
                         .clickWomen(shopData.getClickWomen() + clickWomen)
                         .clickAll(shopData.getClickAll() + 1)
-                        .simg(shopData.getSimg())
                         .build()
         );
 
