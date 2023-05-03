@@ -9,15 +9,15 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import school.bonobono.fyb.domain.user.Dto.*;
+import school.bonobono.fyb.domain.user.Dto.PhoneCheckDto;
+import school.bonobono.fyb.domain.user.Dto.PwDeleteDto;
+import school.bonobono.fyb.domain.user.Dto.UserDto;
+import school.bonobono.fyb.domain.user.Dto.UserUpdateDto;
 import school.bonobono.fyb.domain.user.Service.UserService;
 import school.bonobono.fyb.global.Model.CustomResponseEntity;
-import school.bonobono.fyb.global.Model.Result;
 import school.bonobono.fyb.global.Model.StatusTrue;
 
 import javax.validation.Valid;
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -84,7 +84,7 @@ public class UserController {
             @Valid @RequestBody final UserUpdateDto.Request request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        return CustomResponseEntity.success(userService.updateUser(request,userDetails));
+        return CustomResponseEntity.success(userService.updateUser(request, userDetails));
     }
 
     // 비밀번호 변경 ( 로그인 이후 )
@@ -94,7 +94,7 @@ public class UserController {
             @Valid @RequestBody final UserDto.PasswordResetDto request,
             @AuthenticationPrincipal final UserDetails userDetails
     ) {
-        return CustomResponseEntity.success(userService.PwChangeUser(request,userDetails));
+        return CustomResponseEntity.success(userService.PwChangeUser(request, userDetails));
     }
 
     // 비밀번호 변경 ( 로그인 이전 )
@@ -108,10 +108,11 @@ public class UserController {
     // 로그아웃
     @DeleteMapping("logout")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<StatusTrue> logoutUser(
-            @Valid @RequestBody final PwDeleteDto.Request2 request2
+    public CustomResponseEntity<UserDto.DetailDto> logoutUser(
+            @RequestHeader(value = "Authorization") final String auth,
+            @AuthenticationPrincipal final UserDetails userDetails
     ) {
-        return userService.logoutUser(request2);
+        return CustomResponseEntity.success(userService.logoutUser(auth, userDetails));
     }
 
     // 회원탈퇴

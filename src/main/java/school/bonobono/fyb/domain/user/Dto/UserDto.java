@@ -58,6 +58,7 @@ public class UserDto {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
     @Builder
     public static class DetailDto{
         private String email;

@@ -270,11 +270,10 @@ public class UserService {
 
     // 로그아웃
     @Transactional
-    public ResponseEntity<StatusTrue> logoutUser(PwDeleteDto.Request2 request) {
-        String atk = request.getToken().substring(7);
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
+    public UserDto.DetailDto logoutUser(String auth, UserDetails userDetails) {
+        String atk = auth.substring(7);
+        String email = userDetails.getUsername();
+
         if (redisDao.getValues(email) != null) {
             redisDao.deleteValues(email);
         }
@@ -283,7 +282,7 @@ public class UserService {
                 tokenProvider.getExpiration(atk)
         ));
 
-        return new ResponseEntity<>(LOGOUT_STATUS_TRUE, HttpStatus.OK);
+        return new UserDto.DetailDto();
     }
 
     // 휴대폰 인증
