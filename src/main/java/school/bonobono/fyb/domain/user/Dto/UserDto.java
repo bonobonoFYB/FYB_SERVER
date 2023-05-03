@@ -30,4 +30,26 @@ public class UserDto {
                     .build();
         }
     }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Builder
+    public static class RegisterDto {
+        private String email;
+        private String pw;
+        private String name;
+        private Character gender;
+        private Integer height;
+        private Integer weight;
+        private Integer age;
+        private String form;
+        private String pelvis;
+        private String shoulder;
+        private String leg;
+        private String atk;
+        private String rtk;
+    }
+
 }

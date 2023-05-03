@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.domain.user.Dto.*;
 import school.bonobono.fyb.domain.user.Service.UserService;
 import school.bonobono.fyb.global.Model.CustomResponseEntity;
+import school.bonobono.fyb.global.Model.Result;
 import school.bonobono.fyb.global.Model.StatusTrue;
 
 import javax.validation.Valid;
@@ -41,10 +42,10 @@ public class UserController {
 
     // 회원가입
     @PostMapping
-    public ResponseEntity<StatusTrue> registerUser(
-            @Valid @RequestBody final UserRegisterDto.Request request
+    public CustomResponseEntity<UserDto.RegisterDto> registerUser(
+            @Valid @RequestBody final UserDto.RegisterDto request
     ) {
-        return userService.registerUser(request);
+        return CustomResponseEntity.success(userService.registerUser(request));
     }
 
     // 로그인 만료시 atk 재발급

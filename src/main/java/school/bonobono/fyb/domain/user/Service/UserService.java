@@ -81,7 +81,7 @@ public class UserService {
         }
     }
 
-    private void REGISTER_VALIDATION(UserRegisterDto.Request request) {
+    private void REGISTER_VALIDATION(UserDto.RegisterDto request) {
         if (request.getEmail() == null || request.getPw() == null || request.getName() == null
                 || request.getWeight() == null || request.getHeight() == null)
             throw new CustomException(Result.REGISTER_INFO_NULL);
@@ -172,13 +172,41 @@ public class UserService {
 
     // 회원가입
     @Transactional
-    public ResponseEntity<StatusTrue> registerUser(UserRegisterDto.Request request) {
+    public UserDto.RegisterDto registerUser(UserDto.RegisterDto request) {
         REGISTER_VALIDATION(request);
 
-        String bmiGrade;
-        String userForm = request.getForm() + request.getPelvis() + request.getShoulder() + request.getLeg();
+        String bodyInformation = request.getForm() + request.getPelvis() + request.getShoulder() + request.getLeg();
+        double BMI = calculateBMI(request);
 
+        userRepository.save(
+                FybUser.builder()
+                        .email(request.getEmail())
+                        .pw(passwordEncoder.encode(request.getPw()))
+                        .name(request.getName())
+                        .authorities(getUserAuthority())
+                        .gender(request.getGender())
+                        .height(request.getHeight())
+                        .weight(request.getWeight())
+                        .age(request.getAge())
+                        .userData(request.getGender() + getBmiGrade(BMI) + bodyInformation)
+                        .build()
+        );
+
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPw());
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        return new UserDto.RegisterDto();
+    }
+
+    private static double calculateBMI(UserDto.RegisterDto request) {
         double BMI = ((double) request.getWeight() / (double) request.getHeight() / (double) request.getHeight()) * 10000;
+        return BMI;
+    }
+
+    private static String getBmiGrade(double BMI) {
+        String bmiGrade;
         if (BMI <= 18.5) {
             bmiGrade = "A";
         } else if (BMI <= 22.9) {
@@ -190,33 +218,7 @@ public class UserService {
         } else {
             bmiGrade = "E";
         }
-        userRepository.save(
-                FybUser.builder()
-                        .email(request.getEmail())
-                        .pw(passwordEncoder.encode(request.getPw()))
-                        .name(request.getName())
-                        .authorities(getUserAuthority())
-                        .gender(request.getGender())
-                        .height(request.getHeight())
-                        .weight(request.getWeight())
-                        .age(request.getAge())
-                        .userData(request.getGender() + bmiGrade + userForm)
-                        .build()
-        );
-
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPw());
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String atk = tokenProvider.createToken(authentication);
-        String rtk = tokenProvider.createRefreshToken(request.getEmail());
-
-        redisDao.setValues(request.getEmail(), rtk, Duration.ofDays(14));
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Authorization", "Bearer " + atk);
-
-        return new ResponseEntity<>(REGISTER_STATUS_TRUE, httpHeaders, HttpStatus.CREATED);
+        return bmiGrade;
     }
 
     // 프로필 이미지 업로드
