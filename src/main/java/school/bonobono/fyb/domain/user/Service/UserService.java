@@ -257,28 +257,14 @@ public class UserService {
 
     // 내 정보 수정
     @Transactional
-    public ResponseEntity<StatusTrue> updateUser(UserUpdateDto.Request request) {
-
+    public UserDto.UserDetailDto updateUser(UserUpdateDto.Request request, UserDetails userDetails) {
         UPDATE_VALIDATION(request);
-
-        userRepository.save(
-                FybUser.builder()
-                        .id(getTokenInfo().getId())
-                        .email(getTokenInfo().getEmail())
-                        .pw(getTokenInfo().getPw())
-                        .name(request.getName())
-                        .authorities(getUserAuthority())
-                        .gender(request.getGender())
-                        .height(request.getHeight())
-                        .weight(request.getWeight())
-                        .age(request.getAge())
-                        .userData(getTokenInfo().getUserData())
-                        .profileImagePath(getTokenInfo().getProfileImagePath())
-                        .createAt(getTokenInfo().getCreateAt())
-                        .build()
+        FybUser user = getUser(userDetails.getUsername());
+        user.updateUserInfo(
+                request.getName(),request.getGender(),request.getHeight(),
+                request.getWeight(),request.getAge()
         );
-
-        return new ResponseEntity<>(UPDATE_STATUS_TURE, HttpStatus.OK);
+        return UserDto.UserDetailDto.response(user);
     }
 
     // 로그아웃

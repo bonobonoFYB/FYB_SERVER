@@ -102,4 +102,12 @@ public class FybUser {
     public void uploadProfileImage(String profileImagePath) {
         this.profileImagePath = profileImagePath;
     }
+
+    public void updateUserInfo(String name, Character gender, Integer height, Integer weight, Integer age) {
+        this.name = name;
+        this.gender = gender;
+        this.height = height;
+        this.weight = weight;
+        this.age = age;
+    }
 }

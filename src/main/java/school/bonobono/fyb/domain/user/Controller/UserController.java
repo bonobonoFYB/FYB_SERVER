@@ -80,10 +80,11 @@ public class UserController {
     // 내 정보 수정
     @PatchMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<StatusTrue> updateUser(
-            @Valid @RequestBody final UserUpdateDto.Request request
+    public CustomResponseEntity<UserDto.UserDetailDto> updateUser(
+            @Valid @RequestBody final UserUpdateDto.Request request,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        return userService.updateUser(request);
+        return CustomResponseEntity.success(userService.updateUser(request,userDetails));
     }
 
     // 비밀번호 변경 ( 로그인 이후 )
