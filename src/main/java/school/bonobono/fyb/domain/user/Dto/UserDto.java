@@ -115,13 +115,27 @@ public class UserDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Builder
     public static class AccessTokenRefreshDto {
         String accessToken;
         public static AccessTokenRefreshDto response(String accessToken) {
             return AccessTokenRefreshDto.builder()
                     .accessToken(accessToken)
+                    .build();
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Builder
+    public class PhoneVerificationDto {
+        String phoneNumber;
+        String number;
+        public static PhoneVerificationDto response(String number) {
+            return PhoneVerificationDto.builder()
+                    .number(number)
                     .build();
         }
     }

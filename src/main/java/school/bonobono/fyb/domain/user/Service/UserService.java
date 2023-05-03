@@ -76,8 +76,8 @@ public class UserService {
         );
     }
 
-    private void PHONE_NUM_LENGTH_CHECK(PhoneCheckDto.Request request) {
-        if (!(request.getPnum().length() == 13)) {
+    private void PHONE_NUM_LENGTH_CHECK(UserDto.PhoneVerificationDto request) {
+        if (!(request.getPhoneNumber().length() == 13)) {
             throw new CustomException(Result.PHONE_NUM_ERROR);
         }
     }
@@ -287,26 +287,19 @@ public class UserService {
 
     // 휴대폰 인증
     @Transactional
-    public Map<Object, Object> certifiedPhoneNumber(PhoneCheckDto.Request request) throws CoolsmsException {
+    public UserDto.PhoneVerificationDto certifiedPhoneNumber(UserDto.PhoneVerificationDto request) throws CoolsmsException {
         // 핸드폰 번호 - 포함 13글자 지정
         PHONE_NUM_LENGTH_CHECK(request);
-
         String randNum = RandomStringUtils.randomNumeric(6);
-
-        Message coolsms = new Message(smsKey, smsSecretKey);
-
-        HashMap<String, String> params = new HashMap<String, String>();
-        params.put("to", request.getPnum());
+        Message coolSMS = new Message(smsKey, smsSecretKey);
+        HashMap<String, String> params = new HashMap<>();
+        params.put("to", request.getPhoneNumber());
         params.put("from", "010-4345-4377");
         params.put("type", "SMS");
         params.put("text", "FYB 휴대폰인증 인증번호는" + "[ " + randNum + " ]" + "입니다.");
         params.put("app_version", "test app 1.2");
-
-        JSONObject obj = (JSONObject) coolsms.send(params);
-
-        Map<Object, Object> send = new HashMap<>();
-        send.put("randNum", randNum);
-        return send;
+        coolSMS.send(params);
+        return UserDto.PhoneVerificationDto.response(randNum);
     }
 
     // 비밀번호 변경

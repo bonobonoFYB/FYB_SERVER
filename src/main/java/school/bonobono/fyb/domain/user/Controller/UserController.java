@@ -43,10 +43,10 @@ public class UserController {
 
     // 휴대폰 인증
     @PostMapping("check")
-    public Map<Object, Object> certifiedPhoneNumber(
-            @Valid @RequestBody final PhoneCheckDto.Request request
+    public CustomResponseEntity<UserDto.PhoneVerificationDto> certifiedPhoneNumber(
+            @Valid @RequestBody final UserDto.PhoneVerificationDto request
     ) throws CoolsmsException {
-        return userService.certifiedPhoneNumber(request);
+        return CustomResponseEntity.success(userService.certifiedPhoneNumber(request));
     }
 
     // 로그인 만료시 atk 재발급
