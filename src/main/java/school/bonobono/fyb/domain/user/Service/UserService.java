@@ -78,7 +78,7 @@ public class UserService {
     }
 
     private void REGISTER_VALIDATION(UserDto.RegisterDto request) {
-        if (request.getEmail() == null || request.getPw() == null || request.getName() == null
+        if (request.getEmail() == null || request.getPassword() == null || request.getName() == null
                 || request.getWeight() == null || request.getHeight() == null)
             throw new CustomException(Result.REGISTER_INFO_NULL);
 
@@ -88,19 +88,19 @@ public class UserService {
         if (!request.getEmail().contains("@"))
             throw new CustomException(Result.NOT_EMAIL_FORM);
 
-        if (!(request.getPw().length() > 5))
+        if (!(request.getPassword().length() > 5))
             throw new CustomException(Result.PASSWORD_SIZE_ERROR);
 
-        if (!(request.getPw().contains("!") || request.getPw().contains("@") || request.getPw().contains("#")
-                || request.getPw().contains("$") || request.getPw().contains("%") || request.getPw().contains("^")
-                || request.getPw().contains("&") || request.getPw().contains("*") || request.getPw().contains("(")
-                || request.getPw().contains(")"))
+        if (!(request.getPassword().contains("!") || request.getPassword().contains("@") || request.getPassword().contains("#")
+                || request.getPassword().contains("$") || request.getPassword().contains("%") || request.getPassword().contains("^")
+                || request.getPassword().contains("&") || request.getPassword().contains("*") || request.getPassword().contains("(")
+                || request.getPassword().contains(")"))
         ) {
             throw new CustomException(Result.NOT_CONTAINS_EXCLAMATIONMARK);
         }
     }
 
-    private void UPDATE_VALIDATION(UserUpdateDto.Request request) {
+    private void UPDATE_VALIDATION(UserDto.UpdateDto request) {
         if (request.getName() == null || request.getWeight() == null || request.getHeight() == null)
             throw new CustomException(Result.UPDATE_INFO_NULL);
     }
@@ -125,7 +125,7 @@ public class UserService {
     }
 
     private void LOGIN_VALIDATION(UserDto.LoginDto request) {
-        if (request.getPw().equals("google"))
+        if (request.getPassword().equals("google"))
             throw new CustomException(Result.NOT_SOCIAL_LOGIN);
 
         if (!request.getEmail().contains("@"))
@@ -137,7 +137,7 @@ public class UserService {
                 );
 
         if (!passwordEncoder.matches(
-                request.getPw(),
+                request.getPassword(),
                 userRepository.findByEmail(request.getEmail())
                         .get()
                         .getPw()
@@ -153,7 +153,7 @@ public class UserService {
         LOGIN_VALIDATION(request);
 
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPw());
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String atk = tokenProvider.createToken(authentication);
@@ -183,7 +183,7 @@ public class UserService {
         userRepository.save(
                 FybUser.builder()
                         .email(request.getEmail())
-                        .pw(passwordEncoder.encode(request.getPw()))
+                        .pw(passwordEncoder.encode(request.getPassword()))
                         .name(request.getName())
                         .authorities(getUserAuthority())
                         .gender(request.getGender())
@@ -195,7 +195,7 @@ public class UserService {
         );
 
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPw());
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -253,7 +253,7 @@ public class UserService {
 
     // 내 정보 수정
     @Transactional
-    public UserDto.DetailDto updateUser(UserUpdateDto.Request request, UserDetails userDetails) {
+    public UserDto.DetailDto updateUser(UserDto.UpdateDto request, UserDetails userDetails) {
         UPDATE_VALIDATION(request);
         FybUser user = getUser(userDetails.getUsername());
         user.updateUserInfo(

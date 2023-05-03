@@ -19,16 +19,16 @@ public class UserDto {
         private Long id;
         private String email;
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        private String pw;
-        private String atk;
-        private String rtk;
+        private String password;
+        private String accessToken;
+        private String refreshToken;
 
         public static LoginDto response(FybUser user, String atk, String rtk) {
             return LoginDto.builder()
                     .id(user.getId())
                     .email(user.getEmail())
-                    .atk(atk)
-                    .rtk(rtk)
+                    .accessToken(atk)
+                    .accessToken(rtk)
                     .build();
         }
     }
@@ -40,7 +40,7 @@ public class UserDto {
     @Builder
     public static class RegisterDto {
         private String email;
-        private String pw;
+        private String password;
         private String name;
         private Character gender;
         private Integer height;
@@ -151,5 +151,19 @@ public class UserDto {
                     .userData(userData)
                     .build();
         }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class UpdateDto {
+        private String email;
+        private String password;
+        private String name;
+        private Character gender;
+        private Integer height;
+        private Integer weight;
+        private Integer age;
     }
 }

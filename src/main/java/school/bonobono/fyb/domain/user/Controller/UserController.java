@@ -3,20 +3,16 @@ package school.bonobono.fyb.domain.user.Controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import school.bonobono.fyb.domain.user.Dto.PhoneCheckDto;
 import school.bonobono.fyb.domain.user.Dto.UserDto;
-import school.bonobono.fyb.domain.user.Dto.UserUpdateDto;
 import school.bonobono.fyb.domain.user.Service.UserService;
 import school.bonobono.fyb.global.Model.CustomResponseEntity;
 
 import javax.validation.Valid;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -78,7 +74,7 @@ public class UserController {
     @PatchMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CustomResponseEntity<UserDto.DetailDto> updateUser(
-            @Valid @RequestBody final UserUpdateDto.Request request,
+            @Valid @RequestBody final UserDto.UpdateDto request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         return CustomResponseEntity.success(userService.updateUser(request, userDetails));
