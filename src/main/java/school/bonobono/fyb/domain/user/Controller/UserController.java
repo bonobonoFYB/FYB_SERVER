@@ -118,10 +118,11 @@ public class UserController {
     // 회원탈퇴
     @DeleteMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<StatusTrue> deleteUser(
-            @Valid @RequestBody final PwDeleteDto.Request request
+    public CustomResponseEntity<UserDto.WithdrawalDto> deleteUser(
+            @Valid @RequestBody final UserDto.WithdrawalDto request,
+            @AuthenticationPrincipal final UserDetails userDetails
     ) {
-        return userService.delete(request);
+        return CustomResponseEntity.success(userService.delete(request,userDetails));
     }
 
     // 3d 모델링을 위한 userdata 전송

@@ -329,14 +329,13 @@ public class UserService {
 
     // 회원탈퇴
     @Transactional
-    public ResponseEntity<StatusTrue> delete(PwDeleteDto.Request request) {
-
-        if (!passwordEncoder.matches(request.getPw(), getTokenInfo().getPw())) {
+    public UserDto.WithdrawalDto delete(UserDto.WithdrawalDto request,UserDetails userDetails) {
+        FybUser user = getUser(userDetails.getUsername());
+        if (passwordEncoder.matches(request.getPassword(), user.getPw()) == false) {
             throw new CustomException(Result.USER_DELETE_STATUS_FALSE);
         }
-        userRepository.deleteById(getTokenInfo().getId());
-
-        return new ResponseEntity<>(USER_DELETE_STATUS_TRUE, HttpStatus.OK);
+        userRepository.delete(user);
+        return new UserDto.WithdrawalDto();
     }
 
     public ResponseEntity<Map<String, String>> model() {
