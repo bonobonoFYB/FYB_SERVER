@@ -344,14 +344,11 @@ public class UserService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    public ResponseEntity<Map<String, String>> reissue(String rtk) {
-        Map<String, String> response = new HashMap<>();
-        String username = tokenProvider.getRefreshTokenInfo(rtk);
-        String rtkInRedis = redisDao.getValues(username);
+    public UserDto.AccessTokenRefreshDto reissue(String rtk) {
+        String email = tokenProvider.getRefreshTokenInfo(rtk);
+        String rtkInRedis = redisDao.getValues(email);
         if (Objects.isNull(rtkInRedis) || !rtkInRedis.equals(rtk))
             throw new CustomException(Result.REFRESH_TOKEN_IS_BAD_REQUEST);
-        response.put("atk", tokenProvider.reCreateToken(username));
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return UserDto.AccessTokenRefreshDto.response(tokenProvider.reCreateToken(email));
     }
 }

@@ -10,12 +10,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.domain.user.Dto.PhoneCheckDto;
-import school.bonobono.fyb.domain.user.Dto.PwDeleteDto;
 import school.bonobono.fyb.domain.user.Dto.UserDto;
 import school.bonobono.fyb.domain.user.Dto.UserUpdateDto;
 import school.bonobono.fyb.domain.user.Service.UserService;
 import school.bonobono.fyb.global.Model.CustomResponseEntity;
-import school.bonobono.fyb.global.Model.StatusTrue;
 
 import javax.validation.Valid;
 import java.util.Map;
@@ -53,10 +51,10 @@ public class UserController {
 
     // 로그인 만료시 atk 재발급
     @GetMapping
-    public ResponseEntity<Map<String, String>> reissue(
+    public CustomResponseEntity<UserDto.AccessTokenRefreshDto> reissue(
             @RequestHeader(value = "REFRESH_TOKEN") String rtk
     ) {
-        return userService.reissue(rtk);
+        return CustomResponseEntity.success(userService.reissue(rtk));
     }
 
     // 프로필 이미지 설정

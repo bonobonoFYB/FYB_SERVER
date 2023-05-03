@@ -111,4 +111,18 @@ public class UserDto {
     public static class WithdrawalDto {
         private String password;
     }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Builder
+    public static class AccessTokenRefreshDto {
+        String accessToken;
+        public static AccessTokenRefreshDto response(String accessToken) {
+            return AccessTokenRefreshDto.builder()
+                    .accessToken(accessToken)
+                    .build();
+        }
+    }
 }
