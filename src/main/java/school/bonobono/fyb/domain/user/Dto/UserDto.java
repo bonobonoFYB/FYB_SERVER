@@ -52,7 +52,21 @@ public class UserDto {
         private String leg;
         private String atk;
         private String rtk;
+    }
 
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class SocialRegisterDto {
+        private Character gender;
+        private Integer height;
+        private Integer weight;
+        private Integer age;
+        private String form;
+        private String pelvis;
+        private String shoulder;
+        private String leg;
     }
 
     @Getter

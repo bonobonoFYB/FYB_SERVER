@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import school.bonobono.fyb.domain.user.Dto.UserDto;
 import school.bonobono.fyb.domain.user.Dto.UserRegisterDto;
@@ -45,22 +47,27 @@ public class OAuthController {
 
     // 구글 로그인 창 접근
     @GetMapping("google")
-    public void redirectToGoogleLogin (HttpServletResponse response) throws Exception {
-        response.sendRedirect(googleOAuth.getGoogleLoginURL());
+    public void redirectToGoogleLogin (HttpServletResponse response) {
+        try {
+            response.sendRedirect(googleOAuth.getGoogleLoginURL());
+        } catch (IOException e) {
+            throw new CustomException(Result.FAIL);
+        }
     }
 
     // 구글 로그인 이후
     @GetMapping("login/google")
     public CustomResponseEntity<UserDto.LoginDto> googleLogin(
             @RequestParam(name = "code") String code) throws IOException {
-        return CustomResponseEntity.success(oAuthService.googlelogin(code));
+        return CustomResponseEntity.success(oAuthService.googleLogin(code));
     }
 
     // Sosial 로그인 이후 추가 정보 요청
     @PostMapping("/")
-    public ResponseEntity<StatusTrue> socialRegister(
-            @RequestBody final UserRegisterDto.socialRequest request
-    ) {
-        return oAuthService.socialRegister(request);
+    public CustomResponseEntity<UserDto.DetailDto> socialRegister(
+            @RequestBody final UserDto.SocialRegisterDto request,
+            @AuthenticationPrincipal final UserDetails userDetails
+            ) {
+        return CustomResponseEntity.success(oAuthService.socialRegister(request,userDetails));
     }
 }

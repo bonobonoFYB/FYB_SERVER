@@ -114,4 +114,12 @@ public class FybUser {
     public void updatePassword(String password) {
         this.pw = password;
     }
+
+    public void saveUserBodyInformation(Character gender, Integer height, Integer weight, Integer age, String userData) {
+        this.gender = gender;
+        this.height = height;
+        this.weight = weight;
+        this.age = age;
+        this.userData = userData;
+    }
 }
