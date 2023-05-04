@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import school.bonobono.fyb.domain.user.Entity.FybUser;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -23,9 +24,9 @@ public class Wishlist {
     @Column(name = "pid")
     private Long pid;
 
-    @Column(name = "uid")
-    @NotNull
-    private Long uid;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private FybUser user;
 
     @Column(name = "pname",length = 50)
     private String pname;
