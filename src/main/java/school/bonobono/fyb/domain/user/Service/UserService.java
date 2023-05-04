@@ -62,15 +62,6 @@ public class UserService {
                 .build());
     }
 
-    private TokenInfoResponseDto getTokenInfo() {
-        return TokenInfoResponseDto.Response(
-                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
-                        .flatMap(
-                                userRepository::findOneWithAuthoritiesByEmail)
-                        .orElse(null))
-        );
-    }
-
     private void PHONE_NUM_LENGTH_CHECK(UserDto.PhoneVerificationDto request) {
         if (!(request.getPhoneNumber().length() == 13)) {
             throw new CustomException(Result.PHONE_NUM_ERROR);
@@ -227,13 +218,13 @@ public class UserService {
     @Transactional
     public UserDto.DetailDto updateImage(MultipartFile multipartFile, UserDetails userDetails) {
         FybUser user = getUser(userDetails.getUsername());
-        String myProfileImagePath = uploadProfileImage(multipartFile);
+        String myProfileImagePath = uploadProfileImage(multipartFile, user.getEmail());
         user.uploadProfileImage(myProfileImagePath);
         return UserDto.DetailDto.response(user);
     }
 
-    private String uploadProfileImage(MultipartFile multipartFile) {
-        String profile_image_name = "profile/" + getTokenInfo().getEmail();
+    private String uploadProfileImage(MultipartFile multipartFile,String email) {
+        String profile_image_name = "profile/" + email;
         ObjectMetadata objMeta = new ObjectMetadata();
         try {
             objMeta.setContentLength(multipartFile.getInputStream().available());

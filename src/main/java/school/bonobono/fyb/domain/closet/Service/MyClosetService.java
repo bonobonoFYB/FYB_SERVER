@@ -13,9 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.domain.closet.Dto.MyClosetDto;
 import school.bonobono.fyb.domain.closet.Entity.MyCloset;
 import school.bonobono.fyb.domain.closet.Repository.MyClosetRepository;
-import school.bonobono.fyb.domain.user.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
-import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
 import school.bonobono.fyb.global.Exception.CustomException;
 import school.bonobono.fyb.global.Model.Result;
 import school.bonobono.fyb.global.Model.StatusTrue;
@@ -65,15 +63,6 @@ public class MyClosetService {
             throw new CustomException(Result.MY_CLOSET_PKIND_IS_NULL);
         }
 
-    }
-
-    private TokenInfoResponseDto getTokenInfo() {
-        return TokenInfoResponseDto.Response(
-                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
-                        .flatMap(
-                                userRepository::findOneWithAuthoritiesByEmail)
-                        .orElse(null))
-        );
     }
 
     // Service
