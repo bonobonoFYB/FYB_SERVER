@@ -1,5 +1,6 @@
 package school.bonobono.fyb.global.Exception;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -135,6 +136,23 @@ public class CustomExceptionHandler {
         return CustomResponseEntity.builder()
                 .code(-1)
                 .message("{ " + e.getHeaderName() + " }"+ " 값을 요청받지 못했습니다.")
+                .build();
+    }
+
+    // RequestHeader 예외처리
+    @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(
+            JsonProcessingException.class
+    )
+    public CustomResponseEntity<Object> handleInternalServerError(
+            JsonProcessingException e, HttpServletRequest request
+    ) {
+        log.error("[Json Processing Error] {}, message: {}",
+                request.getRequestURI(), e.getMessage());
+        return CustomResponseEntity.builder()
+                .code(-1)
+                .message(e.getMessage())
                 .build();
     }
 }

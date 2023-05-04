@@ -1,19 +1,22 @@
 package school.bonobono.fyb.domain.user.Controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import school.bonobono.fyb.domain.user.Dto.UserDto;
+import school.bonobono.fyb.domain.user.Dto.UserRegisterDto;
 import school.bonobono.fyb.domain.user.OAuth.GoogleOAuth;
 import school.bonobono.fyb.domain.user.OAuth.KakaoOAuth;
-import school.bonobono.fyb.domain.user.Dto.UserRegisterDto;
-import school.bonobono.fyb.global.Model.StatusTrue;
 import school.bonobono.fyb.domain.user.Service.OAuthService;
+import school.bonobono.fyb.global.Exception.CustomException;
+import school.bonobono.fyb.global.Model.CustomResponseEntity;
+import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.Model.StatusTrue;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,22 +29,24 @@ public class OAuthController {
     private final GoogleOAuth googleOAuth;
 
     @GetMapping("/kakao")
-    public Map<Object,Object> getKakakoAuthUrl() {
-        Map<Object,Object> url = new HashMap<>();
-        url.put("url",kakaoOAuth.responseUrl());
-        return url;
+    public void redirectToKakaoLogin(HttpServletResponse response) {
+        try {
+            response.sendRedirect(kakaoOAuth.getKakaoLoginURL());
+        } catch (IOException e) {
+            throw new CustomException(Result.FAIL);
+        }
     }
 
     @GetMapping("login/kakao")
-    public ResponseEntity<StatusTrue> kakaoLogin(
-            @RequestParam(name = "code") String code) throws IOException {
-        return oAuthService.kakaoLogin(code);
+    public CustomResponseEntity<UserDto.LoginDto> kakaoLogin(
+            @RequestParam(name = "code") String code) throws JsonProcessingException {
+        return CustomResponseEntity.success(oAuthService.kakaoLogin(code));
     }
 
     // 구글 로그인 창 접근
     @GetMapping("google")
-    public void getGoogleAuthUrl(HttpServletResponse response) throws Exception {
-        response.sendRedirect(googleOAuth.getOauthRedirectURL());
+    public void redirectToGoogleLogin (HttpServletResponse response) throws Exception {
+        response.sendRedirect(googleOAuth.getGoogleLoginURL());
     }
 
     // 구글 로그인 이후

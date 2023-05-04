@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
 import static school.bonobono.fyb.global.Model.StatusTrue.*;
 
@@ -44,11 +45,7 @@ public class OAuthService {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final RedisDao redisDao;
-    UsernamePasswordAuthenticationToken authenticationToken = null;
     // validate 및 단순 메소드
-    Authority authority = Authority.builder()
-            .authorityName("ROLE_USER")
-            .build();
 
     private static void socialRegisterValidate(UserRegisterDto.socialRequest request) {
         if (request.getWeight() == null || request.getHeight() == null)
@@ -85,11 +82,11 @@ public class OAuthService {
         );
     }
 
-    private KakaoUserInfoDto getKakaoUserInfoDto(String code) throws JsonProcessingException {
+    private KakaoDto.UserInfoDto getKakaoUserInfoDto(String code) throws JsonProcessingException {
         ResponseEntity<String> accessTokenResponse = kakaoOAuth.requestAccessToken(code);
-        KakaoOAuthTokenDto oAuthToken = kakaoOAuth.getAccessToken(accessTokenResponse);
+        KakaoDto.OAuthTokenDto oAuthToken = kakaoOAuth.getAccessToken(accessTokenResponse);
         ResponseEntity<String> userInfoResponse = kakaoOAuth.requestUserInfo(oAuthToken);
-        KakaoUserInfoDto kakaoUser = kakaoOAuth.getUserInfo(userInfoResponse);
+        KakaoDto.UserInfoDto kakaoUser = kakaoOAuth.getUserInfo(userInfoResponse);
         return kakaoUser;
     }
 
@@ -115,7 +112,7 @@ public class OAuthService {
                             .email(email)
                             .pw(passwordEncoder.encode("google"))
                             .name(name)
-                            .authorities(Collections.singleton(authority))
+                            .authorities(getUserAuthority())
                             .gender(null)
                             .height(null)
                             .weight(null)
@@ -129,23 +126,22 @@ public class OAuthService {
         return Login(email);
     }
 
-
     // 카카오 로그인 서비스
     @Transactional
-    public ResponseEntity<StatusTrue> kakaoLogin(String code) throws IOException {
-        KakaoUserInfoDto kakaoUser = getKakaoUserInfoDto(code);
+    public UserDto.LoginDto kakaoLogin(String code) throws JsonProcessingException {
+        KakaoDto.UserInfoDto kakaoUser = getKakaoUserInfoDto(code);
         String email = kakaoUser.getKakao_account().getEmail();
         String name = kakaoUser.getProperties().getNickname();
         String profileImagePath = kakaoUser.getProperties().getProfile_image();
 
         // 회원가입
-        if (!userRepository.existsByEmail(email)) {
+        if (userRepository.existsByEmail(email) == false) {
             userRepository.save(
                     FybUser.builder()
                             .email(email)
                             .pw(passwordEncoder.encode("kakao"))
                             .name(name)
-                            .authorities(Collections.singleton(authority))
+                            .authorities(getUserAuthority())
                             .profileImagePath(profileImagePath)
                             .gender(null)
                             .height(null)
@@ -153,10 +149,25 @@ public class OAuthService {
                             .age(null)
                             .build()
             );
-            Login(email);
-            return new ResponseEntity<>(SOCIAL_REGISTER_STATUS_TRUE, HttpStatus.OK);
         }
-        return Login(email);
+
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(email, "kakao");
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String atk = tokenProvider.createToken(authentication);
+        String rtk = tokenProvider.createRefreshToken(email);
+        redisDao.setValues(email, rtk, Duration.ofDays(14));
+
+        FybUser user = getUser(email);
+        
+        return UserDto.LoginDto.response(user, atk, rtk);
+    }
+
+    private Set<Authority> getUserAuthority() {
+        return Collections.singleton(Authority.builder()
+                .authorityName("ROLE_USER")
+                .build());
     }
 
 
@@ -188,7 +199,7 @@ public class OAuthService {
                         .email(getTokenInfo().getEmail())
                         .pw(getTokenInfo().getPw())
                         .name(getTokenInfo().getName())
-                        .authorities(Collections.singleton(authority))
+                        .authorities(getUserAuthority())
                         .gender(request.getGender())
                         .height(request.getHeight())
                         .weight(request.getWeight())
@@ -198,5 +209,11 @@ public class OAuthService {
                         .build()
         );
         return new ResponseEntity<>(SOCIAL_ADD_INFO_STAUTS_TRUE, HttpStatus.OK);
+    }
+
+    private FybUser getUser(String email) {
+        return userRepository.findOneWithAuthoritiesByEmail(
+                email).orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER)
+        );
     }
 }
