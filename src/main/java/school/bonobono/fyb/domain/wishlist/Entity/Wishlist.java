@@ -21,29 +21,22 @@ public class Wishlist {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pid")
-    private Long pid;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private FybUser user;
 
-    @Column(name = "pname",length = 50)
-    private String pname;
+    private String productName;
 
-    @Column(name = "pnotes")
-    private String notes;
+    private String productNotes;
 
-    @Column(name = "purl")
-    private String purl;
+    private String productUrl;
 
-    @Column(name = "price")
-    private Integer price;
+    private Integer productPrice;
 
     @CreatedDate
-    @Column(name = "createAt")
-    private LocalDateTime pcreateAt;
+    private LocalDateTime createAt;
     @LastModifiedDate
-    @Column(name = "updateAt")
-    private LocalDateTime pupdateAt;
+    private LocalDateTime updateAt;
 }

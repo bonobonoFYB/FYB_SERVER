@@ -90,10 +90,10 @@ public class WishlistService {
         wishlistRepository.save(
                 Wishlist.builder()
                         .user(user)
-                        .pname(request.getPname())
-                        .purl(request.getPurl())
-                        .notes(request.getNotes())
-                        .price(request.getPrice())
+                        .productName(request.getPname())
+                        .productUrl(request.getPurl())
+                        .productNotes(request.getNotes())
+                        .productPrice(request.getPrice())
                         .build()
         );
         return new ResponseEntity<>(WISHLIST_ADD_STATUS_TRUE, HttpStatus.OK);
@@ -116,12 +116,12 @@ public class WishlistService {
 
         wishlistRepository.save(
                 Wishlist.builder()
-                        .pid(request.getPid())
+                        .id(request.getPid())
                         .user(user)
-                        .pname(request.getPname())
-                        .purl(request.getPurl())
-                        .notes(request.getNotes())
-                        .price(request.getPrice())
+                        .productName(request.getPname())
+                        .productUrl(request.getPurl())
+                        .productNotes(request.getNotes())
+                        .productPrice(request.getPrice())
                         .build()
         );
         return new ResponseEntity<>(WISHLIST_UPDATE_STATUS_TRUE, HttpStatus.OK);

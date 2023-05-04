@@ -42,11 +42,11 @@ public class WishlistDto {
 
         public static WishlistDto.Response response(@NotNull Wishlist wishlist) {
             return Response.builder()
-                    .pid(wishlist.getPid())
-                    .pname(wishlist.getPname())
-                    .notes(wishlist.getNotes())
-                    .purl(wishlist.getPurl())
-                    .price(wishlist.getPrice())
+                    .pid(wishlist.getId())
+                    .pname(wishlist.getProductName())
+                    .notes(wishlist.getProductNotes())
+                    .purl(wishlist.getProductUrl())
+                    .price(wishlist.getProductPrice())
                     .build();
         }
     }
