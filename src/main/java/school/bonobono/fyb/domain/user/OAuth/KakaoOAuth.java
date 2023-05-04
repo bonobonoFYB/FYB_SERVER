@@ -45,9 +45,8 @@ public class KakaoOAuth {
 
         HttpEntity<MultiValueMap<String, String>> kakaoRequest = new HttpEntity<>(params, headersAccess);
 
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(KAKAO_TOKEN_REQUEST_URL,
+        return restTemplate.postForEntity(KAKAO_TOKEN_REQUEST_URL,
                 kakaoRequest, String.class);
-        return responseEntity;
     }
 
     public KakaoDto.OAuthTokenDto getAccessToken(ResponseEntity<String> response) throws JsonProcessingException {
@@ -63,15 +62,12 @@ public class KakaoOAuth {
         headers.add("Authorization", "Bearer " + oAuthToken.getAccess_token());
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
-        ResponseEntity<String> response = restTemplate.exchange("https://kapi.kakao.com/v2/user/me", HttpMethod.GET, request, String.class);
-        return response;
+        return restTemplate.exchange("https://kapi.kakao.com/v2/user/me", HttpMethod.GET, request, String.class);
     }
 
     public KakaoDto.UserInfoDto getUserInfo(ResponseEntity<String> response) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        KakaoDto.UserInfoDto kakaoUserInfoDto = objectMapper.readValue(response.getBody(), KakaoDto.UserInfoDto.class);
-        return kakaoUserInfoDto;
+        return objectMapper.readValue(response.getBody(), KakaoDto.UserInfoDto.class);
     }
-
 
 }
