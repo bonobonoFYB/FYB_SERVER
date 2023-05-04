@@ -18,6 +18,7 @@ import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.domain.wishlist.Repository.WishlistRepository;
 import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,22 +41,23 @@ public class WishlistService {
         );
     }
 
-    private void GET_WISHLIST_INFO_VALIDATION(List<WishlistDto.Response> list) {
+    private void GET_WISHLIST_INFO_VALIDATION(List<Wishlist> list) {
         if (list.isEmpty())
             throw new CustomException(Result.WISHLIST_EMPTY);
     }
-    private void ADD_WISHLIST_INFO_VALIDATION(WishlistDto.Request request) {
-        if (request.getPname() == null)
+
+    private void ADD_WISHLIST_INFO_VALIDATION(WishlistDto.SaveDto request) {
+        if (request.getProductName() == null)
             throw new CustomException(Result.WISHLIST_PNAME_IS_NULL);
-        if (request.getPurl() == null)
+        if (request.getProductUrl() == null)
             throw new CustomException(Result.WISHLIST_PURL_IS_NULL);
     }
-    private void UPDATE_WISHLIST_INFO_VALIDATION(WishlistDto.Response request) {
-        if (request.getPname() == null)
+    private void UPDATE_WISHLIST_INFO_VALIDATION(WishlistDto.UpdateDto request) {
+        if (request.getProductName() == null)
             throw new CustomException(Result.WISHLIST_PNAME_IS_NULL);
-        if (request.getPurl() == null)
+        if (request.getProductUrl() == null)
             throw new CustomException(Result.WISHLIST_PURL_IS_NULL);
-        if (request.getPid() == null)
+        if (request.getId() == null)
             throw new CustomException(Result.WISHLIST_PID_IS_NULL);
     }
 
@@ -67,63 +69,61 @@ public class WishlistService {
 
     // Service
     // 사용자 장바구니 전체조회
-/*    @Transactional
-    public List<WishlistDto.Response> getWishlistInfo() {
+    @Transactional
+    public List<WishlistDto.DetailDto> getWishlistInfo(UserDetails userDetails) {
+        FybUser user = getUser(userDetails.getUsername());
+        List<Wishlist> wishlists = user.getWishlists();
 
-        List<WishlistDto.Response> list = wishlistRepository
-                .findByUid(getTokenInfo().getId())
-                .stream()
-                .map(WishlistDto.Response::response).toList();
+        GET_WISHLIST_INFO_VALIDATION(wishlists);
 
-        GET_WISHLIST_INFO_VALIDATION(list);
-
-        return list;
-    }*/
+        return wishlists.stream().map(WishlistDto.DetailDto::response).toList();
+    }
 
     // 사용자 장바구니 안 상품 등록
     @Transactional
-    public ResponseEntity<StatusTrue> addWishlistInfo(WishlistDto.Request request, UserDetails userDetails) {
+    public WishlistDto.SaveDto addWishlistInfo(WishlistDto.SaveDto request, UserDetails userDetails) {
         ADD_WISHLIST_INFO_VALIDATION(request);
 
         FybUser user = getUser(userDetails.getUsername());
 
-        wishlistRepository.save(
+        Wishlist wishlist = wishlistRepository.save(
                 Wishlist.builder()
                         .user(user)
-                        .productName(request.getPname())
-                        .productUrl(request.getPurl())
-                        .productNotes(request.getNotes())
-                        .productPrice(request.getPrice())
+                        .productName(request.getProductName())
+                        .productUrl(request.getProductUrl())
+                        .productNotes(request.getProductNotes())
+                        .productPrice(request.getProductPrice())
                         .build()
         );
-        return new ResponseEntity<>(WISHLIST_ADD_STATUS_TRUE, HttpStatus.OK);
+
+        return WishlistDto.SaveDto.response(wishlist);
     }
 
     // 사용자 장바구니 상품 삭제
     @Transactional
-    public ResponseEntity<StatusTrue> deleteWishlistInfo(WishlistDto.deleteRequest request) {
-
-        wishlistRepository.deleteById(request.getPid());
-        return new ResponseEntity<>(WISHLIST_DELETE_STATUS_TRUE, HttpStatus.OK);
+    public WishlistDto.DetailDto deleteWishlistInfo(WishlistDto.DeleteDto request) {
+        Wishlist wishlist = getWishlist(request.getId());
+        wishlistRepository.delete(wishlist);
+        return WishlistDto.DetailDto.response(wishlist);
     }
 
     // 사용자 장바구니 상품 수정
     @Transactional
-    public ResponseEntity<StatusTrue> updateWishlistInfo(WishlistDto.Response request, UserDetails userDetails) {
+    public WishlistDto.DetailDto updateWishlistInfo(WishlistDto.UpdateDto request) {
         UPDATE_WISHLIST_INFO_VALIDATION(request);
 
-        FybUser user = getUser(userDetails.getUsername());
-
-        wishlistRepository.save(
-                Wishlist.builder()
-                        .id(request.getPid())
-                        .user(user)
-                        .productName(request.getPname())
-                        .productUrl(request.getPurl())
-                        .productNotes(request.getNotes())
-                        .productPrice(request.getPrice())
-                        .build()
+        Wishlist wishlist = getWishlist(request.getId());
+        wishlist.updateWishlist(
+                request.getProductName(),request.getProductNotes(),
+                request.getProductNotes(), request.getProductPrice()
         );
-        return new ResponseEntity<>(WISHLIST_UPDATE_STATUS_TRUE, HttpStatus.OK);
+
+        return WishlistDto.DetailDto.response(wishlist);
+    }
+
+    private Wishlist getWishlist(Long id) {
+        return wishlistRepository.findById(id).orElseThrow(
+                () -> new CustomException(Result.NOT_FOUND_WISHLIST)
+        );
     }
 }

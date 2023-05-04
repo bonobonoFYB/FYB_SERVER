@@ -44,6 +44,7 @@ public enum Result {
     WISHLIST_PNAME_IS_NULL(-3002,"상품 이름을 입력하지 않았습니다."),
     WISHLIST_PURL_IS_NULL(-3003,"상품을 판매하는 주소를 입력하지 않았습니다."),
     WISHLIST_PID_IS_NULL(-3004, "PID 값이 넘어오지 않았습니다. (웹 / 서버 오류)"),
+    NOT_FOUND_WISHLIST(-3005,"상품이 존재하지 않습니다."),
 
     // 내 옷장
     MY_CLOSET_EMPTY(-4001, "내 옷장이 비어있습니다."),

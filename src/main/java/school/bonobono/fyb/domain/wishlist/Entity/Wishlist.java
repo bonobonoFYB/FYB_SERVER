@@ -39,4 +39,11 @@ public class Wishlist {
     private LocalDateTime createAt;
     @LastModifiedDate
     private LocalDateTime updateAt;
+
+    public void updateWishlist(String productName, String productUrl, String productNotes, Integer productPrice) {
+        this.productName = productName;
+        this.productUrl = productUrl;
+        this.productNotes = productNotes;
+        this.productPrice = productPrice;
+    }
 }
