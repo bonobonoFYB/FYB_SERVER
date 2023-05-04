@@ -52,27 +52,6 @@ public class OAuthService {
             throw new CustomException(Result.REGISTER_INFO_NULL);
     }
 
-    private ResponseEntity<StatusTrue> Login(String email) {
-        if (email.contains("gmail")) {
-            authenticationToken = new UsernamePasswordAuthenticationToken(email, "google");
-        }
-        if (email.contains("daum")) {
-            authenticationToken = new UsernamePasswordAuthenticationToken(email, "kakao");
-        }
-
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String atk = tokenProvider.createToken(authentication);
-        String rtk = tokenProvider.createRefreshToken(email);
-
-        redisDao.setValues(email, rtk, Duration.ofDays(14));
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Authorization", "Bearer " + atk);
-
-        return new ResponseEntity<>(LOGIN_STATUS_TRUE, httpHeaders, HttpStatus.OK);
-    }
-
     private TokenInfoResponseDto getTokenInfo() {
         return TokenInfoResponseDto.Response(
                 Objects.requireNonNull(SecurityUtil.getCurrentUsername()
@@ -90,40 +69,45 @@ public class OAuthService {
         return kakaoUser;
     }
 
-    private GoogleUserInfoDto getGoogleUserInfoDto(String code) throws JsonProcessingException {
+    private GoogleDto.UserInfoDto getGoogleUserInfoDto(String code) throws JsonProcessingException {
         ResponseEntity<String> accessTokenResponse = googleOAuth.requestAccessToken(code);
-        GoogleOAuthTokenDto oAuthToken = googleOAuth.getAccessToken(accessTokenResponse);
+        GoogleDto.OAuthTokenDto oAuthToken = googleOAuth.getAccessToken(accessTokenResponse);
         ResponseEntity<String> userInfoResponse = googleOAuth.requestUserInfo(oAuthToken);
-        GoogleUserInfoDto googleUser = googleOAuth.getUserInfo(userInfoResponse);
+        GoogleDto.UserInfoDto googleUser = googleOAuth.getUserInfo(userInfoResponse);
         return googleUser;
     }
 
     // Service
     // 구글 로그인 서비스
     @Transactional
-    public ResponseEntity<StatusTrue> googlelogin(String code) throws IOException {
-        GoogleUserInfoDto googleUser = getGoogleUserInfoDto(code);
+    public UserDto.LoginDto googlelogin(String code) throws IOException {
+        GoogleDto.UserInfoDto googleUser = getGoogleUserInfoDto(code);
         String email = googleUser.getEmail();
         String name = googleUser.getName();
-        // 데이터베이스에 이메일이 존재하는 경우 로그인
-        if (!userRepository.existsByEmail(email)) {
+
+        // 회원가입
+        if (userRepository.existsByEmail(email) == false) {
             userRepository.save(
                     FybUser.builder()
                             .email(email)
                             .pw(passwordEncoder.encode("google"))
                             .name(name)
                             .authorities(getUserAuthority())
+                            .profileImagePath(null)
                             .gender(null)
                             .height(null)
                             .weight(null)
                             .age(null)
                             .build()
             );
-            Login(email);
-            return new ResponseEntity<>(SOCIAL_REGISTER_STATUS_TRUE, HttpStatus.OK);
         }
-        // 데이터베이스에 이메일이 존재하지 않는 경우 회원가입 후 로그인
-        return Login(email);
+
+        String atk = issueAccessToken(email, "google");
+        String rtk = tokenProvider.createRefreshToken(email);
+        redisDao.setValues(email, rtk, Duration.ofDays(14));
+        FybUser user = getUser(email);
+
+        return UserDto.LoginDto.response(user, atk, rtk);
     }
 
     // 카카오 로그인 서비스
@@ -151,23 +135,12 @@ public class OAuthService {
             );
         }
 
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(email, "kakao");
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String atk = tokenProvider.createToken(authentication);
+        String atk = issueAccessToken(email, "kakao");
         String rtk = tokenProvider.createRefreshToken(email);
         redisDao.setValues(email, rtk, Duration.ofDays(14));
-
         FybUser user = getUser(email);
-        
-        return UserDto.LoginDto.response(user, atk, rtk);
-    }
 
-    private Set<Authority> getUserAuthority() {
-        return Collections.singleton(Authority.builder()
-                .authorityName("ROLE_USER")
-                .build());
+        return UserDto.LoginDto.response(user, atk, rtk);
     }
 
 
@@ -215,5 +188,19 @@ public class OAuthService {
         return userRepository.findOneWithAuthoritiesByEmail(
                 email).orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER)
         );
+    }
+    private String issueAccessToken(String email, String google) {
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(email, google);
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String atk = tokenProvider.createToken(authentication);
+        return atk;
+    }
+
+    private Set<Authority> getUserAuthority() {
+        return Collections.singleton(Authority.builder()
+                .authorityName("ROLE_USER")
+                .build());
     }
 }

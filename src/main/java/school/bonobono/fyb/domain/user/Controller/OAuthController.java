@@ -51,9 +51,9 @@ public class OAuthController {
 
     // 구글 로그인 이후
     @GetMapping("login/google")
-    public ResponseEntity<StatusTrue> callback(
+    public CustomResponseEntity<UserDto.LoginDto> googleLogin(
             @RequestParam(name = "code") String code) throws IOException {
-        return oAuthService.googlelogin(code);
+        return CustomResponseEntity.success(oAuthService.googlelogin(code));
     }
 
     // Sosial 로그인 이후 추가 정보 요청

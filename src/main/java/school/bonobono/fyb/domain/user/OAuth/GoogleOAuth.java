@@ -8,8 +8,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import school.bonobono.fyb.domain.user.Dto.GoogleOAuthTokenDto;
-import school.bonobono.fyb.domain.user.Dto.GoogleUserInfoDto;
+import school.bonobono.fyb.domain.user.Dto.GoogleDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,10 +29,9 @@ public class GoogleOAuth {
     @Value("${app.google.clientSecret}")
     private String googleClientSecret;
 
-    public String getOauthRedirectURL() {
-        String reqUrl = googleLoginUrl + "/o/oauth2/v2/auth?client_id=" + googleClientId + "&redirect_uri=" + googleRedirecUrl
+    public String getGoogleLoginURL() {
+        return googleLoginUrl + "/o/oauth2/v2/auth?client_id=" + googleClientId + "&redirect_uri=" + googleRedirecUrl
                 + "&response_type=code&scope=email%20profile%20openid&access_type=offline";
-        return reqUrl;
     }
 
     public ResponseEntity<String> requestAccessToken(String code) {
@@ -54,13 +52,12 @@ public class GoogleOAuth {
         return null;
     }
 
-    public GoogleOAuthTokenDto getAccessToken(ResponseEntity<String> response) throws JsonProcessingException {
+    public GoogleDto.OAuthTokenDto getAccessToken(ResponseEntity<String> response) throws JsonProcessingException {
         System.out.println("response.getBody() = " + response.getBody());
-        GoogleOAuthTokenDto googleOAuthTokenDto = objectMapper.readValue(response.getBody(), GoogleOAuthTokenDto.class);
-        return googleOAuthTokenDto;
+        return objectMapper.readValue(response.getBody(), GoogleDto.OAuthTokenDto.class);
     }
 
-    public ResponseEntity<String> requestUserInfo(GoogleOAuthTokenDto oAuthToken) {
+    public ResponseEntity<String> requestUserInfo(GoogleDto.OAuthTokenDto oAuthToken) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + oAuthToken.getAccess_token());
@@ -71,10 +68,9 @@ public class GoogleOAuth {
         return response;
     }
 
-    public GoogleUserInfoDto getUserInfo(ResponseEntity<String> response) throws JsonProcessingException {
+    public GoogleDto.UserInfoDto getUserInfo(ResponseEntity<String> response) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        GoogleUserInfoDto googleUserInfoDto = objectMapper.readValue(response.getBody(), GoogleUserInfoDto.class);
-        return googleUserInfoDto;
+        return objectMapper.readValue(response.getBody(), GoogleDto.UserInfoDto.class);
     }
 
 }
