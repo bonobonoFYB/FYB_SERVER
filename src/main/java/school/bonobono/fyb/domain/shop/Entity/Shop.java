@@ -12,6 +12,8 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @Builder
 @Entity
+@Table(name = "shop")
+@EntityListeners(AuditingEntityListener.class)
 public class Shop {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,4 +28,11 @@ public class Shop {
 
     @NotNull
     private String shopImage;
+
+    @NotNull
+    private Boolean shopData = false;
+
+    public void updateShopData() {
+        this.shopData = true;
+    }
 }

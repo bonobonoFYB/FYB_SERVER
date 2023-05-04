@@ -33,27 +33,27 @@ public class ShopController {
     // 사용자 최다조회수 API
     @GetMapping("rank/all")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<List<ShopDto.Response>> getMostViewed(
+    public CustomResponseEntity<List<ShopDto.DetailListDto>> getMostViewed(
     ) {
-        return shopService.getMostViewed();
+        return CustomResponseEntity.success(shopService.getMostViewed());
     }
 
     // 사용자 나이대별 최다조회수 API
     @GetMapping("rank/age")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<List<ShopDto.Response>> getAgeViewed(
-            @RequestParam(required = false, value = "value") Integer value
+    public CustomResponseEntity<List<ShopDto.DetailListDto>> getAgeViewed(
+            @AuthenticationPrincipal final UserDetails userDetails
     ) {
-        return shopService.getAgeViewed(value);
+        return CustomResponseEntity.success(shopService.getAgeViewed(userDetails));
     }
 
     // 사용자 성별 최다조회수 API
     @GetMapping("rank/gender")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<List<ShopDto.Response>> getGenderViewed(
-            @RequestParam(required = false, value = "value") Character value
+    public CustomResponseEntity<List<ShopDto.DetailListDto>> getGenderViewed(
+            @AuthenticationPrincipal final UserDetails userDetails
     ) {
-        return shopService.getGenderViewed(value);
+        return CustomResponseEntity.success(shopService.getGenderViewed(userDetails));
     }
 
     // 쇼핑몰 클릭시 쇼핑몰 이용자의 빅데이터 분석

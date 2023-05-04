@@ -42,6 +42,16 @@ public class ShopDto {
     @NoArgsConstructor
     @Builder
     public static class SaveDto {
-        private Long id;
+        private Long shopId;
+        private String shopName;
+        private String redirectURL;
+
+        public static SaveDto response(Shop shop) {
+            return SaveDto.builder()
+                    .shopId(shop.getId())
+                    .shopName(shop.getShopName())
+                    .redirectURL(shop.getShopUrl())
+                    .build();
+        }
     }
 }
