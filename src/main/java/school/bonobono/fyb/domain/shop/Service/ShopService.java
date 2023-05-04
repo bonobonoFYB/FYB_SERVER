@@ -127,12 +127,6 @@ public class ShopService {
                 .collect(Collectors.toList());
     }
 
-    private FybUser getUser(String email) {
-        return userRepository.findOneWithAuthoritiesByEmail(
-                email).orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER)
-        );
-    }
-
     private List<Long> getSortedShopId(String pattern) {
         Set<String> keys = redisDao.getKeys("*" + pattern);
         return keys.stream().sorted((a, b) -> {
@@ -151,5 +145,11 @@ public class ShopService {
     private void saveShopDataToRedis(Long id, String keyName) {
         int incrementedCount = Integer.parseInt(redisDao.getValues(id + keyName));
         redisDao.setValues(id + keyName, String.valueOf(++incrementedCount));
+    }
+
+    private FybUser getUser(String email) {
+        return userRepository.findOneWithAuthoritiesByEmail(
+                email).orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER)
+        );
     }
 }
