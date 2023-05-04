@@ -20,7 +20,6 @@ import school.bonobono.fyb.domain.user.Dto.KakaoDto;
 @Slf4j
 public class KakaoOAuth {
 
-    private final String KAKAO_TOKEN_REQUEST_URL = "https://kauth.kakao.com/oauth/token";
     @Value("${app.kakao.restApiKey}")
     private String restApiKey;
     @Value("${app.kakao.redirectUrl}")
@@ -45,7 +44,7 @@ public class KakaoOAuth {
 
         HttpEntity<MultiValueMap<String, String>> kakaoRequest = new HttpEntity<>(params, headersAccess);
 
-        return restTemplate.postForEntity(KAKAO_TOKEN_REQUEST_URL,
+        return restTemplate.postForEntity("https://kauth.kakao.com/oauth/token",
                 kakaoRequest, String.class);
     }
 
