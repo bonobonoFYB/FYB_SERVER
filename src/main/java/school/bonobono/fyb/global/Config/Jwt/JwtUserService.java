@@ -27,18 +27,15 @@ public class JwtUserService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(final String email) {
         return userRepository.findOneWithAuthoritiesByEmail(email)
-                .map(user -> createUser(user))
+                .map(this::createUser)
                 .orElseThrow(() -> new CustomException(Result.LOGIN_FALSE));
     }
 
     private User createUser(FybUser user) {
-
         List<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
                 .map(authority -> new SimpleGrantedAuthority(authority.getAuthorityName()))
                 .collect(Collectors.toList());
-        return new User(user.getEmail(),
-                user.getPw(),
-                grantedAuthorities
+        return new User(user.getEmail(), user.getPw(), grantedAuthorities
         );
     }
 }

@@ -6,16 +6,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
+import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.domain.wishlist.Dto.WishlistDto;
 import school.bonobono.fyb.domain.wishlist.Entity.Wishlist;
+import school.bonobono.fyb.domain.wishlist.Repository.WishlistRepository;
 import school.bonobono.fyb.global.Exception.CustomException;
 import school.bonobono.fyb.global.Model.Result;
-import school.bonobono.fyb.domain.user.Repository.UserRepository;
-import school.bonobono.fyb.domain.wishlist.Repository.WishlistRepository;
-import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +35,7 @@ public class WishlistService {
         if (request.getProductUrl() == null)
             throw new CustomException(Result.WISHLIST_PURL_IS_NULL);
     }
+
     private void UPDATE_WISHLIST_INFO_VALIDATION(WishlistDto.UpdateDto request) {
         if (request.getProductName() == null)
             throw new CustomException(Result.WISHLIST_PNAME_IS_NULL);
@@ -99,7 +98,7 @@ public class WishlistService {
 
         Wishlist wishlist = getWishlist(request.getId());
         wishlist.updateWishlist(
-                request.getProductName(),request.getProductNotes(),
+                request.getProductName(), request.getProductNotes(),
                 request.getProductNotes(), request.getProductPrice()
         );
 
