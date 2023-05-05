@@ -26,9 +26,10 @@ public class MyClosetController {
     // 옷장 조회
     @GetMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public List<ClosetDto.readResponse> readMyCloset(
+    public CustomResponseEntity<List<ClosetDto.DetailDto>> readMyCloset(
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        return myClosetService.readMyCloset();
+        return CustomResponseEntity.success(myClosetService.readMyCloset(userDetails));
     }
 
     // 옷 사진 추가 등록

@@ -38,7 +38,7 @@ public class MyClosetService {
     private String bucket;
 
     // Validation 및 단순화
-    private static void readMyClosetValidate(List<ClosetDto.readResponse> list) {
+    private static void readMyClosetValidate(List<Closet> list) {
         if (list.isEmpty()) {
             throw new CustomException(Result.MY_CLOSET_EMPTY);
         }
@@ -80,15 +80,11 @@ public class MyClosetService {
 
     // Service
     @Transactional
-    public List<ClosetDto.readResponse> readMyCloset() {
-        List<ClosetDto.readResponse> list = myClosetRepository
-                .findByUid(getTokenInfo().getId())
-                .stream()
-                .map(ClosetDto.readResponse::Response).toList();
-
-        readMyClosetValidate(list);
-
-        return list;
+    public List<ClosetDto.DetailDto> readMyCloset(UserDetails userDetails) {
+        FybUser user = getUser(userDetails.getUsername());
+        List<Closet> closets = user.getClosets();
+        readMyClosetValidate(closets);
+        return closets.stream().map(ClosetDto.DetailDto::response).toList();
     }
 
     @Transactional

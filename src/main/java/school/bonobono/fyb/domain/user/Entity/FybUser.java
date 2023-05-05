@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import school.bonobono.fyb.domain.closet.Entity.Closet;
 import school.bonobono.fyb.domain.wishlist.Entity.Wishlist;
 
 import javax.persistence.*;
@@ -96,6 +97,9 @@ public class FybUser {
 
     @OneToMany(mappedBy = "user")
     private List<Wishlist> Wishlists;
+
+    @OneToMany(mappedBy = "user")
+    private List<Closet> closets;
 
     @ManyToMany
     @JoinTable(

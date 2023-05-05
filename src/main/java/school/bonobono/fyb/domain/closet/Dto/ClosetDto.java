@@ -37,20 +37,20 @@ public class ClosetDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class readResponse{
+    public static class DetailDto{
         private Long id;
-        private String pname;
-        private String pnotes;
-        private String pkind;
+        private String productName;
+        private String productNotes;
+        private String productKind;
         private String closetImagePath;
 
-        public static ClosetDto.readResponse Response(@NotNull Closet myCloset){
-            return readResponse.builder()
-                    .id(myCloset.getId())
-                    .pname(myCloset.getPname())
-                    .pkind(myCloset.getPkind())
-                    .pnotes(myCloset.getPnotes())
-                    .closetImagePath(myCloset.getClosetImagePath())
+        public static DetailDto response(@NotNull Closet closet){
+            return DetailDto.builder()
+                    .id(closet.getId())
+                    .productName(closet.getProductName())
+                    .productNotes(closet.getProductNotes())
+                    .productKind(closet.getProductKind())
+                    .closetImagePath(closet.getClosetImagePath())
                     .build();
         }
     }
