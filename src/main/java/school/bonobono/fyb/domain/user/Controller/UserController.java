@@ -30,7 +30,7 @@ public class UserController {
 
     // 회원가입
     @PostMapping
-    public CustomResponseEntity<UserDto.RegisterDto> registerUser(
+    public CustomResponseEntity<UserDto.LoginDto> registerUser(
             @Valid @RequestBody final UserDto.RegisterDto request
     ) {
         return CustomResponseEntity.success(userService.registerUser(request));
@@ -47,9 +47,9 @@ public class UserController {
     // 로그인 만료시 atk 재발급
     @GetMapping
     public CustomResponseEntity<UserDto.AccessTokenRefreshDto> reissue(
-            @RequestHeader(value = "REFRESH_TOKEN") String rtk
+            @RequestHeader(value = "REFRESH_TOKEN") String refreshToken
     ) {
-        return CustomResponseEntity.success(userService.reissue(rtk));
+        return CustomResponseEntity.success(userService.reissue(refreshToken));
     }
 
     // 프로필 이미지 설정
@@ -111,7 +111,7 @@ public class UserController {
     // 회원탈퇴
     @DeleteMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public CustomResponseEntity<UserDto.WithdrawalDto> deleteUser(
+    public CustomResponseEntity<UserDto.DetailDto> deleteUser(
             @Valid @RequestBody final UserDto.WithdrawalDto request,
             @AuthenticationPrincipal final UserDetails userDetails
     ) {
