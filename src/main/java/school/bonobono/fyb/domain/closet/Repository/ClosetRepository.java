@@ -9,6 +9,4 @@ import java.util.Optional;
 
 @Repository
 public interface ClosetRepository extends JpaRepository<Closet, Long> {
-    List<Closet> findByUid(Long uid);
-    Optional<Closet> findByPnameAndUid(String pname, Long uid);
 }

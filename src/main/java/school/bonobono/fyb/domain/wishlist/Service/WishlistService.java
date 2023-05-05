@@ -2,27 +2,20 @@ package school.bonobono.fyb.domain.wishlist.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import school.bonobono.fyb.domain.user.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.wishlist.Dto.WishlistDto;
 import school.bonobono.fyb.domain.wishlist.Entity.Wishlist;
 import school.bonobono.fyb.global.Exception.CustomException;
 import school.bonobono.fyb.global.Model.Result;
-import school.bonobono.fyb.global.Model.StatusTrue;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.domain.wishlist.Repository.WishlistRepository;
 import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
-
-import static school.bonobono.fyb.global.Model.StatusTrue.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,14 +25,6 @@ public class WishlistService {
     private final UserRepository userRepository;
 
     // Validation 및 단순화
-    private TokenInfoResponseDto getTokenInfo() {
-        return TokenInfoResponseDto.Response(
-                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
-                        .flatMap(
-                                userRepository::findOneWithAuthoritiesByEmail)
-                        .orElse(null))
-        );
-    }
 
     private void GET_WISHLIST_INFO_VALIDATION(List<Wishlist> list) {
         if (list.isEmpty())
