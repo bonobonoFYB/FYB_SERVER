@@ -4,11 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import school.bonobono.fyb.domain.closet.Dto.MyClosetDto;
-import school.bonobono.fyb.global.Model.StatusTrue;
+import school.bonobono.fyb.domain.closet.Dto.ClosetDto;
 import school.bonobono.fyb.domain.closet.Service.MyClosetService;
+import school.bonobono.fyb.global.Model.CustomResponseEntity;
+import school.bonobono.fyb.global.Model.StatusTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,7 +26,7 @@ public class MyClosetController {
     // 옷장 조회
     @GetMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public List<MyClosetDto.readResponse> readMyCloset(
+    public List<ClosetDto.readResponse> readMyCloset(
     ) {
         return myClosetService.readMyCloset();
     }
@@ -40,17 +43,18 @@ public class MyClosetController {
     // 옷장 추가하기
     @PostMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public List<Object> addMyCloset(
-            @RequestBody final MyClosetDto.addRequest request
+    public CustomResponseEntity<ClosetDto.SaveDto> addMyCloset(
+            @RequestBody final ClosetDto.SaveDto request,
+            @AuthenticationPrincipal final UserDetails userDetails
     ) {
-        return myClosetService.addMyCloset(request);
+        return CustomResponseEntity.success(myClosetService.addMyCloset(request, userDetails));
     }
 
     // 옷장 삭제
     @DeleteMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<StatusTrue> deleteMyCloset(
-            @RequestBody final MyClosetDto.deleteRequest request
+            @RequestBody final ClosetDto.deleteRequest request
     ) {
         return myClosetService.deleteCloset(request);
     }
@@ -59,7 +63,7 @@ public class MyClosetController {
     @PatchMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<StatusTrue> updateMyCloset(
-            @RequestBody final MyClosetDto.readResponse request
+            @RequestBody final ClosetDto.readResponse request
     ) {
         return myClosetService.updateCloset(request);
     }

@@ -7,13 +7,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import school.bonobono.fyb.domain.closet.Dto.MyClosetDto;
-import school.bonobono.fyb.domain.closet.Entity.MyCloset;
+import school.bonobono.fyb.domain.closet.Dto.ClosetDto;
+import school.bonobono.fyb.domain.closet.Entity.Closet;
 import school.bonobono.fyb.domain.closet.Repository.MyClosetRepository;
+import school.bonobono.fyb.domain.user.Dto.TokenInfoResponseDto;
+import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
+import school.bonobono.fyb.global.Config.Jwt.SecurityUtil;
 import school.bonobono.fyb.global.Exception.CustomException;
 import school.bonobono.fyb.global.Model.Result;
 import school.bonobono.fyb.global.Model.StatusTrue;
@@ -34,23 +38,23 @@ public class MyClosetService {
     private String bucket;
 
     // Validation 및 단순화
-    private static void readMyClosetValidate(List<MyClosetDto.readResponse> list) {
+    private static void readMyClosetValidate(List<ClosetDto.readResponse> list) {
         if (list.isEmpty()) {
             throw new CustomException(Result.MY_CLOSET_EMPTY);
         }
     }
 
-    private static void addMyClosetValidate(MyClosetDto.addRequest request) {
-        if (request.getPname() == null) {
+    private static void addMyClosetValidate(ClosetDto.SaveDto request) {
+        if (request.getProductName() == null) {
             throw new CustomException(Result.MY_CLOSET_PNAME_IS_NULL);
         }
 
-        if (request.getPkind() == null) {
+        if (request.getProductKind() == null) {
             throw new CustomException(Result.MY_CLOSET_PKIND_IS_NULL);
         }
     }
 
-    private static void updateValidate(MyClosetDto.readResponse request) {
+    private static void updateValidate(ClosetDto.readResponse request) {
         if (request.getId() == null) {
             throw new CustomException(Result.MY_CLOSET_PNAME_IS_NULL);
         }
@@ -65,14 +69,22 @@ public class MyClosetService {
 
     }
 
-    // Service
+    private TokenInfoResponseDto getTokenInfo() {
+        return TokenInfoResponseDto.Response(
+                Objects.requireNonNull(SecurityUtil.getCurrentUsername()
+                        .flatMap(
+                                userRepository::findOneWithAuthoritiesByEmail)
+                        .orElse(null))
+        );
+    }
 
+    // Service
     @Transactional
-    public List<MyClosetDto.readResponse> readMyCloset() {
-        List<MyClosetDto.readResponse> list = myClosetRepository
+    public List<ClosetDto.readResponse> readMyCloset() {
+        List<ClosetDto.readResponse> list = myClosetRepository
                 .findByUid(getTokenInfo().getId())
                 .stream()
-                .map(MyClosetDto.readResponse::Response).toList();
+                .map(ClosetDto.readResponse::Response).toList();
 
         readMyClosetValidate(list);
 
@@ -80,34 +92,22 @@ public class MyClosetService {
     }
 
     @Transactional
-    public List<Object> addMyCloset(MyClosetDto.addRequest request) {
+    public ClosetDto.SaveDto addMyCloset(ClosetDto.SaveDto request, UserDetails userDetails) {
         addMyClosetValidate(request);
-
-        myClosetRepository.save(
-                MyCloset.builder()
-                        .uid(getTokenInfo().getId())
-                        .pkind(request.getPkind())
-                        .pname(request.getPname())
-                        .pnotes(request.getPnotes())
+        FybUser user = getUser(userDetails.getUsername());
+        Closet closet = myClosetRepository.save(
+                Closet.builder()
+                        .user(user)
+                        .productName(request.getProductName())
+                        .productNotes(request.getProductNotes())
+                        .productKind(request.getProductKind())
                         .build()
         );
-
-        MyCloset myCloset = myClosetRepository.findByPnameAndUid(request.getPname(), getTokenInfo().getId()).orElseThrow(
-                NullPointerException::new
-        );
-
-        HashMap<String, Long> response = new HashMap<>();
-        response.put("id", myCloset.getId());
-
-        List<Object> list = new ArrayList<>();
-        list.add(response);
-        list.add(MY_CLOSET_ADD_STATUS_TRUE);
-
-        return list;
+        return ClosetDto.SaveDto.response(closet);
     }
 
     @Transactional
-    public ResponseEntity<StatusTrue> deleteCloset(MyClosetDto.deleteRequest request) {
+    public ResponseEntity<StatusTrue> deleteCloset(ClosetDto.deleteRequest request) {
         if (request.getId() == null) {
             throw new CustomException(Result.MY_CLOSET_ID_IS_NULL);
         }
@@ -118,12 +118,12 @@ public class MyClosetService {
     }
 
     @Transactional
-    public ResponseEntity<StatusTrue> updateCloset(MyClosetDto.readResponse request) {
+    public ResponseEntity<StatusTrue> updateCloset(ClosetDto.readResponse request) {
 
         updateValidate(request);
 
         myClosetRepository.save(
-                MyCloset.builder()
+                Closet.builder()
                         .id(request.getId())
                         .uid(getTokenInfo().getId())
                         .pkind(request.getPkind())
@@ -144,13 +144,13 @@ public class MyClosetService {
         objMeta.setContentLength(multipartFile.getInputStream().available());
         amazonS3Client.putObject(bucket, mycloset_image_name, multipartFile.getInputStream(), objMeta);
 
-        MyCloset myCloset = myClosetRepository.findById(id).orElseThrow(
+        Closet myCloset = myClosetRepository.findById(id).orElseThrow(
                 NullPointerException::new
         );
 
 
         myClosetRepository.save(
-                MyCloset.builder()
+                Closet.builder()
                         .id(id)
                         .uid(myCloset.getUid())
                         .pkind(myCloset.getPkind())
@@ -161,5 +161,11 @@ public class MyClosetService {
         );
 
         return new ResponseEntity<>(MY_CLOSET_IMAGE_UPLOAD_TRUE, HttpStatus.OK);
+    }
+
+    public FybUser getUser(String email) {
+        return userRepository.findOneWithAuthoritiesByEmail(email).orElseThrow(
+                () -> new CustomException(Result.NOT_FOUND_USER)
+        );
     }
 }

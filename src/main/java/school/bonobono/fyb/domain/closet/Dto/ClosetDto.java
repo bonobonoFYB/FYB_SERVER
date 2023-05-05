@@ -1,20 +1,28 @@
 package school.bonobono.fyb.domain.closet.Dto;
 
 import lombok.*;
-import school.bonobono.fyb.domain.closet.Entity.MyCloset;
+import school.bonobono.fyb.domain.closet.Entity.Closet;
+import school.bonobono.fyb.domain.wishlist.Entity.Wishlist;
 
 import javax.validation.constraints.NotNull;
 
-public class MyClosetDto {
+public class ClosetDto {
 
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class addRequest{
-        private String pname;
-        private String pnotes;
-        private String pkind;
+    public static class SaveDto{
+        private String productName;
+        private String productNotes;
+        private String productKind;
+        public static SaveDto response(Closet closet) {
+            return SaveDto.builder()
+                    .productName(closet.getProductName())
+                    .productNotes(closet.getProductNotes())
+                    .productKind(closet.getProductKind())
+                    .build();
+        }
     }
 
     @Getter
@@ -36,7 +44,7 @@ public class MyClosetDto {
         private String pkind;
         private String closetImagePath;
 
-        public static MyClosetDto.readResponse Response(@NotNull MyCloset myCloset){
+        public static ClosetDto.readResponse Response(@NotNull Closet myCloset){
             return readResponse.builder()
                     .id(myCloset.getId())
                     .pname(myCloset.getPname())
