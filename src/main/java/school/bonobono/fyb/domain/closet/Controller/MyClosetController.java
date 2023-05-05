@@ -54,10 +54,10 @@ public class MyClosetController {
     // 옷장 삭제
     @DeleteMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<StatusTrue> deleteMyCloset(
-            @RequestBody final ClosetDto.deleteRequest request
+    public CustomResponseEntity<ClosetDto.DetailDto> deleteMyCloset(
+            @RequestBody final ClosetDto.DeleteDto request
     ) {
-        return myClosetService.deleteCloset(request);
+        return CustomResponseEntity.success(myClosetService.deleteCloset(request));
     }
 
     // 옷장 업데이트

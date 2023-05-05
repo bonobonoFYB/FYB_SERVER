@@ -29,7 +29,7 @@ public class ClosetDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class deleteRequest{
+    public static class DeleteDto{
         private Long id;
     }
 

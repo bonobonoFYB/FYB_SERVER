@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.domain.closet.Dto.ClosetDto;
 import school.bonobono.fyb.domain.closet.Entity.Closet;
-import school.bonobono.fyb.domain.closet.Repository.MyClosetRepository;
+import school.bonobono.fyb.domain.closet.Repository.ClosetRepository;
 import school.bonobono.fyb.domain.user.Dto.TokenInfoResponseDto;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
@@ -33,7 +33,7 @@ import static school.bonobono.fyb.global.Model.StatusTrue.*;
 @RequiredArgsConstructor
 @Slf4j
 public class MyClosetService {
-    private final MyClosetRepository myClosetRepository;
+    private final ClosetRepository closetRepository;
     private final UserRepository userRepository;
     private final AmazonS3Client amazonS3Client;
     @Value("${cloud.aws.s3.bucket}")
@@ -93,7 +93,7 @@ public class MyClosetService {
     public ClosetDto.SaveDto addMyCloset(ClosetDto.SaveDto request, UserDetails userDetails) {
         addMyClosetValidate(request);
         FybUser user = getUser(userDetails.getUsername());
-        Closet closet = myClosetRepository.save(
+        Closet closet = closetRepository.save(
                 Closet.builder()
                         .user(user)
                         .productName(request.getProductName())
@@ -105,14 +105,15 @@ public class MyClosetService {
     }
 
     @Transactional
-    public ResponseEntity<StatusTrue> deleteCloset(ClosetDto.deleteRequest request) {
+    public ClosetDto.DetailDto deleteCloset(ClosetDto.DeleteDto request) {
         if (request.getId() == null) {
             throw new CustomException(Result.MY_CLOSET_ID_IS_NULL);
         }
-
-        myClosetRepository.deleteById(request.getId());
-
-        return new ResponseEntity<>(MY_CLOSET_DELETE_STATUS_TRUE, HttpStatus.OK);
+        Closet closet = closetRepository.findById(request.getId()).orElseThrow(
+                () -> new CustomException(Result.NOT_FOUND_CLOSET)
+        );
+        closetRepository.delete(closet);
+        return ClosetDto.DetailDto.response(closet);
     }
 
     @Transactional
@@ -120,7 +121,7 @@ public class MyClosetService {
 
         updateValidate(request);
 
-        myClosetRepository.save(
+        closetRepository.save(
                 Closet.builder()
                         .id(request.getId())
                         .uid(getTokenInfo().getId())
@@ -139,7 +140,7 @@ public class MyClosetService {
         String imageName = "closet/" + uuid;
         uploadImage(multipartFile, imageName);
 
-        Closet closet = myClosetRepository.findById(id).orElseThrow(
+        Closet closet = closetRepository.findById(id).orElseThrow(
                 () -> new CustomException(Result.NOT_FOUND_CLOSET)
         );
         closet.updateImagePath(amazonS3Client.getUrl(bucket, imageName).toString());
