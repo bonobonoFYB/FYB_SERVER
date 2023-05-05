@@ -23,7 +23,9 @@ import school.bonobono.fyb.global.Model.Result;
 import school.bonobono.fyb.global.Model.StatusTrue;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 import static school.bonobono.fyb.global.Model.StatusTrue.*;
 
@@ -132,36 +134,33 @@ public class MyClosetService {
         return new ResponseEntity<>(MY_CLOSET_UPDATE_STATUS_TRUE, HttpStatus.OK);
     }
 
-    public ResponseEntity<Object> updateImage(MultipartFile multipartFile, Long id) throws IOException {
-        // String ext = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+    public ClosetDto.DetailDto updateImage(MultipartFile multipartFile, Long id) {
         UUID uuid = UUID.randomUUID();
-        String mycloset_image_name = "mycloset/" + uuid ;
-        ObjectMetadata objMeta = new ObjectMetadata();
-        objMeta.setContentLength(multipartFile.getInputStream().available());
-        amazonS3Client.putObject(bucket, mycloset_image_name, multipartFile.getInputStream(), objMeta);
+        String imageName = "closet/" + uuid;
+        uploadImage(multipartFile, imageName);
 
-        Closet myCloset = myClosetRepository.findById(id).orElseThrow(
-                NullPointerException::new
+        Closet closet = myClosetRepository.findById(id).orElseThrow(
+                () -> new CustomException(Result.NOT_FOUND_CLOSET)
         );
+        closet.updateImagePath(amazonS3Client.getUrl(bucket, imageName).toString());
 
-
-        myClosetRepository.save(
-                Closet.builder()
-                        .id(id)
-                        .uid(myCloset.getUid())
-                        .pkind(myCloset.getPkind())
-                        .pnotes(myCloset.getPnotes())
-                        .pname(myCloset.getPname())
-                        .closetImagePath(amazonS3Client.getUrl(bucket, mycloset_image_name).toString())
-                        .build()
-        );
-
-        return new ResponseEntity<>(MY_CLOSET_IMAGE_UPLOAD_TRUE, HttpStatus.OK);
+        return ClosetDto.DetailDto.response(closet);
     }
 
     public FybUser getUser(String email) {
         return userRepository.findOneWithAuthoritiesByEmail(email).orElseThrow(
                 () -> new CustomException(Result.NOT_FOUND_USER)
         );
+    }
+
+    private void uploadImage(MultipartFile multipartFile, String imageName) {
+        // String ext = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+        ObjectMetadata objMeta = new ObjectMetadata();
+        try {
+            objMeta.setContentLength(multipartFile.getInputStream().available());
+            amazonS3Client.putObject(bucket, imageName, multipartFile.getInputStream(), objMeta);
+        } catch (IOException e) {
+            throw new CustomException(Result.IMAGE_UPLOAD_FAIL);
+        }
     }
 }

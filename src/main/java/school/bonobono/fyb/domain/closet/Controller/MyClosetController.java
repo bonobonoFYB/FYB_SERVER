@@ -35,10 +35,10 @@ public class MyClosetController {
     // 옷 사진 추가 등록
     @PutMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<Object> updateImage(
+    public CustomResponseEntity<ClosetDto.DetailDto> updateImage(
             @RequestParam("file") MultipartFile multipartFile, @RequestParam("id") Long id
-    ) throws IOException {
-        return myClosetService.updateImage(multipartFile, id);
+    ) {
+        return CustomResponseEntity.success(myClosetService.updateImage(multipartFile, id));
     }
 
     // 옷장 추가하기

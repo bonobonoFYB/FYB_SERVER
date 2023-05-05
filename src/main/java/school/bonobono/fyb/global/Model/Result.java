@@ -52,9 +52,11 @@ public enum Result {
     MY_CLOSET_PKIND_IS_NULL(-4003, "등록하려는 옷의 종류가 선택되지 않았습니다."),
     MY_CLOSET_ID_IS_NULL(-4004, "아무 항목도 삭제하지 않습니다."),
     MY_CLOSET_DATA_ID_IS_NULL(-4005, "프론트, 서버오류 : 유저의 Data Id 값이 넘어오지 않았습니다."),
+    NOT_FOUND_CLOSET(-4006, "해당 옷을 찾지 못하였습니다."),
 
     // 이미지 관련
     IMAGE_UPLOAD_FAIL(-5001,"이미지 업로드에 실패하였습니다."),
+
 
     // 매장 관련
     NOT_FOUND_SHOP(-6001, "해당 매장은 존재하지 않습니다"),

@@ -28,4 +28,8 @@ public class Closet {
     @Column(name = "closetImagePath")
     private String closetImagePath;
 
+    public void updateImagePath(String closetImagePath) {
+        this.closetImagePath = closetImagePath;
+    }
+
 }
