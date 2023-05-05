@@ -44,7 +44,7 @@ public class MyClosetController {
     // 옷장 추가하기
     @PostMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public CustomResponseEntity<ClosetDto.SaveDto> addMyCloset(
+    public CustomResponseEntity<ClosetDto.DetailDto> addMyCloset(
             @RequestBody final ClosetDto.SaveDto request,
             @AuthenticationPrincipal final UserDetails userDetails
     ) {
@@ -63,9 +63,9 @@ public class MyClosetController {
     // 옷장 업데이트
     @PatchMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<StatusTrue> updateMyCloset(
-            @RequestBody final ClosetDto.readResponse request
+    public CustomResponseEntity<ClosetDto.DetailDto> updateMyCloset(
+            @RequestBody final ClosetDto.UpdateDto request
     ) {
-        return myClosetService.updateCloset(request);
+        return CustomResponseEntity.success(myClosetService.updateCloset(request));
     }
 }

@@ -16,13 +16,17 @@ public class ClosetDto {
         private String productName;
         private String productNotes;
         private String productKind;
-        public static SaveDto response(Closet closet) {
-            return SaveDto.builder()
-                    .productName(closet.getProductName())
-                    .productNotes(closet.getProductNotes())
-                    .productKind(closet.getProductKind())
-                    .build();
-        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class UpdateDto{
+        private Long id;
+        private String productName;
+        private String productNotes;
+        private String productKind;
     }
 
     @Getter

@@ -56,16 +56,12 @@ public class MyClosetService {
         }
     }
 
-    private static void updateValidate(ClosetDto.readResponse request) {
-        if (request.getId() == null) {
+    private static void updateValidate(ClosetDto.UpdateDto request) {
+        if (request.getProductName() == null) {
             throw new CustomException(Result.MY_CLOSET_PNAME_IS_NULL);
         }
 
-        if (request.getPname() == null) {
-            throw new CustomException(Result.MY_CLOSET_PNAME_IS_NULL);
-        }
-
-        if (request.getPkind() == null) {
+        if (request.getProductKind() == null) {
             throw new CustomException(Result.MY_CLOSET_PKIND_IS_NULL);
         }
 
@@ -90,7 +86,7 @@ public class MyClosetService {
     }
 
     @Transactional
-    public ClosetDto.SaveDto addMyCloset(ClosetDto.SaveDto request, UserDetails userDetails) {
+    public ClosetDto.DetailDto addMyCloset(ClosetDto.SaveDto request, UserDetails userDetails) {
         addMyClosetValidate(request);
         FybUser user = getUser(userDetails.getUsername());
         Closet closet = closetRepository.save(
@@ -101,7 +97,7 @@ public class MyClosetService {
                         .productKind(request.getProductKind())
                         .build()
         );
-        return ClosetDto.SaveDto.response(closet);
+        return ClosetDto.DetailDto.response(closet);
     }
 
     @Transactional
@@ -109,30 +105,20 @@ public class MyClosetService {
         if (request.getId() == null) {
             throw new CustomException(Result.MY_CLOSET_ID_IS_NULL);
         }
-        Closet closet = closetRepository.findById(request.getId()).orElseThrow(
-                () -> new CustomException(Result.NOT_FOUND_CLOSET)
-        );
+        Closet closet = getCloset(request.getId());
         closetRepository.delete(closet);
         return ClosetDto.DetailDto.response(closet);
     }
 
     @Transactional
-    public ResponseEntity<StatusTrue> updateCloset(ClosetDto.readResponse request) {
+    public ClosetDto.DetailDto updateCloset(ClosetDto.UpdateDto request) {
 
         updateValidate(request);
 
-        closetRepository.save(
-                Closet.builder()
-                        .id(request.getId())
-                        .uid(getTokenInfo().getId())
-                        .pkind(request.getPkind())
-                        .pnotes(request.getPnotes())
-                        .pname(request.getPname())
-                        .closetImagePath(getTokenInfo().getProfileImagePath())
-                        .build()
-        );
+        Closet closet = getCloset(request.getId());
+        closet.updateCloset(request.getProductName(), request.getProductKind(), request.getProductNotes());
 
-        return new ResponseEntity<>(MY_CLOSET_UPDATE_STATUS_TRUE, HttpStatus.OK);
+        return ClosetDto.DetailDto.response(closet);
     }
 
     public ClosetDto.DetailDto updateImage(MultipartFile multipartFile, Long id) {
@@ -140,12 +126,16 @@ public class MyClosetService {
         String imageName = "closet/" + uuid;
         uploadImage(multipartFile, imageName);
 
-        Closet closet = closetRepository.findById(id).orElseThrow(
-                () -> new CustomException(Result.NOT_FOUND_CLOSET)
-        );
+        Closet closet = getCloset(id);
         closet.updateImagePath(amazonS3Client.getUrl(bucket, imageName).toString());
 
         return ClosetDto.DetailDto.response(closet);
+    }
+
+    private Closet getCloset(Long id) {
+        return closetRepository.findById(id).orElseThrow(
+                () -> new CustomException(Result.NOT_FOUND_CLOSET)
+        );
     }
 
     public FybUser getUser(String email) {
