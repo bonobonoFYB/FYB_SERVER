@@ -2,6 +2,7 @@ package school.bonobono.fyb.domain.closet.Entity;
 
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import school.bonobono.fyb.domain.user.Entity.FybUser;
 
 import javax.persistence.*;
 
@@ -12,15 +13,18 @@ import javax.persistence.*;
 @Builder
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class MyCloset {
+public class Closet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    // 논리적 설계의 FK ( 사용자 ID )
-    private Long uid;
-    private String pname;
-    private String pkind;
-    private String pnotes;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private FybUser user;
+
+    private String productName;
+    private String productKind;
+    private String productNotes;
     @Column(name = "closetImagePath")
     private String closetImagePath;
 
