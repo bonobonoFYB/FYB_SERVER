@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.nurigo.java_sdk.api.Message;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
-import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -44,14 +43,11 @@ public class UserService {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final AmazonS3Client amazonS3Client;
+    private final SmsService smsService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
-    @Value("${coolsms.apiKey}")
-    private String smsKey;
 
-    @Value("${coolsms.secretKey}")
-    private String smsSecretKey;
 
     // Service
     @Transactional
@@ -136,15 +132,12 @@ public class UserService {
 
         return new UserDto.DetailDto();
     }
-    // 비밀번호 변경
 
     @Transactional
-    public UserDto.PhoneVerificationDto certifiedPhoneNumber(UserDto.PhoneVerificationDto request) throws CoolsmsException {
+    public UserDto.PhoneVerificationDto certifiedPhoneNumber(UserDto.PhoneVerificationDto request, String randNum) throws CoolsmsException {
         // 핸드폰 번호 - 포함 13글자 지정
         PHONE_NUM_LENGTH_CHECK(request);
-        String randNum = RandomStringUtils.randomNumeric(6);
-        Message coolSMS = new Message(smsKey, smsSecretKey);
-        coolSMS.send(getInformation(request, randNum));
+        smsService.sendMessage(request.getPhoneNumber(),randNum);
         return UserDto.PhoneVerificationDto.response(randNum);
     }
 
@@ -158,7 +151,6 @@ public class UserService {
 
 
     // 비밀번호 잃어버린경우
-
     @Transactional
     public UserDto.LostPasswordResetDto PwLostChange(UserDto.LostPasswordResetDto request) {
         FybUser user = getUser(request.getEmail());
@@ -166,8 +158,8 @@ public class UserService {
         user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
         return new UserDto.LostPasswordResetDto();
     }
-    // 회원탈퇴
 
+    // 회원탈퇴
     @Transactional
     public UserDto.DetailDto delete(UserDto.WithdrawalDto request, UserDetails userDetails) {
         FybUser user = getUser(userDetails.getUsername());
@@ -237,8 +229,7 @@ public class UserService {
     }
 
     private static double calculateBMI(UserDto.RegisterDto request) {
-        double BMI = ((double) request.getWeight() / (double) request.getHeight() / (double) request.getHeight()) * 10000;
-        return BMI;
+        return ((double) request.getWeight() / (double) request.getHeight() / (double) request.getHeight()) * 10000;
     }
 
     private Set<Authority> getUserAuthority() {
@@ -322,22 +313,11 @@ public class UserService {
     }
 
     private FybUser getUser(String email) {
-        return userRepository.findOneWithAuthoritiesByEmail(
-                email).orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER)
+        return userRepository.findOneWithAuthoritiesByEmail(email).orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER)
         );
     }
 
     private static String getBodyInformation(UserDto.RegisterDto request) {
         return request.getForm() + request.getPelvis() + request.getShoulder() + request.getLeg();
-    }
-
-    private static HashMap<String, String> getInformation(UserDto.PhoneVerificationDto request, String randNum) {
-        HashMap<String, String> sendInformation = new HashMap<>();
-        sendInformation.put("to", request.getPhoneNumber());
-        sendInformation.put("from", "010-4345-4377");
-        sendInformation.put("type", "SMS");
-        sendInformation.put("text", "FYB 휴대폰인증 인증번호는" + "[ " + randNum + " ]" + "입니다.");
-        sendInformation.put("app_version", "test app 1.2");
-        return sendInformation;
     }
 }

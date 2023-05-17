@@ -3,6 +3,7 @@ package school.bonobono.fyb.domain.user.Controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
+import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,7 +42,7 @@ public class UserController {
     public CustomResponseEntity<UserDto.PhoneVerificationDto> certifiedPhoneNumber(
             @Valid @RequestBody final UserDto.PhoneVerificationDto request
     ) throws CoolsmsException {
-        return CustomResponseEntity.success(userService.certifiedPhoneNumber(request));
+        return CustomResponseEntity.success(userService.certifiedPhoneNumber(request, RandomStringUtils.randomNumeric(6)));
     }
 
     // 로그인 만료시 atk 재발급
