@@ -27,6 +27,7 @@ import school.bonobono.fyb.global.Model.Result;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -49,10 +50,11 @@ public class OAuthService {
         GoogleDto.UserInfoDto googleUser = getGoogleUserInfoDto(code);
         String email = googleUser.getEmail();
         String name = googleUser.getName();
+        Optional<FybUser> userOptional = userRepository.findByEmail(googleUser.getEmail());
 
         // 회원가입
-        if (userRepository.existsByEmail(email) == false) {
-            userRepository.save(
+        if (userOptional.isPresent() == false) {
+            FybUser user = userRepository.save(
                     FybUser.builder()
                             .email(email)
                             .pw(passwordEncoder.encode("google"))
@@ -65,12 +67,13 @@ public class OAuthService {
                             .age(null)
                             .build()
             );
+            userOptional = Optional.of(user);
         }
 
-        String atk = issueAccessToken(email, "google");
+        FybUser user = userOptional.get();
+        String atk = issueAccessToken(user, email, "google");
         String rtk = tokenProvider.createRefreshToken(email);
         redisDao.setValues(email, rtk, Duration.ofDays(14));
-        FybUser user = getUser(email);
 
         return UserDto.LoginDto.response(user, atk, rtk);
     }
@@ -82,10 +85,10 @@ public class OAuthService {
         String email = kakaoUser.getKakao_account().getEmail();
         String name = kakaoUser.getProperties().getNickname();
         String profileImagePath = kakaoUser.getProperties().getProfile_image();
-
+        Optional<FybUser> userOptional = userRepository.findByEmail(email);
         // 회원가입
-        if (userRepository.existsByEmail(email) == false) {
-            userRepository.save(
+        if (userOptional.isPresent() == false) {
+            FybUser user = userRepository.save(
                     FybUser.builder()
                             .email(email)
                             .pw(passwordEncoder.encode("kakao"))
@@ -98,12 +101,13 @@ public class OAuthService {
                             .age(null)
                             .build()
             );
+            userOptional = Optional.of(user);
         }
 
-        String atk = issueAccessToken(email, "kakao");
+        FybUser user = userOptional.get();
+        String atk = issueAccessToken(user, email, "kakao");
         String rtk = tokenProvider.createRefreshToken(email);
         redisDao.setValues(email, rtk, Duration.ofDays(14));
-        FybUser user = getUser(email);
 
         return UserDto.LoginDto.response(user, atk, rtk);
     }
@@ -134,13 +138,13 @@ public class OAuthService {
                 email).orElseThrow(() -> new CustomException(Result.NOT_FOUND_USER)
         );
     }
-    private String issueAccessToken(String email, String google) {
+
+    private String issueAccessToken(FybUser user, String email, String google) {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(email, google);
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String atk = tokenProvider.createToken(authentication);
-        return atk;
+        return tokenProvider.createToken(user, authentication);
     }
 
     private Set<Authority> getUserAuthority() {

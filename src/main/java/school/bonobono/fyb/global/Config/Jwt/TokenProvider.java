@@ -13,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import school.bonobono.fyb.domain.user.Entity.FybUser;
 
 import java.security.Key;
 import java.util.Arrays;
@@ -50,7 +51,7 @@ public class TokenProvider implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String createToken(Authentication authentication) {
+    public String createToken(FybUser user, Authentication authentication) {
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -60,6 +61,16 @@ public class TokenProvider implements InitializingBean {
 
         return Jwts.builder()
                 .setSubject(authentication.getName())
+                .claim("id", user.getId())
+                .claim("name", user.getName())
+                .claim("email", user.getEmail())
+                .claim("profileImagePath", user.getProfileImagePath())
+                .claim("height", user.getHeight())
+                .claim("weight", user.getWeight())
+                .claim("gender", user.getGender())
+                .claim("age", user.getAge())
+                .claim("userData", user.getUserData())
+
                 .claim(AUTHORITIES_KEY, authorities)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
@@ -115,9 +126,19 @@ public class TokenProvider implements InitializingBean {
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        User principal = new User(claims.getSubject(), "", authorities);
+        FybUser user = FybUser.builder()
+                .id(Long.valueOf(claims.get("id").toString()))
+                .name(claims.get("name").toString())
+                .email(claims.get("email").toString())
+                .profileImagePath(claims.get("profileImagePath").toString())
+                .height(Integer.valueOf(claims.get("height").toString()))
+                .weight(Integer.valueOf(claims.get("weight").toString()))
+                .gender(claims.get("gender").toString().charAt(0))
+                .age(Integer.valueOf(claims.get("age").toString()))
+                .userData(claims.get("userData").toString())
+                .build();
 
-        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+        return new UsernamePasswordAuthenticationToken(user, token, authorities);
     }
 
     public String getRefreshTokenInfo(String token) {

@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.domain.user.Dto.UserDto;
+import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Service.UserService;
 import school.bonobono.fyb.global.Model.CustomResponseEntity;
 
@@ -66,9 +67,9 @@ public class UserController {
     @GetMapping("/")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CustomResponseEntity<UserDto.DetailDto> getMyUserInfo(
-            @AuthenticationPrincipal final UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(userService.getMyInfo(userDetails));
+        return CustomResponseEntity.success(userService.getMyInfo(user));
     }
 
     // 내 정보 수정

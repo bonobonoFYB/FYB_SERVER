@@ -14,7 +14,10 @@ import school.bonobono.fyb.domain.user.Dto.UserDto;
 import school.bonobono.fyb.domain.user.Entity.Authority;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
+import school.bonobono.fyb.global.Config.Jwt.TokenProvider;
+import school.bonobono.fyb.global.Config.Redis.RedisDao;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -40,6 +43,12 @@ class UserServiceTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private TokenProvider tokenProvider;
+
+    @Autowired
+    private RedisDao redisDao;
 
     @DisplayName("유저가 회원가입을 하고 토큰을 발급받는다.")
     @Test
@@ -109,7 +118,7 @@ class UserServiceTest {
 
     @DisplayName("비밀번호를 잃어버린 경우 새로운 비밀번호를 발급한다.")
     @Test
-    void test() {
+    void generateNewPassword() {
         // given
         FybUser user = getUserAndSave();
         String oldPassword = user.getPw();
@@ -127,13 +136,42 @@ class UserServiceTest {
         assertThat(assertUser.getPw()).isNotEqualTo(oldPassword);
     }
 
-    // method
+    @DisplayName("AccessToken 이 만료되었을경우 RefreshToken 을 재발급 받는다.")
+    @Test
+    void refreshAccessToken() {
+        // given
+        FybUser user = getUserAndSave();
 
+        String refreshToken = tokenProvider.createRefreshToken(user.getEmail());
+        redisDao.setValues(user.getEmail(), refreshToken, Duration.ofDays(14));
+
+        // when
+        UserDto.AccessTokenRefreshDto response = userService.reissue(refreshToken);
+
+        // then
+        assertThat(response.getAccessToken()).isNotNull();
+    }
+
+    @DisplayName("내 정보 조회")
+    @Test
+    void myInfoReadDetail() {
+        // given
+        FybUser userAndSave = getUserAndSave();
+
+        // when
+        UserDto.DetailDto response = userService.getMyInfo(userAndSave);
+
+        // then
+        assertThat(response.getEmail()).isEqualTo("test@test.com");
+    }
+
+    // method
     private Set<Authority> getUserAuthority() {
         return Collections.singleton(Authority.builder()
                 .authorityName("ROLE_USER")
                 .build());
     }
+
     private FybUser getUserAndSave() {
         FybUser user = FybUser.builder()
                 .email("test@test.com")

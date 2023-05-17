@@ -53,10 +53,10 @@ public class UserService {
     @Transactional
     public UserDto.LoginDto loginUser(UserDto.LoginDto request) {
         LOGIN_VALIDATION(request);
-        String atk = tokenProvider.createToken(getAuthentication(request.getEmail(), request.getPassword()));
+        FybUser user = getUser(request.getEmail());
+        String atk = tokenProvider.createToken(user, setAuthenticationAndReturn(request.getEmail(), request.getPassword()));
         String rtk = tokenProvider.createRefreshToken(request.getEmail());
         redisDao.setValues(request.getEmail(), rtk, Duration.ofDays(14));
-        FybUser user = getUser(request.getEmail());
 
         return UserDto.LoginDto.response(user, atk, rtk);
     }
@@ -80,7 +80,7 @@ public class UserService {
                         .build()
         );
 
-        String atk = tokenProvider.createToken(getAuthentication(request.getEmail(), request.getPassword()));
+        String atk = tokenProvider.createToken(user, setAuthenticationAndReturn(request.getEmail(), request.getPassword()));
         String rtk = tokenProvider.createRefreshToken(request.getEmail());
         redisDao.setValues(request.getEmail(), rtk, Duration.ofDays(14));
 
@@ -100,8 +100,8 @@ public class UserService {
     // 내 정보 수정
 
     @Transactional
-    public UserDto.DetailDto getMyInfo(UserDetails userDetails) {
-        return UserDto.DetailDto.response(getUser(userDetails.getUsername()));
+    public UserDto.DetailDto getMyInfo(FybUser user) {
+        return UserDto.DetailDto.response(user);
     }
     // 로그아웃
 
@@ -137,7 +137,7 @@ public class UserService {
     public UserDto.PhoneVerificationDto certifiedPhoneNumber(UserDto.PhoneVerificationDto request, String randNum) throws CoolsmsException {
         // 핸드폰 번호 - 포함 13글자 지정
         PHONE_NUM_LENGTH_CHECK(request);
-        smsService.sendMessage(request.getPhoneNumber(),randNum);
+        smsService.sendMessage(request.getPhoneNumber(), randNum);
         return UserDto.PhoneVerificationDto.response(randNum);
     }
 
@@ -171,6 +171,7 @@ public class UserService {
         userRepository.delete(user);
         return UserDto.DetailDto.response(user);
     }
+
     @Transactional
     public UserDto.UserDataDto model(UserDetails userDetails) {
         FybUser user = getUser(userDetails.getUsername());
@@ -212,6 +213,7 @@ public class UserService {
             throw new CustomException(Result.LOGIN_FALSE);
         }
     }
+
     private static String getBmiGrade(double BMI) {
         String bmiGrade;
         if (BMI <= 18.5) {
@@ -291,7 +293,7 @@ public class UserService {
         }
     }
 
-    public Authentication getAuthentication(String email, String password) {
+    public Authentication setAuthenticationAndReturn(String email, String password) {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(email, password);
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
