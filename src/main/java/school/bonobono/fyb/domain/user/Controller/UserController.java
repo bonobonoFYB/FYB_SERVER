@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.domain.user.Dto.UserDto;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Service.UserService;
-import school.bonobono.fyb.global.Model.CustomResponseEntity;
+import school.bonobono.fyb.global.model.CustomResponseEntity;
 
 import javax.validation.Valid;
 
@@ -42,7 +42,7 @@ public class UserController {
     @PostMapping("check")
     public CustomResponseEntity<UserDto.PhoneVerificationDto> certifiedPhoneNumber(
             @Valid @RequestBody final UserDto.PhoneVerificationDto request
-    ) throws CoolsmsException {
+    ) {
         return CustomResponseEntity.success(userService.certifiedPhoneNumber(request, RandomStringUtils.randomNumeric(6)));
     }
 
@@ -58,9 +58,9 @@ public class UserController {
     @PutMapping("image")
     public CustomResponseEntity<UserDto.DetailDto> updateImage(
             @RequestParam("file") MultipartFile multipartFile,
-            @AuthenticationPrincipal final UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(userService.updateImage(multipartFile, userDetails));
+        return CustomResponseEntity.success(userService.updateImage(multipartFile, user));
     }
 
     // 내 정보 조회
@@ -77,37 +77,37 @@ public class UserController {
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CustomResponseEntity<UserDto.DetailDto> updateUser(
             @Valid @RequestBody final UserDto.UpdateDto request,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(userService.updateUser(request, userDetails));
+        return CustomResponseEntity.success(userService.updateUser(request, user));
     }
 
     // 비밀번호 변경 ( 로그인 이후 )
     @PatchMapping("/password")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public CustomResponseEntity<UserDto.PasswordResetDto> pwChangeUser(
+    public CustomResponseEntity<UserDto.PasswordResetDto> changePasswordWhileLoggedIn(
             @Valid @RequestBody final UserDto.PasswordResetDto request,
-            @AuthenticationPrincipal final UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(userService.PwChangeUser(request, userDetails));
+        return CustomResponseEntity.success(userService.changePasswordWhileLoggedIn(request, user));
     }
 
     // 비밀번호 변경 ( 로그인 이전 )
     @PutMapping("/password")
-    public CustomResponseEntity<UserDto.LostPasswordResetDto> pwLostChange(
+    public CustomResponseEntity<UserDto.LostPasswordResetDto> resetLostPassword(
             @Valid @RequestBody final UserDto.LostPasswordResetDto request
     ) {
-        return CustomResponseEntity.success(userService.PwLostChange(request));
+        return CustomResponseEntity.success(userService.resetLostPassword(request));
     }
 
     // 로그아웃
     @DeleteMapping("logout")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public CustomResponseEntity<UserDto.DetailDto> logoutUser(
+    public CustomResponseEntity<Void> logoutUser(
             @RequestHeader(value = "Authorization") final String auth,
-            @AuthenticationPrincipal final UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(userService.logoutUser(auth, userDetails));
+        return CustomResponseEntity.success(userService.logoutUser(auth, user));
     }
 
     // 회원탈퇴
@@ -115,9 +115,9 @@ public class UserController {
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CustomResponseEntity<UserDto.DetailDto> deleteUser(
             @Valid @RequestBody final UserDto.WithdrawalDto request,
-            @AuthenticationPrincipal final UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(userService.delete(request,userDetails));
+        return CustomResponseEntity.success(userService.deleteUser(request, user));
     }
 
     // 3d 모델링을 위한 userdata 전송

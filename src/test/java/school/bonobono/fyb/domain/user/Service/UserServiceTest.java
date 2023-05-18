@@ -1,12 +1,15 @@
 package school.bonobono.fyb.domain.user.Service;
 
-import net.nurigo.java_sdk.exceptions.CoolsmsException;
-import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +17,9 @@ import school.bonobono.fyb.domain.user.Dto.UserDto;
 import school.bonobono.fyb.domain.user.Entity.Authority;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
-import school.bonobono.fyb.global.Config.Jwt.TokenProvider;
-import school.bonobono.fyb.global.Config.Redis.RedisDao;
+import school.bonobono.fyb.global.aws.service.S3Service;
+import school.bonobono.fyb.global.config.Jwt.TokenProvider;
+import school.bonobono.fyb.global.config.Redis.RedisDao;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -25,7 +29,6 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -34,6 +37,15 @@ class UserServiceTest {
     static {
         System.setProperty("com.amazonaws.sdk.disableEc2Metadata", "true");
     }
+
+    @MockBean
+    private SmsService smsService;
+
+    @MockBean
+    private S3Service s3Service;
+
+    @Autowired
+    private AuthenticationManagerBuilder authenticationManagerBuilder;
 
     @Autowired
     private UserService userService;
@@ -104,36 +116,20 @@ class UserServiceTest {
 
     @DisplayName("유저가 자신의 휴대폰으로 인증번호를 받고 해당 번호를 인증한다.")
     @Test
-    void phoneVerification() throws CoolsmsException {
+    void phoneVerification() {
         // given
         UserDto.PhoneVerificationDto request = UserDto.PhoneVerificationDto.builder()
-                .phoneNumber("010-1234-5678")
+                .phoneNumber("010-4345-4377")
                 .build();
+
+        given(smsService.sendMessage(anyString(), anyString()))
+                .willReturn(true);
+
         // when
         UserDto.PhoneVerificationDto response = userService.certifiedPhoneNumber(request, "123456");
 
         // then
         assertThat(response.getNumber()).isEqualTo("123456");
-    }
-
-    @DisplayName("비밀번호를 잃어버린 경우 새로운 비밀번호를 발급한다.")
-    @Test
-    void generateNewPassword() {
-        // given
-        FybUser user = getUserAndSave();
-        String oldPassword = user.getPw();
-
-        UserDto.LostPasswordResetDto request = UserDto.LostPasswordResetDto.builder()
-                .email("test@test.com")
-                .newPassword("abc124!")
-                .build();
-
-        // when
-        UserDto.LostPasswordResetDto response = userService.PwLostChange(request);
-
-        // then
-        FybUser assertUser = userRepository.findByEmail("test@test.com").get();
-        assertThat(assertUser.getPw()).isNotEqualTo(oldPassword);
     }
 
     @DisplayName("AccessToken 이 만료되었을경우 RefreshToken 을 재발급 받는다.")
@@ -165,6 +161,144 @@ class UserServiceTest {
         assertThat(response.getEmail()).isEqualTo("test@test.com");
     }
 
+    @DisplayName("사용자에게 파일을 요청받아 서버에 업로드한다.")
+    @Test
+    void uploadImage() {
+        // given
+        FybUser user = getUserAndSave();
+        MockMultipartFile multipartFile = new MockMultipartFile(
+                "file", "test.txt", "text/plain", "Spring Framework".getBytes()
+        );
+
+        given(s3Service.uploadProfileImage(multipartFile, user.getEmail()))
+                .willReturn("s3/profile/test.png");
+
+        // when
+        UserDto.DetailDto response = userService.updateImage(multipartFile, user);
+
+        // then
+        assertThat(response.getProfileImagePath()).isEqualTo("s3/profile/test.png");
+    }
+
+    @DisplayName("유저가 자신의 정보를 조회한다.")
+    @Test
+    void getMyUserInfo() {
+        // given
+        FybUser user = getUserAndSave();
+
+        // when
+        UserDto.DetailDto response = userService.getMyInfo(user);
+
+        // then
+        assertThat(response)
+                .extracting("email", "name", "gender", "age")
+                .contains("test@test.com", "테스트 계정", 'M', 23);
+    }
+
+    @DisplayName("유저가 자신의 정보를 수정한다.")
+    @Test
+    void updateUser() {
+        // given
+        FybUser user = getUserAndSave();
+
+        UserDto.UpdateDto request = UserDto.UpdateDto.builder()
+                .name("업데이트 테스트 계정")
+                .gender('W')
+                .height(175)
+                .weight(64)
+                .age(24)
+                .build();
+        // when
+        userService.updateUser(request, user);
+
+        // then
+        Optional<FybUser> userOptional = userRepository.findByEmail(user.getEmail());
+
+        assertThat(userOptional.isPresent()).isTrue();
+        assertThat(userOptional.get())
+                .extracting("name", "gender", "height", "weight", "age")
+                .contains("업데이트 테스트 계정", 'W', 175, 64, 24);
+    }
+
+    @DisplayName("유저가 로그인을 한 상태에서 비밀번호를 변경한다.")
+    @Test
+    void changePasswordWhileLoggedIn() {
+        // given
+        FybUser user = getUserAndSave();
+        String oldPassword = user.getPw();
+        UserDto.PasswordResetDto request = UserDto.PasswordResetDto.builder()
+                .email("test@test.com")
+                .password("abc123!")
+                .newPassword("abc124!")
+                .build();
+
+        // when
+        userService.changePasswordWhileLoggedIn(request, user);
+
+        // then
+        Optional<FybUser> userOptional = userRepository.findByEmail(user.getEmail());
+        assertThat(userOptional.isPresent()).isTrue();
+        assertThat(oldPassword).isNotEqualTo(userOptional.get().getPw());
+    }
+
+    @DisplayName("유저가 비밀번호를 잃어버렸을때 패스워드를 변경한다.")
+    @Test
+    void resetLostPassword() {
+        // given
+        FybUser user = getUserAndSave();
+        String oldPassword = user.getPw();
+
+        UserDto.LostPasswordResetDto request = UserDto.LostPasswordResetDto.builder()
+                .email("test@test.com")
+                .newPassword("abc124!")
+                .build();
+
+        // when
+        userService.resetLostPassword(request);
+
+        // then
+        Optional<FybUser> userOptional = userRepository.findByEmail(user.getEmail());
+        assertThat(userOptional.isPresent()).isTrue();
+        assertThat(oldPassword).isNotEqualTo(userOptional.get().getPw());
+    }
+
+    @DisplayName("유저가 로그아웃을 하면 액세스 토큰이 블랙리스트로 redis 에 저장된다.")
+    @Test
+    void logoutUser() {
+        // given
+        FybUser user = getUserAndSave();
+        Authentication authentication = saveSecurityContextHolderAndGetAuthentication();
+
+        String testAccessToken = tokenProvider.createToken(user, authentication);
+        redisDao.setValues(user.getEmail(), "testRefreshToken");
+
+        // when
+        userService.logoutUser(testAccessToken, user);
+
+        // then
+        assertThat(redisDao.getValues(user.getEmail())).isNull();
+        assertThat(redisDao.getValues(testAccessToken)).isEqualTo("logout");
+    }
+
+    @DisplayName("유저가 회원탈퇴를 한다.")
+    @Test
+    void deleteUser() {
+        // given
+        FybUser user = getUserAndSave();
+        UserDto.WithdrawalDto request = UserDto.WithdrawalDto.builder()
+                .password("abc123!")
+                .build();
+
+        // when
+        UserDto.DetailDto response = userService.deleteUser(request, user);
+
+        // then
+        assertThat(response.getEmail()).isEqualTo("test@test.com");
+
+        Optional<FybUser> userOptional = userRepository.findByEmail(user.getEmail());
+        assertThat(userOptional.isEmpty()).isTrue();
+    }
+
     // method
     private Set<Authority> getUserAuthority() {
         return Collections.singleton(Authority.builder()
@@ -185,5 +319,14 @@ class UserServiceTest {
                 .userData("ABC")
                 .build();
         return userRepository.save(user);
+    }
+
+    private Authentication saveSecurityContextHolderAndGetAuthentication() {
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken("test@test.com", "abc123!");
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        return authentication;
     }
 }

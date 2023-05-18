@@ -1,13 +1,8 @@
 package school.bonobono.fyb.domain.user.Service;
 
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.nurigo.java_sdk.api.Message;
-import net.nurigo.java_sdk.exceptions.CoolsmsException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -21,15 +16,14 @@ import school.bonobono.fyb.domain.user.Dto.UserDto;
 import school.bonobono.fyb.domain.user.Entity.Authority;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
-import school.bonobono.fyb.global.Config.Jwt.TokenProvider;
-import school.bonobono.fyb.global.Config.Redis.RedisDao;
-import school.bonobono.fyb.global.Exception.CustomException;
-import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.aws.service.S3Service;
+import school.bonobono.fyb.global.config.Jwt.TokenProvider;
+import school.bonobono.fyb.global.config.Redis.RedisDao;
+import school.bonobono.fyb.global.exception.CustomException;
+import school.bonobono.fyb.global.model.Result;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
 
@@ -42,12 +36,8 @@ public class UserService {
     private final RedisDao redisDao;
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final AmazonS3Client amazonS3Client;
     private final SmsService smsService;
-
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
-
+    private final S3Service s3Service;
 
     // Service
     @Transactional
@@ -87,54 +77,46 @@ public class UserService {
         return UserDto.LoginDto.response(user, atk, rtk);
     }
 
-
-    // 내 정보 조회
-
     @Transactional
-    public UserDto.DetailDto updateImage(MultipartFile multipartFile, UserDetails userDetails) {
-        FybUser user = getUser(userDetails.getUsername());
-        String myProfileImagePath = uploadProfileImage(multipartFile, user.getEmail());
+    public UserDto.DetailDto updateImage(MultipartFile multipartFile, FybUser user) {
+        String myProfileImagePath = s3Service.uploadProfileImage(multipartFile, user.getEmail());
         user.uploadProfileImage(myProfileImagePath);
         return UserDto.DetailDto.response(user);
     }
-    // 내 정보 수정
+
 
     @Transactional
     public UserDto.DetailDto getMyInfo(FybUser user) {
         return UserDto.DetailDto.response(user);
     }
-    // 로그아웃
 
     @Transactional
-    public UserDto.DetailDto updateUser(UserDto.UpdateDto request, UserDetails userDetails) {
+    public UserDto.DetailDto updateUser(UserDto.UpdateDto request, FybUser user) {
         UPDATE_VALIDATION(request);
-        FybUser user = getUser(userDetails.getUsername());
         user.updateUserInfo(
                 request.getName(), request.getGender(), request.getHeight(),
                 request.getWeight(), request.getAge()
         );
         return UserDto.DetailDto.response(user);
     }
-    // 휴대폰 인증
 
     @Transactional
-    public UserDto.DetailDto logoutUser(String auth, UserDetails userDetails) {
-        String atk = auth.substring(7);
-        String email = userDetails.getUsername();
+    public Void logoutUser(String accessToken, FybUser user) {
+        Long accessTokenExpiration = tokenProvider.getExpiration(accessToken);
+        String email = user.getEmail();
 
-        if (redisDao.getValues(email) != null) {
-            redisDao.deleteValues(email);
+        if (redisDao.getValues(email) == null || redisDao.getValues(email).isEmpty()) {
+            throw new CustomException(Result.FAIL);
         }
 
-        redisDao.setValues(atk, "logout", Duration.ofMillis(
-                tokenProvider.getExpiration(atk)
-        ));
+        redisDao.deleteValues(email);
+        redisDao.setValues(accessToken, "logout", Duration.ofMillis(accessTokenExpiration));
 
-        return new UserDto.DetailDto();
+        return null;
     }
 
     @Transactional
-    public UserDto.PhoneVerificationDto certifiedPhoneNumber(UserDto.PhoneVerificationDto request, String randNum) throws CoolsmsException {
+    public UserDto.PhoneVerificationDto certifiedPhoneNumber(UserDto.PhoneVerificationDto request, String randNum) {
         // 핸드폰 번호 - 포함 13글자 지정
         PHONE_NUM_LENGTH_CHECK(request);
         smsService.sendMessage(request.getPhoneNumber(), randNum);
@@ -142,9 +124,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto.PasswordResetDto PwChangeUser(UserDto.PasswordResetDto request, UserDetails userDetails) {
+    public UserDto.PasswordResetDto changePasswordWhileLoggedIn(UserDto.PasswordResetDto request, FybUser user) {
         PWCHANGE_VALIDATION(request);
-        FybUser user = getUser(userDetails.getUsername());
         user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
         return new UserDto.PasswordResetDto();
     }
@@ -152,7 +133,7 @@ public class UserService {
 
     // 비밀번호 잃어버린경우
     @Transactional
-    public UserDto.LostPasswordResetDto PwLostChange(UserDto.LostPasswordResetDto request) {
+    public UserDto.LostPasswordResetDto resetLostPassword(UserDto.LostPasswordResetDto request) {
         FybUser user = getUser(request.getEmail());
         PWLOSTCHANGE_VALIDATION(request, user.getPw());
         user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
@@ -161,9 +142,7 @@ public class UserService {
 
     // 회원탈퇴
     @Transactional
-    public UserDto.DetailDto delete(UserDto.WithdrawalDto request, UserDetails userDetails) {
-        FybUser user = getUser(userDetails.getUsername());
-
+    public UserDto.DetailDto deleteUser(UserDto.WithdrawalDto request, FybUser user) {
         if (passwordEncoder.matches(request.getPassword(), user.getPw()) == false) {
             throw new CustomException(Result.USER_DELETE_STATUS_FALSE);
         }
@@ -299,19 +278,6 @@ public class UserService {
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return authentication;
-    }
-
-    private String uploadProfileImage(MultipartFile multipartFile, String email) {
-        String profile_image_name = "profile/" + email;
-        ObjectMetadata objMeta = new ObjectMetadata();
-        try {
-            objMeta.setContentLength(multipartFile.getInputStream().available());
-            amazonS3Client.putObject(bucket, profile_image_name, multipartFile.getInputStream(), objMeta);
-        } catch (IOException e) {
-            log.info(e.getMessage());
-            throw new CustomException(Result.FAIL);
-        }
-        return amazonS3Client.getUrl(bucket, profile_image_name).toString();
     }
 
     private FybUser getUser(String email) {
