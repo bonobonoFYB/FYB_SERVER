@@ -1,4 +1,4 @@
-package school.bonobono.fyb.global.Exception;
+package school.bonobono.fyb.global.exception;
 
 import lombok.*;
 

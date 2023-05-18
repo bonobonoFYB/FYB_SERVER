@@ -1,4 +1,4 @@
-package school.bonobono.fyb.global.Config.Jwt;
+package school.bonobono.fyb.global.config.Jwt;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;

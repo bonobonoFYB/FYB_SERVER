@@ -10,9 +10,9 @@ import school.bonobono.fyb.domain.user.Dto.UserDto;
 import school.bonobono.fyb.domain.user.OAuth.GoogleOAuth;
 import school.bonobono.fyb.domain.user.OAuth.KakaoOAuth;
 import school.bonobono.fyb.domain.user.Service.OAuthService;
-import school.bonobono.fyb.global.Exception.CustomException;
-import school.bonobono.fyb.global.Model.CustomResponseEntity;
-import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.exception.CustomException;
+import school.bonobono.fyb.global.model.CustomResponseEntity;
+import school.bonobono.fyb.global.model.Result;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;

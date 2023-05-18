@@ -1,4 +1,4 @@
-package school.bonobono.fyb.global.Model;
+package school.bonobono.fyb.global.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

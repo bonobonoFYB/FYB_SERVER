@@ -10,9 +10,9 @@ import school.bonobono.fyb.domain.shop.Entity.Shop;
 import school.bonobono.fyb.domain.shop.Repository.ShopRepository;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
-import school.bonobono.fyb.global.Config.Redis.RedisDao;
-import school.bonobono.fyb.global.Exception.CustomException;
-import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.config.Redis.RedisDao;
+import school.bonobono.fyb.global.exception.CustomException;
+import school.bonobono.fyb.global.model.Result;
 
 import java.util.ArrayList;
 import java.util.List;

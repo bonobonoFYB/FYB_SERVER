@@ -1,4 +1,4 @@
-package school.bonobono.fyb.global.Config;
+package school.bonobono.fyb.global.config;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;

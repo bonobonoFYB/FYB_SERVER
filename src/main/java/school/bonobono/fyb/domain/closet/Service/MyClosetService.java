@@ -14,8 +14,8 @@ import school.bonobono.fyb.domain.closet.Entity.Closet;
 import school.bonobono.fyb.domain.closet.Repository.ClosetRepository;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
-import school.bonobono.fyb.global.Exception.CustomException;
-import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.exception.CustomException;
+import school.bonobono.fyb.global.model.Result;
 
 import java.io.IOException;
 import java.util.List;

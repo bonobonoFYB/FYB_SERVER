@@ -1,12 +1,12 @@
-package school.bonobono.fyb.global.Config.Jwt;
+package school.bonobono.fyb.global.config.Jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
-import school.bonobono.fyb.global.Exception.CustomErrorResponse;
-import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.exception.CustomErrorResponse;
+import school.bonobono.fyb.global.model.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

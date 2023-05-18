@@ -1,4 +1,4 @@
-package school.bonobono.fyb.global.Exception;
+package school.bonobono.fyb.global.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
-import school.bonobono.fyb.global.Model.CustomResponseEntity;
+import school.bonobono.fyb.global.model.CustomResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
 

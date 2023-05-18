@@ -1,11 +1,11 @@
-package school.bonobono.fyb.global.Config.Jwt;
+package school.bonobono.fyb.global.config.Jwt;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
-import school.bonobono.fyb.global.Config.Redis.RedisDao;
+import school.bonobono.fyb.global.config.Redis.RedisDao;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;

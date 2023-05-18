@@ -1,4 +1,4 @@
-package school.bonobono.fyb.global.Config.Jwt;
+package school.bonobono.fyb.global.config.Jwt;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
-import school.bonobono.fyb.global.Exception.CustomException;
-import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.exception.CustomException;
+import school.bonobono.fyb.global.model.Result;
 
 import java.util.List;
 import java.util.stream.Collectors;

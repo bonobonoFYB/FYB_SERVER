@@ -1,8 +1,8 @@
-package school.bonobono.fyb.global.Exception;
+package school.bonobono.fyb.global.exception;
 
 import lombok.Getter;
 import lombok.Setter;
-import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.model.Result;
 
 @Getter
 @Setter

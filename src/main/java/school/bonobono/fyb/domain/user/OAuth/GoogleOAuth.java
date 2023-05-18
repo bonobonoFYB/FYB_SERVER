@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import school.bonobono.fyb.domain.user.Dto.GoogleDto;
-import school.bonobono.fyb.global.Exception.CustomException;
-import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.exception.CustomException;
+import school.bonobono.fyb.global.model.Result;
 
 import java.util.HashMap;
 import java.util.Map;

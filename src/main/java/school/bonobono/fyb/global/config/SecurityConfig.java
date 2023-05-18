@@ -1,4 +1,4 @@
-package school.bonobono.fyb.global.Config;
+package school.bonobono.fyb.global.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,11 +11,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CorsFilter;
-import school.bonobono.fyb.global.Config.Jwt.JwtAccessDeniedHandler;
-import school.bonobono.fyb.global.Config.Jwt.JwtAuthenticationEntryPoint;
-import school.bonobono.fyb.global.Config.Jwt.JwtSecurityConfig;
-import school.bonobono.fyb.global.Config.Jwt.TokenProvider;
-import school.bonobono.fyb.global.Config.Redis.RedisDao;
+import school.bonobono.fyb.global.config.Jwt.JwtAccessDeniedHandler;
+import school.bonobono.fyb.global.config.Jwt.JwtAuthenticationEntryPoint;
+import school.bonobono.fyb.global.config.Jwt.JwtSecurityConfig;
+import school.bonobono.fyb.global.config.Jwt.TokenProvider;
+import school.bonobono.fyb.global.config.Redis.RedisDao;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)

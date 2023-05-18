@@ -10,8 +10,8 @@ import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.domain.wishlist.Dto.WishlistDto;
 import school.bonobono.fyb.domain.wishlist.Entity.Wishlist;
 import school.bonobono.fyb.domain.wishlist.Repository.WishlistRepository;
-import school.bonobono.fyb.global.Exception.CustomException;
-import school.bonobono.fyb.global.Model.Result;
+import school.bonobono.fyb.global.exception.CustomException;
+import school.bonobono.fyb.global.model.Result;
 
 import java.util.List;
 

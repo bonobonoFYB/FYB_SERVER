@@ -1,4 +1,4 @@
-package school.bonobono.fyb.global.Config.Jwt;
+package school.bonobono.fyb.global.config.Jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -11,7 +11,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 
