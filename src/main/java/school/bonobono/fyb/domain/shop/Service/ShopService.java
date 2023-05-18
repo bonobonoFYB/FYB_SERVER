@@ -31,7 +31,7 @@ public class ShopService {
     // Service
     // Main 홈 조회 페이지
     @Transactional
-    public List<ShopDto.DetailListDto> getAllShopAndUserInfo() {
+    public List<ShopDto.DetailListDto> getAllShop() {
         return shopRepository.findAll().stream()
                 .map(ShopDto.DetailListDto::response)
                 .collect(Collectors.toList());

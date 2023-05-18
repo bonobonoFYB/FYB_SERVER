@@ -23,9 +23,9 @@ public class ShopController {
     // Main 홈 페이지
     @GetMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public CustomResponseEntity<List<ShopDto.DetailListDto>> getAllShopAndUserInfo(
+    public CustomResponseEntity<List<ShopDto.DetailListDto>> getAllShop(
     ) {
-        return CustomResponseEntity.success(shopService.getAllShopAndUserInfo());
+        return CustomResponseEntity.success(shopService.getAllShop());
     }
 
     // 사용자 최다조회수 API

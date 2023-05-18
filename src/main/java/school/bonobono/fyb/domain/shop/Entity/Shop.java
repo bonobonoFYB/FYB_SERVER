@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 @Table(name = "shop")
 @EntityListeners(AuditingEntityListener.class)
 public class Shop {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @NotNull
