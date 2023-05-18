@@ -9,14 +9,13 @@ import school.bonobono.fyb.domain.wishlist.Entity.Wishlist;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class FybUser {
@@ -96,7 +95,7 @@ public class FybUser {
     private LocalDateTime updateAt;
 
     @OneToMany(mappedBy = "user")
-    private List<Wishlist> Wishlists;
+    private List<Wishlist> wishlists;
 
     @OneToMany(mappedBy = "user")
     private List<Closet> closets;
@@ -107,6 +106,25 @@ public class FybUser {
             joinColumns = {@JoinColumn(name = "id", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "authority_name")})
     private Set<Authority> authorities;
+
+    @Builder
+    private FybUser(Long id, String email, String pw, String name, Character gender, Integer height, Integer weight, Integer age, String userData, String profileImagePath, LocalDateTime createAt, LocalDateTime updateAt, List<Wishlist> wishlists, List<Closet> closets, Set<Authority> authorities) {
+        this.id = id;
+        this.email = email;
+        this.pw = pw;
+        this.name = name;
+        this.gender = gender;
+        this.height = height;
+        this.weight = weight;
+        this.age = age;
+        this.userData = userData;
+        this.profileImagePath = profileImagePath;
+        this.createAt = createAt;
+        this.updateAt = updateAt;
+        this.wishlists = new ArrayList<>();
+        this.closets = new ArrayList<>();
+        this.authorities = authorities;
+    }
 
     public void uploadProfileImage(String profileImagePath) {
         this.profileImagePath = profileImagePath;

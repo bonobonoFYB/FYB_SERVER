@@ -32,18 +32,17 @@ public class MyClosetService {
     private String bucket;
 
     // Service
-    @Transactional
-    public List<ClosetDto.DetailDto> readMyCloset(UserDetails userDetails) {
-        FybUser user = getUser(userDetails.getUsername());
-        List<Closet> closets = user.getClosets();
+    @Transactional(readOnly = true)
+    public List<ClosetDto.DetailDto> readMyCloset(FybUser user) {
+        FybUser updateUser = userRepository.findById(user.getId()).orElse(user);
+        List<Closet> closets = updateUser.getClosets();
         readMyClosetValidate(closets);
         return closets.stream().map(ClosetDto.DetailDto::response).toList();
     }
 
     @Transactional
-    public ClosetDto.DetailDto addMyCloset(ClosetDto.SaveDto request, UserDetails userDetails) {
+    public ClosetDto.DetailDto addMyCloset(ClosetDto.SaveDto request, FybUser user) {
         addMyClosetValidate(request);
-        FybUser user = getUser(userDetails.getUsername());
         Closet closet = closetRepository.save(
                 Closet.builder()
                         .user(user)

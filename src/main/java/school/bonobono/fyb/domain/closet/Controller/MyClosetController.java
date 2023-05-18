@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import school.bonobono.fyb.domain.closet.Dto.ClosetDto;
 import school.bonobono.fyb.domain.closet.Service.MyClosetService;
+import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.global.model.CustomResponseEntity;
 
 import java.util.List;
@@ -20,13 +21,23 @@ import java.util.List;
 public class MyClosetController {
     private final MyClosetService myClosetService;
 
+    // 옷장 추가하기
+    @PostMapping("closet")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public CustomResponseEntity<ClosetDto.DetailDto> addMyCloset(
+            @RequestBody final ClosetDto.SaveDto request,
+            @AuthenticationPrincipal final FybUser user
+    ) {
+        return CustomResponseEntity.success(myClosetService.addMyCloset(request, user));
+    }
+
     // 옷장 조회
     @GetMapping("closet")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CustomResponseEntity<List<ClosetDto.DetailDto>> readMyCloset(
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(myClosetService.readMyCloset(userDetails));
+        return CustomResponseEntity.success(myClosetService.readMyCloset(user));
     }
 
     // 옷 사진 추가 등록
@@ -36,16 +47,6 @@ public class MyClosetController {
             @RequestParam("file") MultipartFile multipartFile, @RequestParam("id") Long id
     ) {
         return CustomResponseEntity.success(myClosetService.updateImage(multipartFile, id));
-    }
-
-    // 옷장 추가하기
-    @PostMapping("closet")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public CustomResponseEntity<ClosetDto.DetailDto> addMyCloset(
-            @RequestBody final ClosetDto.SaveDto request,
-            @AuthenticationPrincipal final UserDetails userDetails
-    ) {
-        return CustomResponseEntity.success(myClosetService.addMyCloset(request, userDetails));
     }
 
     // 옷장 삭제
