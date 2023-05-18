@@ -28,6 +28,24 @@ public class ShopController {
         return CustomResponseEntity.success(shopService.getAllShop());
     }
 
+    // 쇼핑몰 검색
+    @PostMapping("shop")
+    public CustomResponseEntity<List<ShopDto.DetailListDto>> getSearchShop(
+            @RequestBody final ShopDto.SearchDto request
+    ) {
+        return CustomResponseEntity.success(shopService.getSearchShop(request));
+    }
+
+    // 쇼핑몰 클릭시 쇼핑몰 이용자의 빅데이터 분석
+    @PostMapping
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public CustomResponseEntity<ShopDto.SaveDto> saveShopData(
+            @RequestBody ShopDto.SaveDto request,
+            @AuthenticationPrincipal final UserDetails userDetails
+    ) {
+        return CustomResponseEntity.success(shopService.saveShopData(request, userDetails));
+    }
+
     // 사용자 최다조회수 API
     @GetMapping("rank/all")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
@@ -52,23 +70,5 @@ public class ShopController {
             @AuthenticationPrincipal final UserDetails userDetails
     ) {
         return CustomResponseEntity.success(shopService.getGenderViewed(userDetails));
-    }
-
-    // 쇼핑몰 클릭시 쇼핑몰 이용자의 빅데이터 분석
-    @PostMapping
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public CustomResponseEntity<ShopDto.SaveDto> saveShopData(
-            @RequestBody ShopDto.SaveDto request,
-            @AuthenticationPrincipal final UserDetails userDetails
-            ) {
-        return CustomResponseEntity.success(shopService.saveShopData(request, userDetails));
-    }
-
-    // Search 페이지 Post
-    @PostMapping("shop")
-    public CustomResponseEntity<List<ShopDto.DetailListDto>> getSearchShop(
-            @RequestBody final ShopDto.SearchDto request
-    ) {
-        return CustomResponseEntity.success(shopService.getSearchShop(request));
     }
 }

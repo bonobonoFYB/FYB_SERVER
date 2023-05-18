@@ -10,8 +10,6 @@ import java.util.List;
 
 @Repository
 public interface ShopRepository extends JpaRepository<Shop, Long> {
-    @Query("SELECT s FROM Shop s WHERE s.id IN :ids ORDER BY FIELD(s.id, :ids)")
-    List<Shop> findByIdsInSpecifiedOrder(@Param("ids") List<Long> ids);
     List<Shop> findByShopNameContaining(String shopName);
     List<Shop> findByIdIn(List<Long> sortedViewsId);
 }

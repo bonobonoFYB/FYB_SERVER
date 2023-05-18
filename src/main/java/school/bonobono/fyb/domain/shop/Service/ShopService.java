@@ -39,7 +39,7 @@ public class ShopService {
                 .collect(Collectors.toList());
     }
 
-    // Search 페이지 검색 (문자열 포함 기반)
+    // 쇼핑몰 검색 (문자열 포함 기반)
     @Transactional
     public List<ShopDto.DetailListDto> getSearchShop(ShopDto.SearchDto request) {
         List<Shop> shopList = shopRepository.findByShopNameContaining(request.getShop());

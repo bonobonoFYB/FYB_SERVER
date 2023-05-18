@@ -66,6 +66,24 @@ class ShopServiceTest {
                 );
     }
 
+    @DisplayName("유저가 문자열 포함 방식으로 쇼핑몰을 검색한다.")
+    @Test
+    void getSearchShop() {
+        // given
+        savedShop();
+        ShopDto.SearchDto request = ShopDto.SearchDto.builder()
+                .shop("신")
+                .build();
+
+        // when
+        List<ShopDto.DetailListDto> searchShop = shopService.getSearchShop(request);
+
+        // then
+        assertThat(searchShop.size()).isEqualTo(2);
+        assertThat(searchShop.get(0).getId()).isEqualTo(1L);
+        assertThat(searchShop.get(1).getId()).isEqualTo(2L);
+    }
+
     @DisplayName("사용자 조회수 기준으로 정렬된 쇼핑몰 목록을 가져온다.")
     @Test
     void getMostViewed() {
@@ -84,7 +102,6 @@ class ShopServiceTest {
     }
 
     // method
-
     private Set<Authority> getUserAuthority() {
         return Collections.singleton(Authority.builder()
                 .authorityName("ROLE_USER")

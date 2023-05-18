@@ -33,6 +33,19 @@ class ShopRepositoryTest {
         assertThat(sortedShop.size()).isEqualTo(3);
     }
 
+    @DisplayName("데이터베이스 안에서 문자열 포함 검색을 통해 데이터를 출력한다.")
+    @Test
+    void findByShopNameContaining() {
+        // given
+        savedShop();
+
+        // when
+        List<Shop> shopList = shopRepository.findByShopNameContaining("신");
+
+        // then
+        assertThat(shopList.size()).isEqualTo(2);
+    }
+
     private void savedShop() {
         Shop musinsa = Shop.builder()
                 .id(1L)
