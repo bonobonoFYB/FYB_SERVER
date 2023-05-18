@@ -27,9 +27,10 @@ public class RedisService {
         return sortedShopIdList;
     }
 
-    public void saveShopData(Long id, String keyName) {
+    public boolean saveShopData(Long id, String keyName) {
         int incrementedCount = Integer.parseInt(redisDao.getValues(id + keyName));
         redisDao.setValues(id + keyName, String.valueOf(++incrementedCount));
+        return true;
     }
 
     public void saveInitialShopData(Long shopId) {

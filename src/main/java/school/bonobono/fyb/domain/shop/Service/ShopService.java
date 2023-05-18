@@ -2,7 +2,6 @@ package school.bonobono.fyb.domain.shop.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import school.bonobono.fyb.domain.shop.Dto.ShopDto;
@@ -10,7 +9,6 @@ import school.bonobono.fyb.domain.shop.Entity.Shop;
 import school.bonobono.fyb.domain.shop.Repository.ShopRepository;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
-import school.bonobono.fyb.global.redis.RedisDao;
 import school.bonobono.fyb.global.exception.CustomException;
 import school.bonobono.fyb.global.model.Result;
 import school.bonobono.fyb.global.redis.service.RedisService;
@@ -18,7 +16,6 @@ import school.bonobono.fyb.global.redis.service.RedisService;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,9 +49,8 @@ public class ShopService {
     }
 
     @Transactional
-    public ShopDto.SaveDto saveShopData(ShopDto.SaveDto request, UserDetails userDetails) {
+    public ShopDto.SaveDto saveShopData(ShopDto.SaveDto request, FybUser user) {
 
-        FybUser user = getUser(userDetails.getUsername());
         Shop shop = getShop(request.getShopId());
         Long shopId = shop.getId();
 
@@ -97,8 +93,7 @@ public class ShopService {
     }
 
     @Transactional
-    public List<ShopDto.DetailListDto> getAgeViewed(UserDetails userDetails) {
-        FybUser user = getUser(userDetails.getUsername());
+    public List<ShopDto.DetailListDto> getAgeViewed(FybUser user) {
         List<Long> sortedAgesShopId = new ArrayList<>();
 
         if (user.getAge() <= 29) {
@@ -113,13 +108,12 @@ public class ShopService {
     }
 
     @Transactional
-    public List<ShopDto.DetailListDto> getGenderViewed(UserDetails userDetails) {
-        FybUser user = getUser(userDetails.getUsername());
+    public List<ShopDto.DetailListDto> getGenderViewed(FybUser user) {
         List<Long> sortedGendersShopId = new ArrayList<>();
 
         if (user.getGender() == 'M') {
             sortedGendersShopId = redisService.getSortedShopId("_maleUserCount");
-        } else {
+        } else if (user.getGender() == 'W'){
             sortedGendersShopId = redisService.getSortedShopId("_femaleUserCount");
         }
 

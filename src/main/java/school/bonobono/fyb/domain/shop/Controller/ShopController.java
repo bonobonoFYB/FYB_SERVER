@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import school.bonobono.fyb.domain.shop.Dto.ShopDto;
 import school.bonobono.fyb.domain.shop.Service.ShopService;
+import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.global.model.CustomResponseEntity;
 
 import java.util.List;
@@ -41,9 +43,9 @@ public class ShopController {
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CustomResponseEntity<ShopDto.SaveDto> saveShopData(
             @RequestBody ShopDto.SaveDto request,
-            @AuthenticationPrincipal final UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(shopService.saveShopData(request, userDetails));
+        return CustomResponseEntity.success(shopService.saveShopData(request, user));
     }
 
     // 사용자 최다조회수 API
@@ -58,17 +60,17 @@ public class ShopController {
     @GetMapping("rank/age")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CustomResponseEntity<List<ShopDto.DetailListDto>> getAgeViewed(
-            @AuthenticationPrincipal final UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(shopService.getAgeViewed(userDetails));
+        return CustomResponseEntity.success(shopService.getAgeViewed(user));
     }
 
     // 사용자 성별 최다조회수 API
     @GetMapping("rank/gender")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CustomResponseEntity<List<ShopDto.DetailListDto>> getGenderViewed(
-            @AuthenticationPrincipal final UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(shopService.getGenderViewed(userDetails));
+        return CustomResponseEntity.success(shopService.getGenderViewed(user));
     }
 }
