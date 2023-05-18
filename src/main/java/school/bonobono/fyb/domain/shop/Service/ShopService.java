@@ -10,9 +10,10 @@ import school.bonobono.fyb.domain.shop.Entity.Shop;
 import school.bonobono.fyb.domain.shop.Repository.ShopRepository;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
-import school.bonobono.fyb.global.config.Redis.RedisDao;
+import school.bonobono.fyb.global.redis.RedisDao;
 import school.bonobono.fyb.global.exception.CustomException;
 import school.bonobono.fyb.global.model.Result;
+import school.bonobono.fyb.global.redis.service.RedisService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class ShopService {
 
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
-    private final RedisDao redisDao;
+    private final RedisService redisService;
 
     // Service
     // Main 홈 조회 페이지
@@ -58,29 +59,25 @@ public class ShopService {
 
         // 매장의 초기 데이터가 저장되지 않은 상태인 경우
         if (shop.getShopData() == false) {
-            redisDao.setValues(shopId + "_viewCount", "0");
-            redisDao.setValues(shopId + "_maleUserCount", "0");
-            redisDao.setValues(shopId + "_femaleUserCount", "0");
-            redisDao.setValues(shopId + "_twenties", "0");
-            redisDao.setValues(shopId + "_thirties", "0");
+            redisService.saveInitialShopData(shopId);
             shop.updateShopData();
         }
 
         // 매장 조회수 데이터 수집
-        saveShopDataToRedis(shopId, "_viewCount");
+        redisService.saveShopData(shopId, "_viewCount");
 
         // 성별 조회수 데이터 수집
         if (user.getGender().equals('M')) {
-            saveShopDataToRedis(shopId, "_maleUserCount");
+            redisService.saveShopData(shopId, "_maleUserCount");
         } else if (user.getGender().equals('W')) {
-            saveShopDataToRedis(shopId, "_femaleUserCount");
+            redisService.saveShopData(shopId, "_femaleUserCount");
         }
 
         // 나이 조회수 데이터 수집
         if (user.getAge() <= 29) {
-            saveShopDataToRedis(shopId, "_twenties");
+            redisService.saveShopData(shopId, "_twenties");
         } else if (user.getAge() <= 39) {
-            saveShopDataToRedis(shopId, "_thirties");
+            redisService.saveShopData(shopId, "_thirties");
         }
 
         return ShopDto.SaveDto.response(shop);
@@ -88,8 +85,7 @@ public class ShopService {
 
     @Transactional
     public List<ShopDto.DetailListDto> getMostViewed() {
-        List<Long> sortedViewsShopId = getSortedShopId("_viewCount");
-        System.out.println(sortedViewsShopId);
+        List<Long> sortedViewsShopId = redisService.getSortedShopId("_viewCount");
         return shopRepository.findByIdsInSpecifiedOrder(sortedViewsShopId).stream()
                 .map(ShopDto.DetailListDto::response)
                 .collect(Collectors.toList());
@@ -101,9 +97,9 @@ public class ShopService {
         List<Long> sortedAgesShopId = new ArrayList<>();
 
         if (user.getAge() <= 29) {
-            sortedAgesShopId = getSortedShopId("_twenties");
+            sortedAgesShopId = redisService.getSortedShopId("_twenties");
         } else if (user.getAge() <= 39) {
-            sortedAgesShopId = getSortedShopId("_thirties");
+            sortedAgesShopId = redisService.getSortedShopId("_thirties");
         }
 
         return shopRepository.findByIdIn(sortedAgesShopId).stream()
@@ -117,9 +113,9 @@ public class ShopService {
         List<Long> sortedGendersShopId = new ArrayList<>();
 
         if (user.getGender() == 'M') {
-            sortedGendersShopId = getSortedShopId("_maleUserCount");
+            sortedGendersShopId = redisService.getSortedShopId("_maleUserCount");
         } else {
-            sortedGendersShopId = getSortedShopId("_femaleUserCount");
+            sortedGendersShopId = redisService.getSortedShopId("_femaleUserCount");
         }
 
         return shopRepository.findByIdIn(sortedGendersShopId).stream()
@@ -127,24 +123,10 @@ public class ShopService {
                 .collect(Collectors.toList());
     }
 
-    private List<Long> getSortedShopId(String pattern) {
-        Set<String> keys = redisDao.getKeys("*" + pattern);
-        return keys.stream().sorted((a, b) -> {
-            String viewsA = redisDao.getValues(a);
-            String viewsB = redisDao.getValues(b);
-            return Integer.parseInt(viewsB) - Integer.parseInt(viewsA);
-        }).map(key -> Long.parseLong(key.substring(0, key.indexOf(pattern)))).toList();
-    }
-
     private Shop getShop(Long id) {
         return shopRepository.findById(id).orElseThrow(
                 () -> new CustomException(Result.NOT_FOUND_SHOP)
         );
-    }
-
-    private void saveShopDataToRedis(Long id, String keyName) {
-        int incrementedCount = Integer.parseInt(redisDao.getValues(id + keyName));
-        redisDao.setValues(id + keyName, String.valueOf(++incrementedCount));
     }
 
     private FybUser getUser(String email) {

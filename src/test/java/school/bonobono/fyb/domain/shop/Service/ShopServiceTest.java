@@ -86,6 +86,16 @@ class ShopServiceTest {
         shopRepository.saveAll(List.of(musinsa, wusinsa, zigzag));
     }
 
+    @DisplayName("사용자 조회수 기준으로 정렬된 쇼핑몰 목록을 가져온다.")
+    @Test
+    void getMostViewed() {
+        // given
+
+        // when
+
+        // then
+    }
+
     // method
     private Set<Authority> getUserAuthority() {
         return Collections.singleton(Authority.builder()
