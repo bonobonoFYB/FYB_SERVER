@@ -2,8 +2,10 @@ package school.bonobono.fyb.domain.shop.Service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,7 @@ import school.bonobono.fyb.domain.shop.Repository.ShopRepository;
 import school.bonobono.fyb.domain.user.Entity.Authority;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
+import school.bonobono.fyb.global.redis.service.RedisService;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,11 +24,16 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
 class ShopServiceTest {
+
+    @MockBean
+    private RedisService redisService;
 
     @Autowired
     private ShopService shopService;
@@ -58,6 +66,46 @@ class ShopServiceTest {
                 );
     }
 
+    @DisplayName("사용자 조회수 기준으로 정렬된 쇼핑몰 목록을 가져온다.")
+    @Test
+    void getMostViewed() {
+        // given
+        savedShop();
+        given(redisService.getSortedShopId(anyString()))
+                .willReturn(List.of(2L, 1L, 3L));
+
+        // when
+        List<ShopDto.DetailListDto> response = shopService.getMostViewed();
+
+        // then
+        assertThat(response)
+                .extracting("id")
+                .contains(2L, 1L, 3L);
+    }
+
+    // method
+
+    private Set<Authority> getUserAuthority() {
+        return Collections.singleton(Authority.builder()
+                .authorityName("ROLE_USER")
+                .build());
+    }
+
+    private FybUser getUserAndSave() {
+        FybUser user = FybUser.builder()
+                .email("test@test.com")
+                .pw(passwordEncoder.encode("abc123!"))
+                .name("테스트 계정")
+                .gender('M')
+                .height(180)
+                .weight(70)
+                .age(23)
+                .authorities(getUserAuthority())
+                .userData("ABC")
+                .build();
+        return userRepository.save(user);
+    }
+
     private void savedShop() {
         Shop musinsa = Shop.builder()
                 .id(1L)
@@ -84,37 +132,5 @@ class ShopServiceTest {
                 .build();
 
         shopRepository.saveAll(List.of(musinsa, wusinsa, zigzag));
-    }
-
-    @DisplayName("사용자 조회수 기준으로 정렬된 쇼핑몰 목록을 가져온다.")
-    @Test
-    void getMostViewed() {
-        // given
-
-        // when
-
-        // then
-    }
-
-    // method
-    private Set<Authority> getUserAuthority() {
-        return Collections.singleton(Authority.builder()
-                .authorityName("ROLE_USER")
-                .build());
-    }
-
-    private FybUser getUserAndSave() {
-        FybUser user = FybUser.builder()
-                .email("test@test.com")
-                .pw(passwordEncoder.encode("abc123!"))
-                .name("테스트 계정")
-                .gender('M')
-                .height(180)
-                .weight(70)
-                .age(23)
-                .authorities(getUserAuthority())
-                .userData("ABC")
-                .build();
-        return userRepository.save(user);
     }
 }

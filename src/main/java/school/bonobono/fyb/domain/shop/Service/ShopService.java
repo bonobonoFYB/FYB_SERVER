@@ -16,6 +16,7 @@ import school.bonobono.fyb.global.model.Result;
 import school.bonobono.fyb.global.redis.service.RedisService;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -86,7 +87,11 @@ public class ShopService {
     @Transactional
     public List<ShopDto.DetailListDto> getMostViewed() {
         List<Long> sortedViewsShopId = redisService.getSortedShopId("_viewCount");
-        return shopRepository.findByIdsInSpecifiedOrder(sortedViewsShopId).stream()
+        List<Shop> shops = shopRepository.findByIdIn(sortedViewsShopId);
+
+        shops.sort(Comparator.comparing(shop -> sortedViewsShopId.indexOf(shop.getId())));
+
+        return shops.stream()
                 .map(ShopDto.DetailListDto::response)
                 .collect(Collectors.toList());
     }
