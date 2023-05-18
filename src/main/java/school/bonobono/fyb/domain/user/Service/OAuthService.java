@@ -19,7 +19,7 @@ import school.bonobono.fyb.domain.user.OAuth.GoogleOAuth;
 import school.bonobono.fyb.domain.user.OAuth.KakaoOAuth;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.global.config.Jwt.TokenProvider;
-import school.bonobono.fyb.global.config.Redis.RedisDao;
+import school.bonobono.fyb.global.redis.RedisDao;
 import school.bonobono.fyb.global.exception.CustomException;
 import school.bonobono.fyb.global.model.Result;
 

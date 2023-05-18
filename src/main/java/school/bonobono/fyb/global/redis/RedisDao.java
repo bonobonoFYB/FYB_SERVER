@@ -1,4 +1,4 @@
-package school.bonobono.fyb.global.config.Redis;
+package school.bonobono.fyb.global.redis;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;

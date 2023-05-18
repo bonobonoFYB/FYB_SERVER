@@ -18,7 +18,7 @@ import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
 import school.bonobono.fyb.global.aws.service.S3Service;
 import school.bonobono.fyb.global.config.Jwt.TokenProvider;
-import school.bonobono.fyb.global.config.Redis.RedisDao;
+import school.bonobono.fyb.global.redis.RedisDao;
 import school.bonobono.fyb.global.exception.CustomException;
 import school.bonobono.fyb.global.model.Result;
 

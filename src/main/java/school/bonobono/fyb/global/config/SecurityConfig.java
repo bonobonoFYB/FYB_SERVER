@@ -15,7 +15,7 @@ import school.bonobono.fyb.global.config.Jwt.JwtAccessDeniedHandler;
 import school.bonobono.fyb.global.config.Jwt.JwtAuthenticationEntryPoint;
 import school.bonobono.fyb.global.config.Jwt.JwtSecurityConfig;
 import school.bonobono.fyb.global.config.Jwt.TokenProvider;
-import school.bonobono.fyb.global.config.Redis.RedisDao;
+import school.bonobono.fyb.global.redis.RedisDao;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)

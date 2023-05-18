@@ -1,4 +1,4 @@
-package school.bonobono.fyb.global.config.Redis;
+package school.bonobono.fyb.global.redis;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
