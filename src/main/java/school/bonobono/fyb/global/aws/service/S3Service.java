@@ -10,6 +10,7 @@ import school.bonobono.fyb.global.exception.CustomException;
 import school.bonobono.fyb.global.model.Result;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,14 +21,27 @@ public class S3Service {
     private String bucket;
 
     public String uploadProfileImage(MultipartFile multipartFile, String email) {
-        String profile_image_name = "profile/" + email;
+        String profileImageName = "profile/" + email;
         ObjectMetadata objMeta = new ObjectMetadata();
         try {
             objMeta.setContentLength(multipartFile.getInputStream().available());
-            amazonS3Client.putObject(bucket, profile_image_name, multipartFile.getInputStream(), objMeta);
+            amazonS3Client.putObject(bucket, profileImageName, multipartFile.getInputStream(), objMeta);
         } catch (IOException e) {
             throw new CustomException(Result.FAIL);
         }
-        return amazonS3Client.getUrl(bucket, profile_image_name).toString();
+        return amazonS3Client.getUrl(bucket, profileImageName).toString();
+    }
+
+    public String uploadClosetImage(MultipartFile multipartFile) {
+        UUID uuid = UUID.randomUUID();
+        String closetImageName = "closet" + uuid;
+        ObjectMetadata objMeta = new ObjectMetadata();
+        try {
+            objMeta.setContentLength(multipartFile.getInputStream().available());
+            amazonS3Client.putObject(bucket, closetImageName, multipartFile.getInputStream(), objMeta);
+        } catch (IOException e) {
+            throw new CustomException(Result.IMAGE_UPLOAD_FAIL);
+        }
+        return amazonS3Client.getUrl(bucket, closetImageName).toString();
     }
 }

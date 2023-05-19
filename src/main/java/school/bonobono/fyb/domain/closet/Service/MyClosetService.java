@@ -14,6 +14,7 @@ import school.bonobono.fyb.domain.closet.Entity.Closet;
 import school.bonobono.fyb.domain.closet.Repository.ClosetRepository;
 import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.user.Repository.UserRepository;
+import school.bonobono.fyb.global.aws.service.S3Service;
 import school.bonobono.fyb.global.exception.CustomException;
 import school.bonobono.fyb.global.model.Result;
 
@@ -27,9 +28,7 @@ import java.util.UUID;
 public class MyClosetService {
     private final ClosetRepository closetRepository;
     private final UserRepository userRepository;
-    private final AmazonS3Client amazonS3Client;
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
+    private final S3Service s3Service;
 
     // Service
     @Transactional(readOnly = true)
@@ -77,12 +76,9 @@ public class MyClosetService {
 
     @Transactional
     public ClosetDto.DetailDto updateImage(MultipartFile multipartFile, Long id) {
-        UUID uuid = UUID.randomUUID();
-        String imageName = "closet/" + uuid;
-        uploadImage(multipartFile, imageName);
-
+        String myClosetImagePath = s3Service.uploadClosetImage(multipartFile);
         Closet closet = getCloset(id);
-        closet.updateImagePath(amazonS3Client.getUrl(bucket, imageName).toString());
+        closet.updateImagePath(myClosetImagePath);
 
         return ClosetDto.DetailDto.response(closet);
     }
@@ -119,22 +115,5 @@ public class MyClosetService {
         return closetRepository.findById(id).orElseThrow(
                 () -> new CustomException(Result.NOT_FOUND_CLOSET)
         );
-    }
-
-    public FybUser getUser(String email) {
-        return userRepository.findOneWithAuthoritiesByEmail(email).orElseThrow(
-                () -> new CustomException(Result.NOT_FOUND_USER)
-        );
-    }
-
-    private void uploadImage(MultipartFile multipartFile, String imageName) {
-        // String ext = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
-        ObjectMetadata objMeta = new ObjectMetadata();
-        try {
-            objMeta.setContentLength(multipartFile.getInputStream().available());
-            amazonS3Client.putObject(bucket, imageName, multipartFile.getInputStream(), objMeta);
-        } catch (IOException e) {
-            throw new CustomException(Result.IMAGE_UPLOAD_FAIL);
-        }
     }
 }

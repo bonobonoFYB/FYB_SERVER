@@ -32,7 +32,7 @@ public class Closet {
         this.closetImagePath = closetImagePath;
     }
 
-    public void updateCloset(String productName, String productKind, String productNotes) {
+    public void updateCloset(String productName, String productNotes, String productKind) {
         this.productName = productName;
         this.productNotes = productNotes;
         this.productKind = productKind;
