@@ -2,12 +2,9 @@ package school.bonobono.fyb.domain.closet.Entity;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
-@ActiveProfiles("test")
 class ClosetTest {
 
     @DisplayName("옷장 객체 안에 이미지 값을 수정한다.")

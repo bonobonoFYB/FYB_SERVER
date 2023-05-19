@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import school.bonobono.fyb.domain.user.Entity.FybUser;
 import school.bonobono.fyb.domain.wishlist.Dto.WishlistDto;
 import school.bonobono.fyb.domain.wishlist.Service.WishlistService;
 import school.bonobono.fyb.global.model.CustomResponseEntity;
@@ -25,9 +27,9 @@ public class WishlistController {
     @GetMapping("wishlist")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CustomResponseEntity<List<WishlistDto.DetailDto>> getWishlistInfo(
-            @AuthenticationPrincipal UserDetails userDetails
-            ) {
-        return CustomResponseEntity.success(wishlistService.getWishlistInfo(userDetails));
+            @AuthenticationPrincipal final FybUser user
+    ) {
+        return CustomResponseEntity.success(wishlistService.getWishlistInfo(user));
     }
 
     // 회원 장바구니 등록
@@ -35,9 +37,9 @@ public class WishlistController {
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CustomResponseEntity<WishlistDto.SaveDto> addWishlistInfo(
             @Valid @RequestBody WishlistDto.SaveDto request,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal final FybUser user
     ) {
-        return CustomResponseEntity.success(wishlistService.addWishlistInfo(request, userDetails));
+        return CustomResponseEntity.success(wishlistService.addWishlistInfo(request, user));
     }
 
     // 회원 장바구니 삭제

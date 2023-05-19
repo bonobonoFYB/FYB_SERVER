@@ -2,12 +2,9 @@ package school.bonobono.fyb.domain.user.Entity;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
-@ActiveProfiles("test")
 class FybUserTest {
 
     @DisplayName("유저 객체의 프로필 이미지를 수정한다.")

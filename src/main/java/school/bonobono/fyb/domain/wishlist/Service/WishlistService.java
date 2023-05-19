@@ -54,8 +54,7 @@ public class WishlistService {
     // Service
     // 사용자 장바구니 전체조회
     @Transactional
-    public List<WishlistDto.DetailDto> getWishlistInfo(UserDetails userDetails) {
-        FybUser user = getUser(userDetails.getUsername());
+    public List<WishlistDto.DetailDto> getWishlistInfo(FybUser user) {
         List<Wishlist> wishlists = user.getWishlists();
 
         GET_WISHLIST_INFO_VALIDATION(wishlists);
@@ -65,10 +64,8 @@ public class WishlistService {
 
     // 사용자 장바구니 안 상품 등록
     @Transactional
-    public WishlistDto.SaveDto addWishlistInfo(WishlistDto.SaveDto request, UserDetails userDetails) {
+    public WishlistDto.SaveDto addWishlistInfo(WishlistDto.SaveDto request, FybUser user) {
         ADD_WISHLIST_INFO_VALIDATION(request);
-
-        FybUser user = getUser(userDetails.getUsername());
 
         Wishlist wishlist = wishlistRepository.save(
                 Wishlist.builder()
@@ -99,8 +96,8 @@ public class WishlistService {
         Wishlist wishlist = getWishlist(request.getId());
         wishlist.updateWishlist(
                 request.getProductName(), request.getProductNotes(),
-                request.getProductNotes(), request.getProductPrice()
-        );
+                request.getProductPrice(), request.getProductUrl()
+                );
 
         return WishlistDto.DetailDto.response(wishlist);
     }

@@ -40,7 +40,7 @@ public class Wishlist {
     @LastModifiedDate
     private LocalDateTime updateAt;
 
-    public void updateWishlist(String productName, String productUrl, String productNotes, Integer productPrice) {
+    public void updateWishlist(String productName, String productNotes, Integer productPrice, String productUrl) {
         this.productName = productName;
         this.productUrl = productUrl;
         this.productNotes = productNotes;
